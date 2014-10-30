@@ -126,13 +126,13 @@ g(\hy_e) = \left\{ \begin{array}{l l}
 \right.
 \end{equation}
 The risk parameters $(L, p)$ will be fixed among all lines and  $a$ and $b$ can be calculated given the risk parameters $L,p$. 
-\endnote{\input{\mypathjcc/pwlparam}}
+\endnote{\input{\mypathjcc/end-pwlparam}}
 The extension to line specific values is straightforward given the data and could be grouped based off line voltages and material parameters.
 
 
 \subsubsection*{System Risk Measure}
 First, we will define a risk measures in a static setting which can be solved for exactly using nonlinear programming. This risk measure can be weighted to account for importance of lines, which is useful in a cascading failure setting.
-\endnote{\input{\mypathjcc/nocascade}}
+\endnote{\input{\mypathjcc/end-nocascade}}
 Then, the risk measure is extended to random variables $\rz_e = g( \hry_e )$.
 
 
@@ -145,12 +145,12 @@ This risk measure defines a bernoulli random variable that takes on the value 1 
 h(z) = \prod_{e \in \cE} \left( 1 - z_e \right)
 \end{equation}  
 where $z_e$ is the probability that line $e$ fails.  Also, we restrict $z_e \in [0,1)$ since when $z_e = 1$ for any line, we know that the probability no line fails is 0.  This implies that an individual line will have a hard line limit (denoted $U^\epsilon$) related to the system risk $\epsilon$.
-\endnote{\input{\mypathjcc/hardlimit}}
+\endnote{\input{\mypathjcc/end-hardlimit}}
 This function can be solved exactly for static demand using nonlinear programming by taking a log transform of the line risk.
-\endnote{\input{\mypathjcc/exact}}
+\endnote{\input{\mypathjcc/end-exact}}
 
 The function can be approximated by using a linearization of $h(z)$,
-\endnote{\input{\mypathjcc/linearrisk}}
+\endnote{\input{\mypathjcc/end-linearrisk}}
 which recovers the model used by Wang et. al \cite{wang_2013}.
 
 
@@ -176,13 +176,13 @@ Let $ z_e = \E{\Omega}{g(\ry_e)} $ be the individual line risk. We can break $z_
 \[ z_e = \E{\Omega}{ a+b\hry_e | L \leq \hry_e } \bP{\Omega}{L\leq \hry_e} \]
 
 The branch flows are truncated gaussian, which have known mean and variances.
-\endnote{\input{\mypathjcc/truncgauss}}
+\endnote{\input{\mypathjcc/end-truncgauss}}
 The line risk is a function of the mean and covariance of the branch flows.  The line risk expression is then
 \begin{equation}\label{line_risk}
 z_e(\mu^y_e,\sigma^y_e) = (a + b \mu^y_e)\left[ 1 - \Phi(\alpha_L) \right]  + b \sigma^y_e \phi(\alpha_L) 
 \end{equation}
 which is a convex function with respect to $\mu^y_e$ and $\sigma^y_e$.
-\endnote{\input{\mypathjcc/convexrisk}}
+\endnote{\input{\mypathjcc/end-convexrisk}}
 
 
 %%%%%%%% Section 3
@@ -261,7 +261,7 @@ The volatile injects have mean 0 and a covariance matrix $\Sigma^m$.  This covar
 The JCC model also has a straightforward extension to exogenous contingencies.  In the computational experiments, each model will have a respective N-1 version which ensures the system is stable after any single line goes out.  In order to explore this model, line outage factors are used, which are linear shift factors for branch flows.  Using these, constraints will be formed on the second stage branch flow variables.  The mean branch flow as well as standard deviation of flow can be calculated.  In the OPF version, hard line constraints are used.  In the CC version, probabilistic constraints are formed for line flow.  Finally, the JCC version enforces a system risk constraint on each N-1 subsystem.  In all versions, the respective constraints are loosened in the second stage.
 
 The implementation as well as solution method, which closely parallel the base case, are given in the notes.
-\endnote{\input{\mypathjcc/exogen}}
+\endnote{\input{\mypathjcc/end-exogen}}
 
 \subsection{Solution Method}
 Due to the inclusion of non-analytic functions (the line risk function), an out of the box solver would not work.  However, the risk function is convex, so cutting planes were chosen for the solution methodology.  In addition, there were many second order cone constraints (number of lines).  Instead of using these constraints explicitly, they were added indirectly through cutting planes as well.  This kept the program to a manageable size and allowed for fast solve times.  When exogenous contingencies are added, cutting planes are extremely efficient since no constraints will be added for lines without risk.
