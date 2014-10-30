@@ -18,11 +18,10 @@
 \input{def}
 \begin{document}
 \chapter{Joint Chance Constraints for Real-Time Dispatch}
-\section{abstract}
+\section{Introduction}
 The current line threshold model for transmission elements places the economics and reliability of single lines above that of system.  A system risk measure needs to be developed and constrained so that there is a proper trade off between the cost and risk of a given dispatch point.  In this paper, we develop a line risk measure and then constrain and solve exactly via nonlinear programming in a static demand scenario and approximately in a demand scenario with a multivarate gaussian distribution.  A computational example will be used to discuss the cost-risk frontier created from our Joint Chance Constraint (JCC) model and compare it with other dispatch models, the Optimal Power Flow (OPF) and a chance constrained (CC) version.  
 
-\section{Introduction}
-Currently, the power grid operation and reliability requirements are done with fixed line limits.  However, line failure rates are dependent on power flow, environmental conditions, and other factors.  In order to incorporate this into operation and reliability models, we look to probabilistic risk measures and chance constraints. 
+The power grid operation and reliability requirements are done with fixed line limits.  However, line failure rates are dependent on power flow, environmental conditions, and other factors.  In order to incorporate this into operation and reliability models, we look to probabilistic risk measures and chance constraints. 
 
 The connection between power flow and line failure rates can be looked at from many different directions.  The nominal capacity of transmission elements are based on thermal characteristics of the line as well as a set of environmental characteristics which represent the worst case scenario for different operating times.  Typically, there may be a summer rating and a winter rating for each transmission element, where the winter rating has colder ambient temperature, thus less heating and less sagging.  Dynamic line limits are being explored to account for current environmental conditions \cite{bucher_2013},\cite{yip_2009}, \cite{wang_2011},\cite{zhang_2002}.
 
@@ -69,70 +68,6 @@ Now, we want to understand small perturbabtions to the system.  Taking the deriv
 where $A$ is the injection shift factor $A = B' C \left[\begin{array}{cc} 0 & \tilde{B}^{-1} \end{array} \right]$ and $0\in \R^{N_b}$ is a column of zeros.  For a general slack distribution $\beta$ with $\sum_i \beta_i=1$ and $\Delta = \sum_i dx_i$, the net injects also change by $- \beta \Delta$ so that $dy = A\left( dx - \beta \Delta \right)$.  The slack distribution is responsible for making up the mismatch between forecasted demand and realized demand and a subset of the generators is capable of performing this role.
 
 
-\subsection{Random Power Flows}
-%The net power injections are known to fluctuate over different time intervals. Over short time intervals (less than 30 seconds) regulation support follows demand in order to keep frequency regulated.  
-Over the course of the 5 minute interval dispatch period, demand will fluctuate from its expectation.  This  fluctuation can be due to the behaviors of aggregated residential load, commercial or industrial processes, or even power production for renewable sources such as wind and solar.  Assuming these volatile injects are gaussian, the linear approximations made in the DC power flow will lead to the branch flows also being gaussian random variables.  The mean vector and covariance matrix of branch flows can be calculated if the mean and covariance of the volatile injections are known.
-\subsubsection*{Volatile Nodal Injects}
-Let $\ri \in \R^{N_m}$ be a random vector describing the deviation from forecast on a subset of nodes $m \in \cM$ which are volatile.  Bold lettering $\ri$ will be a random variable with a probability distribution supported on $\Omega$.  Define an admittance matrix $C_M \in \R^{N_b \times N_m}$ where $c_{im}=1$ if volatile inject $m$ is connected to node $i$.  Applying \ref{kcl},\ref{dcpow}, the random power injects for the network are
-\begin{equation}\label{rand_inj}
- \rx = C_g\left(x_0+\beta \rD\right) - (d + C_M \ri) 
-\end{equation}
- where the left term is generation/controllable and the right term is load/uncontrolled.  Both terms have a static component due to the forecasted system and a random component due to the volatile injections.  The random injects $\ri$ are assumed to be a multivariate gaussion distribution with known mean $\mu^m$ and covariance $\Sigma^m$.  
-
-\subsubsection*{Gaussian Branch Flows}
-The random injects cause loading on the transmission lines to fluctuate and the flows are random variables themselves.   The random power flows $\ry$ are
-\begin{equation}\label{rand_flow}
- \ry = y_0+ A C_G \beta \rD  - A C_M \rdm 
-\end{equation}
-with $\rf = A C_G \beta \rD - AC_M \ri$ being the random component of branch flows.
-
-\subsubsection*{Forecasted System}
-Without loss of generality, we can assume that the volatile injects have zero mean.  If we know them to have a nonzero mean, we can shift the forecasted system to account for it. 
-The forecasted system  $\left(x_0, y_0, \theta_0\right)$ is the expectation of \ref{rand_inj} and \ref{rand_flow}
-\begin{align*}
-C_G x_0 - d &= C^T y_0 \\
-y_0 &= B^T C \theta_0 
-\end{align*}
-with zero mean deviation $\Erdm=\left[0 \cdots 0\right]^T$ and $\ErD=0$. 
-%$\Erdm=\left[ \begin{array}{c} 0 \\ \vdots \\ 0\end{array} \right]$ and $\ErD=0$. 
-
-
-\subsubsection*{Branch Covariance Matrix}
-
-From \ref{isf}, we have that the random component of the flow is made part from the volatile injects and part the generators response.   The random branch flows $\rf$ are a linear function of the random injects $\ri$, thus $\ry$ has a multivariate gaussian distribution as well.  The branch covariance matrix can be calculated
-\begin{equation*}
-\E{\Omega}{ \left( \ry - \mu^y \right) \left( \ry - \mu^y \right)^T } = \E{\Omega}{\left( A(C_G\beta 1^T - C_M) \ri \right) \left( A(C_G\beta 1^T - C_M )\rdm \right)^T } 
-\end{equation*}
-Since the expectation is linear and the covariance $\Sigma^m$ of $\ri$ is known, we 
-have power flow covariance matrix
-\begin{equation}\label{branch_cov}
-\Sigma^y = A(C_G\beta 1^T - C_M) \Sigma^m (C_G\beta 1^T - C_M)^T A^T
-\end{equation}
-
-
-
-\subsection{System Risk Measures}
-In order to ensure reliability of the bulk power system, the system risk needs to be quantified and constrained.  Line risk will be quantified by a piecewise linear function for the probability of line failure based on line flow.  The results will be applied to the gaussian branch flows.
-
-% -----  Picture ----- Gaussian PDF and line failure function ---------------------------------%
-\begin{figure}
-  \centering
-  \begin{subfigure}[b]{0.4\textwidth}
-    \begin{tikzpicture}[scale=.7]
-      \begin{axis}[ title=PDF of Power Flow ,xlabel=$y'$,ylabel=$\bP{\Omega}{\ry=y'}$, xmin=-.05, xmax=1.55, 
-          xtick={0,.5,1,1.5},
-  	  extra x ticks={.9,1.25},
-	  extra x tick style={grid=major},
-	  extra x tick labels={$L$,$U^c$}
-        ]
-        \addplot+[black,no marks,domain=0.01:2,samples=150] { 1/(.025*sqrt(2*3.1415))*exp(-((x-.95)^2/(2*(.025^2))) };
-        \addplot+[black,no marks, domain=-2:0,samples=5] {0};
-        
-      \end{axis}
-    \end{tikzpicture}
-    \caption{Probability density of power flow}
-  \end{subfigure}
-  \begin{subfigure}[b]{.4\textwidth}
     \begin{tikzpicture}[scale=.7]
       \begin{axis}[ 
 	  xlabel=$y'$,
@@ -161,11 +96,6 @@ In order to ensure reliability of the bulk power system, the system risk needs t
         \addplot[black,mark=o,mark size=1.4pt] coordinates{(1.4,.4)};
       \end{axis}
     \end{tikzpicture}
-    \caption{Line failure versus power flow distribution}
-  \end{subfigure}
-  \caption{Random Power Flows and the Failure Density Function}
-\end{figure}
-
 
 
 \subsubsection*{Line Risk Function}
@@ -234,7 +164,7 @@ U^{\epsilon} = g^{-1}\left(\epsilon\right)
 \end{equation}
 will be an upper bound on line flow.
 }
-% ----END---------- Hard Line Limits ENDNOTE -----------END------
+% ----END---------- Hard Line Limits ENDNOTE -----------END-----
 This function can be solved exactly for static demand using nonlinear programming by taking a log transform of the line risk.
 % ----------------- Exact Solution for Static Demand ENDNOTE ----------------
 \endnote{\textbf{Static Demand, Exact Solution}
@@ -451,56 +381,6 @@ The mean branch flows for line $e$ given contingeny $n$ can be found by
 \end{equation}
 with $L_{en}$ being a line outage factor for outage $n$'s effect on line $e$.
 
-\textbf{Line Outage Factors}
-The line outage factor can be found by first finding the branch sensitivity matrix and then apply a scale so that when the line outage factor is multiplied by the current branch flow, the response to all other branches is found.
-\begin{equation}
-L_{en} = \left\{ \begin{array}{c c}
-  -1 & \mbox{ if } e=n\\
-  A_{en}^B (1-A_{nn}^B)^{-1} & \mbox{ if } A_{nn}^B \neq 1\\
-  \mbox{NaN} & \mbox{ o/w }
-  \end{array}
-\right.
-\end{equation}
-
-In addition, the standard deviation of branch flows can be calculated.  The variance of branch flows are
-\begin{equation}
- Var[\ry_e^n] = Var[\ry_e] + L^2_{e n} Var[ \ry_n ] + 2 L_{e n} CoVar[ \ry_e, \ry_n ]
-\end{equation}
-
-\textbf{Joint Chance Constraints for N-1 Security}
-
-The following equations are added to JCC to define JCC N-1.
-\begin{subequations}
-\label{jcc_program}
-\begin{alignat}{3}
-y^+_{en} - y_e - L_{en} y_n & \geq 0 && \forall e,n\\
-y^+_{en} + y_e  +  L_{en} y_n & \geq 0 && \forall e,n\\
- s_{en}^2 - \psen^2 \sD + 2 \psen \left( \se + L_{en} \sn \right) &\geq \sigma^2_{\psi_{en}} && \forall e,n\\
-z_{en} - g(y^+_{en},s_{en}) &\geq 0 && \forall e,n\\
-\sum_e z_{en} &\leq \epsilon_n && \forall n
-\end{alignat}
-\end{subequations}
-
-Shift factors for multiple lines can be found provided certain conditions are met. \cite{guler_2007}
-
-The effect of the outage of line $n$ has on line $e$ is related to $\psen$, which can be calculated as
-\begin{equation}
- \psen = \pe + L_{en} \pn
-\end{equation}
-
-The injection covariance matrix allows you to calculate this parameter which is used in the branch covariance matrix and cutting plane algorithms.
-
-\textbf{Branch Response Parameter}
-\begin{equation}
-\sigma^2_{\psi_{en}} = \sko \skt \left(A_{ek_1} + L_{en} A_{nk_2}\right)^2 \sigot
-\end{equation}
-
-The cutting planes for N-1 are
-\begin{align*}
-s_en \geq \fenb &+ \sum_j \pfenb \left( \beta_j - \hat{\beta_j} \right)\\
-\fenb &= \sqrt{ \psen^2 \sD - 2 \psen \left( \se + L_{en} \sn \right) + \sigma^2_{\psi_{en}}} \\
-  \pfenb &= \frac{\left(A_{ej} + L_{en}A_{nj}\right) \left( \psen \sD - \left(\se + L_{en} \sn \right) \right)}{\sqrt{\psen^2 \sD - 2 \psen \left(\se  + L_{en}\sn \right) + \sigma^2_{\psi_{en}} }}
-\end{align*}
 
 }
 % -----END---------- Exogeneous Contingency Details ENDNOTE -------END---------
@@ -534,9 +414,6 @@ s_e \geq \fehb &+ \sum_j \pfehb \left( \beta_j - \hat{\beta_j} \right)\\
   \pfeb &= \frac{A_{ej} \left( \pe \sD - \se \right)}{\sqrt{\pe^2 \sD - 2 \pe \se  + \see }}
 \end{align}
 \end{subequations}
-
-
-
 
 \subsubsection*{Cutting Plane Algorithm}
 Now, we can describe the cutting plane algorithm for JCC at a high level and give pseudo-code \ref{jcc_alg} for implementation.  The main subproblem the algorithm will solve is the standard DC power flow.  After solving, the generator injects $x$, slack distribution $\beta$, and branch flows $y$ will be used to calculate risk information about the dispatch point.  To get the risk information, the branch standard deviations $s$ need to be calculated.  With the mean flow $y$ and standard deviation $s$, the line risk $z$ can be calculated.  The sum of line risk is system risk $r$.  If $r$ is less than the required system risk $\epsilon$, the problem is solved.  Otherwise, the algorithm will add cuts for all lines with a positive risk $z$.  The cuts will describe how $z$ is related to $y,s$ and how $s$ is related to $\beta$.  Then the power flow subproblem will be solved with the addition of the cuts and this will repeat until it is infeasible or the risk constraint is satisfied.

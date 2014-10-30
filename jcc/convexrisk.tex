@@ -1,0 +1,22 @@
+\textbf{Convex Line Risk}
+
+The line risk is
+\begin{equation}
+z_e(\mu^y_e,\sigma^y_e) = (a + b \mu^y_e)\left[ 1 - \Phi(\alpha_L) \right]  + b \sigma^y_e \phi(\alpha_L) 
+\end{equation}
+Taking the derivatives of $z$ with respect to $\mu^y_e$ and $\sigma^y_e$, we have
+\begin{align*}
+\frac{\partial z_e}{\partial \mu}(\mu^y_e,\sigma^y_e) & = b\left[ 1 - \Phi(\alpha_L) \right]\\
+\frac{\partial z_e}{\partial \sigma}(\mu^y_e,\sigma^y_e) & = b \phi(\alpha_L) 
+\end{align*} 
+The Hessian is found with the second derivatives and is given by
+\begin{equation}
+\cH_z(\mu^y_e,\sigma^y_e) = \frac{b \phi(\alpha_L)}{\sigma}
+\left[ 
+\begin{array}{c c}
+1 & \alpha_L \\
+\alpha_L & \alpha_L^2
+\end{array}
+\right]
+\end{equation}
+Then, we note that the determinant is 0 and the diagonal elements are positive so that there is a positive eigenvalue and a zero eigenvalue, thus the line risk is convex with respect to $\mu^y_e, \sigma^y_e$.  Since system risk is approximated by the sum of line risks, this system risk measure is convex.

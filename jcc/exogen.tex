@@ -1,0 +1,58 @@
+\textbf{Exogenous Contingency Details}
+
+
+The mean branch flows for line $e$ given contingeny $n$ can be found by
+\begin{equation}
+ \ry_e^n = \ry_e + L_{e n} \ry_n 
+\end{equation}
+with $L_{en}$ being a line outage factor for outage $n$'s effect on line $e$.
+\textbf{Line Outage Factors}
+The line outage factor can be found by first finding the branch sensitivity matrix and then apply a scale so that when the line outage factor is multiplied by the current branch flow, the response to all other branches is found.
+\begin{equation}
+L_{en} = \left\{ \begin{array}{c c}
+  -1 & \mbox{ if } e=n\\
+  A_{en}^B (1-A_{nn}^B)^{-1} & \mbox{ if } A_{nn}^B \neq 1\\
+  \mbox{NaN} & \mbox{ o/w }
+  \end{array}
+\right.
+\end{equation}
+
+In addition, the standard deviation of branch flows can be calculated.  The variance of branch flows are
+\begin{equation}
+ Var[\ry_e^n] = Var[\ry_e] + L^2_{e n} Var[ \ry_n ] + 2 L_{e n} CoVar[ \ry_e, \ry_n ]
+\end{equation}
+
+\textbf{Joint Chance Constraints for N-1 Security}
+
+The following equations are added to JCC to define JCC N-1.
+\begin{subequations}
+\label{jcc_program}
+\begin{alignat}{3}
+y^+_{en} - y_e - L_{en} y_n & \geq 0 && \forall e,n\\
+y^+_{en} + y_e  +  L_{en} y_n & \geq 0 && \forall e,n\\
+ s_{en}^2 - \psen^2 \sD + 2 \psen \left( \se + L_{en} \sn \right) &\geq \sigma^2_{\psi_{en}} && \forall e,n\\
+z_{en} - g(y^+_{en},s_{en}) &\geq 0 && \forall e,n\\
+\sum_e z_{en} &\leq \epsilon_n && \forall n
+\end{alignat}
+\end{subequations}
+
+Shift factors for multiple lines can be found provided certain conditions are met. \cite{guler_2007}
+
+The effect of the outage of line $n$ has on line $e$ is related to $\psen$, which can be calculated as
+\begin{equation}
+ \psen = \pe + L_{en} \pn
+\end{equation}
+
+The injection covariance matrix allows you to calculate this parameter which is used in the branch covariance matrix and cutting plane algorithms.
+
+\textbf{Branch Response Parameter}
+\begin{equation}
+\sigma^2_{\psi_{en}} = \sko \skt \left(A_{ek_1} + L_{en} A_{nk_2}\right)^2 \sigot
+\end{equation}
+
+The cutting planes for N-1 are
+\begin{align*}
+s_en \geq \fenb &+ \sum_j \pfenb \left( \beta_j - \hat{\beta_j} \right)\\
+\fenb &= \sqrt{ \psen^2 \sD - 2 \psen \left( \se + L_{en} \sn \right) + \sigma^2_{\psi_{en}}} \\
+  \pfenb &= \frac{\left(A_{ej} + L_{en}A_{nj}\right) \left( \psen \sD - \left(\se + L_{en} \sn \right) \right)}{\sqrt{\psen^2 \sD - 2 \psen \left(\se  + L_{en}\sn \right) + \sigma^2_{\psi_{en}} }}
+\end{align*}

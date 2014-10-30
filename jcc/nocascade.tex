@@ -1,0 +1,11 @@
+\textbf{No Cascade Risk Measure}
+
+While it is important that no lines fail, it may be overly restrictive while not actually reducing the risk of large load shedding events, which is the main concern from a system reliability perspective. It would certainly be more beneficial to keep the large high voltage lines in operation that are critical to system stability versus a few small distribution feeders, which may cause some small load shedding but would keep the bad events contained.  In this case, we would like to find the probability of no cascade given an power system operating point.  We can condition this probability on the events of individual lines failing, which we have used previously.
+\begin{equation*}
+P(\mbox{cascade}|x) = \sum_e P(\mbox{cascade}|e\mbox{ fails}) P(e\mbox{ fails}|x)
+\end{equation*}
+where $x$ is the operating point and here we worry about the flows $y$ and not the risk from generators.  Let $q_e(y_e) = P(\mbox{cascade}|e\mbox{ fails})$, then we have
+\begin{equation} 
+H^c(y) = \prod_{e \in \cE} \left( 1 - g_e(y_e)q_e(y_e) \right) \geq 1 - \epsilon
+  \end{equation}  
+The conditional probabilities $q_e(y_e)$ act as weights on the probability of line failures, so if we set them all to 1 to put an equal importance on every line, we get back our previous formulation.

@@ -6,7 +6,8 @@
 \usepackage[table]{xcolor}
 \usepackage{hyperref}                 % For creating hyperlinks in cross references
 \usepackage{algorithm}
-\usepackage{algorithmic}
+%\usepackage{algorithmic}
+\usepackage[noend]{algpseudocode}
 \usepackage{longtable}
 \usepackage{import}
 \usepackage{lscape}
@@ -15,7 +16,7 @@
 \usetikzlibrary{patterns}
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
-
+\usepackage{endnotes}
 \usepackage{cleveref}
 \usepackage{caption}
 \usepackage{subcaption}
@@ -28,16 +29,10 @@
 \parindent 1cm
 \parskip 0.2cm
 \topmargin 0.2cm
-\oddsidemargin 1cm
+\oddsidemargin .5cm
 \evensidemargin 0.5cm
 \textwidth 15cm
 \textheight 21cm
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{proposition}[theorem]{Proposition}
-\newtheorem{corollary}[theorem]{Corollary}
-\newtheorem{lemma}[theorem]{Lemma}
-\newtheorem{remark}[theorem]{Remark}
-\newtheorem{definition}[theorem]{Definition}
 
 
 %\newcommand{\mag}[1][mag]{ \left| {#1} \right| }
@@ -66,15 +61,22 @@
 \newcommand{\cE}{\mathcal{E}}
 \newcommand{\cF}{\mathcal{F}}
 \newcommand{\cG}{\mathcal{G}}
+\newcommand{\cH}{\mathcal{H}}
+\newcommand{\cJ}{\mathcal{J}}
+\newcommand{\cK}{\mathcal{K}}
 \newcommand{\cL}{\mathcal{L}}
-\newcommand{\cN}{\mathcal{N}}
 \newcommand{\cM}{\mathcal{M}}
+\newcommand{\cN}{\mathcal{N}}
 \newcommand{\cO}{\mathcal{O}}
 \newcommand{\cS}{\mathcal{S}}
 \newcommand{\cT}{\mathcal{T}}
-\newcommand{\cV}{\mathcal{V}}
-\newcommand{\cX}{\mathcal{X}}
 \newcommand{\cU}{\mathcal{U}}
+\newcommand{\cV}{\mathcal{V}}
+\newcommand{\cW}{\mathcal{W}}
+\newcommand{\cX}{\mathcal{X}}
+
+
+
 
 \newcommand{\Expect}{\mathbb{E}}
 \newcommand{\Prob}{\mathbb{P}}
@@ -86,6 +88,10 @@
 \newcommand{\defeq}{\stackrel{\rm def}{=}}
 
 
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother
 
 
 \tikzset{

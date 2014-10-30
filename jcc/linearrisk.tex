@@ -1,0 +1,12 @@
+\textbf{Linearization of Line Risk}
+
+To find the linearization for small $t$, the taylor expansion $f(t)=f(t) + \grad f (a)(t-a) +...$ around $a=0$ will be useful.  Applying the taylor expansion to our risk measure \ref{nofail}, we end with the linear approximation
+\begin{equation}\label{linear}
+h(z) \approx 1 - \sum_e z_e
+\end{equation}
+%by using the partial derivative of $H(z)$    %%  + \frac{1}{2} (t-a)^T \grad^2 f(a)(t-a)  <---- Quadratic term
+%\[ \frac{\partial}{\partial z_{e'}} H ( z ) = \prod_{e \neq e'} (1-z_e) ( -1 )\]
+%and $\grad H(0) = -1$.
+It is important to note that the linear approximation underestimates system risk and the quadratic approximation overestimates risk for small risk $h(z)$.
+
+The risk can also be bounded using the Bonferroni Inequalities, which is a generalization of Boole's Inequality, or the union bound.

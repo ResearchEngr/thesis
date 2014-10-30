@@ -1,0 +1,16 @@
+\textbf{Hard Line Limits}
+
+There is a notion of maximum line limits in this model, however these line limits can not be attained simultaneously as is true with the current model.  Using the no failure risk measure \ref{nofail} and bounding according to some risk tolerance $\epsilon$, we have
+\[ \prod_{e \in \cE} (1-z_e) \geq 1 - \epsilon \]
+\[ \sum_{e \in \cE} \ln \left( 1-z_e \right) \geq \ln \left(1-\epsilon \right) \]
+where the second constraint is an equivalent formulation using logarithms.
+Then we note that all the terms are non-positive, so that the constraint must hold term by term, which gives
+\[ \ln \left( 1 - g_e(y_e)  \right) \geq \ln \left( 1- \epsilon \right) \]
+\begin{equation*}
+g_e(y_e) \leq \epsilon
+\end{equation*}
+where the second inequality comes from taking exponentials of both sides and reducing. The line will have critical risk $\epsilon$ when $g_e(y_e) = \epsilon$, so that the hard line limits
+\begin{equation} \label{hardline}
+U^{\epsilon} = g^{-1}\left(\epsilon\right)
+\end{equation}
+will be an upper bound on line flow.

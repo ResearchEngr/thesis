@@ -1,0 +1,17 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\begin{document}
+    \begin{tikzpicture}[scale=.7]
+      \begin{axis}[ title=PDF of Power Flow ,xlabel=$y'$,ylabel=$\bP{\Omega}{\ry=y'}$, xmin=-.05, xmax=1.55, 
+          xtick={0,.5,1,1.5},
+  	  extra x ticks={.9,1.25},
+	  extra x tick style={grid=major},
+	  extra x tick labels={$L$,$U^c$}
+        ]
+        \addplot+[black,no marks,domain=0.01:2,samples=150] { 1/(.025*sqrt(2*3.1415))*exp(-((x-.95)^2/(2*(.025^2))) };
+        \addplot+[black,no marks, domain=-2:0,samples=5] {0};
+        
+      \end{axis}
+    \end{tikzpicture}
+\end{document}

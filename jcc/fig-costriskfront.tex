@@ -1,0 +1,18 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\begin{document}
+\begin{tikzpicture}
+\begin{axis}[title=Cost vs Risk (case30),scale=1, xlabel=Cost, ylabel=Risk, legend pos=outer north east]
+\addplot+[opacity=.7,mark size=1] table[x=copf,y=ropf] {\mypathjccdata/cost-risk2.dat};
+\addlegendentry{OPF}
+\addplot+[opacity=.7, mark size=.1] table[x=ccc,y=rcc] {\mypathjccdata/cost-risk2.dat};
+\addlegendentry{CC}
+\addplot+[opacity=.7, mark size=.1] table[x=csjc,y=rsjc] {\mypathjccdata/cost-risk2.dat};
+\addlegendentry{JCC}
+\end{axis}
+\end{tikzpicture}
+\end{document}
+%pow case/30.db  .775 1.1 1 .00195 .4 .00275 .5 .9 .005 .4 1000 2> cost-risk.dat
+%m0   m1          mg   eps epsN     pL pG     L  p  B    T
+%0.775            1.1  1   0.00195  0.4       0.00275    0.5     0.9     0.005   0.4     1000
