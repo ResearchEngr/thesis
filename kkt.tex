@@ -1,0 +1,142 @@
+\section{Stochastic Valuation of Power System Assets}
+
+\subsubsection{Introduction}
+
+The electricity markets have undergone some drastic changes over the last two decades in order to become what they are today, an efficient and competitive market that provides electricity at a minimum cost while meeting reliability requirements.  They have transitioned from historically vertically integrated utilities which own the power generating assets as well as the transmission lines in order to serve their territory to a restructured market where utilities can buy and sell electricity from the market in order to serve their territory using transmission lines they do not own.  Independent power producers also operate on the market by selling their generation services to the grid.  This whole market is run by an Independent Service Operator which structures and clears the market.  All of the electricity markets are structured slightly differently, so this paper will use the Midwest ISO to provide a concrete reference throughout.
+
+\subsection{Electricity Markets}
+The primary markets include a day-ahead market as well as a real-time market.  The day ahead market has 1 hour time increments and schedules for the full day, 24 time periods.  This market is cleared the night before and is used to commit slow ramping generators for the following day.  Since no one can know exactly the following day’s demand, a real time market is used to make up errors in forecast in the day-ahead market.  This is done on a rolling 5 minute time interval, that is every 5 minutes another market is cleared to provide electricity to demand for the following 5 minutes.  However, demand fluctuates a lot faster than on 5 minute intervals.
+
+\subsection{Regulation and Reserves}
+The ancillary service markets are responsible for providing reliability to the grid.  In order for the grid to maintain stability, the instantaneous demand must be met by the instantaneous supply.  In order to maintain this equilibrium, specific generators are chosen to provide regulation services.  In order to do this, they are sent a signal from a regional balance authority on a second’s time scale which tells the generator which direction to ramp.  The generator bids in a certain capacity of resources and is paid for capacity, not the output profile.  In order to maintain stability on a longer time scale, the system needs to be able to respond to larger fluctuations in demand.  The operating reserve market is used to protect the system on a 10-30 minute time scale.  These reserves can either be spinning or offline but must be able to react within a given amount of time if they are called on to use the reserves.  In order to maintain a given level of reliability, requirements are made on the amount of regulation and reserves needed at any given point in time.
+
+\subsubsection{Motivation}
+In order to illustrate some of the shortcomings of the current market, two examples will be used.  The first example will look at generators and highlight the fact that they are not getting paid according to their value to the system.  The second will look at demand and highlight that all demands are not equal and thus should not pay the same marginal price.
+The first example is of 2 generators at the same bus of a power system and they have equal marginal cost at some point in time.  Generator A is outputting at its maximum output level but generator B is below its maximum output level.  Generator A is only able to ramp down but generator B is able to ramp up or ramp down.  Generator B provides additional flexibility to the system in order to find a least cost power flow and also increase stability of the system.  In today’s market, this generator could bid this capacity into regulation services and get paid.  However, if these generators are not used for ancillary services, they get paid at an equal rate despite offering unequal services.   Furthermore, the regulation and reserve markets are set up so that you can bid into the markets as long as you meet some minimum requirements.  This puts unequal services on the same level and when you are finding a least cost solution, you are likely to deploy inferior quality services.  The market should be able to place the correct value on the true varying levels of service.
+
+The second example is of two different demand profiles at the same node and their demand does not affect the locational marginal price (LMP).  Demand A is a fixed demand and doesn’t fluctuate at all.  Demand B has an average demand equal to demand A, but half the time is at twice A’s level and half the time at 0.  Since they both consume the same amount of power, these demands both pay the same rate.  But these demands place unequal stress on the system.  If all demand was type B, additional resources would need to be put on the grid to meet demand.  Type B demand also increases the regulation needed to ensure reliability of the grid.  Currently, the regulation services bought to support type B demand is paid for by all demand equally.  The market should be able to place the correct price on the varying levels of stress demand put on the grid.     
+
+	There are two types of power system assets: ramping capable assets which are able to adjust their output level and uncertain ramping whose output levels fluctuate randomly.
+
+\subsubsection{Ramping Capable}
+These power system assets are what provide flexibility to the dispatch models as well as stability to ensure reliability requirements.  There are various levels of capability among ramping generators.  Natural Gas plants are able to ramp extremely fast whereas coal and nuclear generation are much slower at changing output levels.  Additional ramping output assets include hydroelectric, energy storage, as well as demand response.
+
+\subsubsection{Uncertain Ramping}
+Anything that withdraws or injects power into the system at random output levels is classified in this group.  This group is primarily demand, but also includes wind and solar.  Demand can have various levels of volatility and the volatility also depends on the aggregation point for the measurement.  For now, we will assume that the volatility is aggregated to node level.  The higher the volatility of any given demand, the more regulation and reserves are needed for the system.  This increases the cost of dispatch.  Since increased volatility means increased costs, the demand should have to pay for the volatility they impose on the system.  
+
+\subsubsection{Balance of Payments}
+	The goal will be to find a model in which the uncertain ramping will pay a premium related to the volatility and these payments will go towards ramping capable assets, which will maintain system stability.
+
+\subsubsection{Least Cost Dispatch}
+To clear the electricity market at a single point in time, a least cost dispatch model is used.  This model takes bids from generators, a known demand, as well as transmission and ramping constraints and finds a set of generator outputs which meet the demand at least cost.  Using a quadratic cost function for the generators (this cost function can be thought of as a bid from generators which includes the profit the generator would like to make for each marginal unit of production), the least cost dispatch model is as follows. 
+
+\subsection{Mathematical Model}
+The following model is a quadratic program with linear constraints.  The objective function is to minimize the cost of generation.  Typical least cost dispatch and unit commitment models will make various assumptions to allow for linear constraints versus the physical nonlinear constraints to which the power system is subject.  By assuming no line losses, small phase angles, and a flat voltage profile, the power flows are driven by Kirchhoff’s Current Law and the system has conservation of energy.  Conservation of energy implies that the sum of generation and demand is equal to 0 at every point in time.
+
+\begin{subequations}
+\begin{align}
+& \min  \sum_i \alpha_i g_i + \beta_i g_i^2	&	\\
+g_i - d_i &= \sum_j X_{ij} (\delta_i - \delta_j)	&	\forall i \in N 	\\
+g_i  &\in \left[ g_i^- , g_i^+ \right]		&	\forall i \in N 	\\
+X_{ij} ( \delta_i - \delta_j ) &\in \left[ -U_{ij}, U_{ij} \right]	&	\forall (i,j) \in M 
+\end{align}
+\label{leastcostdispatch}
+\end{subequations}
+
+
+	In this model, $g_i$ represents the level of output for the ramping capable asset at node $i$.  $g_i$ can be either positive or negative, that is producing or consuming electricity, but it must be capable of ramping to any output within the range $\left[g_i^-,g_i^+ \right]$.  In this paper, only generators will be used as ramping capable assets.  However, different assets may have different cost functions and thus would bid into the market differently.    
+
+\subsubsection{Demand Response}
+Demand response assets would be willing to decrease generation for a fixed price per unit decrease.  Since demand has negative generation, decreasing generation means that it will increase consumption.  By paying demand response at the LMP for each unit of increased consumption, they are able to consume more without increasing cost.  Depending on the given demand, they may be willing to increase consumption by getting paid at some fraction of the LMP as well.  If the demand response has a constraint such as $\sum_{t=1}^T g_t = \gamma$, which could represent a thermal constraint such as maintaining a given range of temperatures for a building over some time interval, the demand response would be able to receive price breaks in exchange for helping balance supply and demand.  
+
+Increasing generation at a demand response node would amount to decreasing consumption.  The demand has some ideal level of electricity it would like to consume.  If they are chosen to decrease consumption to help balance supply and demand, they will have to consume more electricity in the future to meet its aggregate consumption needs.  To make this decision, the demand would look at future prices and what it will cost to consume this marginal demand in the future.  The demand response would be willing to decrease consumption if they are paid the difference between the current LMP and the expected future LMP.  By waiting to consume the electricity, the demand is taking on risk that the future LMP may go up.
+
+\subsection{KKT Conditions}
+	The Karush-Kuhn-Tucker conditions are necessary conditions in a nonlinear program in order to ensure optimality.  The constraints of the original, primal, problem are given dual variables.  These dual variables represent costs to the system in order to maintain the given constrain.  Inequality constraints in the primal have dual variables which are constrained to the positive orthant in the dual problem.  The inequality constraints also satisfy complimentary slackness in an optimal solution.  That is, if the inequality is not active, the cost of that constraint is 0.  The dual variables for equality constraints are free in the dual problem.  First, general form for KKT conditions will be shown and it will then be applied to the problem of least cost dispatch.
+
+\begin{subequations}
+\begin{align}
+\min f_0 (x) & \\
+f_i (x) \le 0	&	\forall i = 1,...,m  \\
+h_j(x) = 0	&	\forall j=1,...,l
+\end{align}
+\end{subequations}
+
+
+For $x^*$ to be a minimum, there must exist $\mu_i,\lambda_j$ such that the following holds.
+Stationarity
+\begin{equation}
+\bigtriangledown f_0 (x^*) + \sum_{i=1}^m \mu_i \bigtriangledown f_i (x^*) + \sum_{j=1}^l \lambda_j \bigtriangledown h_j (x^*) = 0
+\end{equation}
+Primal Feasibility	
+\begin{align}
+f_i (x*)  \le 0 	& \forall i=1,...,m 	\\
+h_j (x^*) = 0  & \forall j=1,...,l  
+\end{align}
+Dual Feasibility	
+\begin{equation}
+\mu_i \ge 0	\forall i=1,...m 
+\end{equation}
+Complimentary Slackness	
+\begin{equation}
+\mu_i f_i (x^*) = 0	\forall i = 1,...,m
+\end{equation}
+
+
+In the least cost dispatch model, the variables are $g,\delta$.  Let $N$ be the number of nodes in the system and $M$  be the number of branches.  There are $N$ equality constraints, which represent conservation of energy at each node, which will be given the dual variables $\lambda_j$.  There are 2 inequality constraints for each node that represent ramping constraints and 2 inequalities for each branch which represent transmission constraints.  Let $\mu_i^-$ represent the constraint for down-ramping abilities and $\mu_i^+$ represent the constraint for up-ramping abilities.  For each branch, the dual variables $\mu_{ij}$ and $\mu_{ji}$ represent the constraints for maximum power flow in either direction. 
+
+\subsection{Least Cost Dispatch Optimality}
+	Define $\Lambda$ and take partial derivatives with respect to $g_i$ and $\delta_i$ to find the stationarity conditions.
+\begin{equation}
+\Lambda = \sum_i \alpha_i g_i + \beta_i g_i^2 + \sum_i \mu_i^- (g_i^- - g_i) + \sum_i \mu_i^+ (g_i - g_i^+) + \sum_{ij} \mu_{ij} X_{ij} (\delta_i - \delta_j) + \sum_i \lambda_i \left[ g_i - d_i - \sum_j X_{ij} (\delta_i - \delta_j) \right]
+\end{equation}
+	Then, in addition to primal feasibility, we want dual feasibility, that is $\mu_i^+,\mu_i^-,\mu_ij\in R_+$ and complementary slackness as follows.
+
+\begin{align}
+\mu_i^+  (g_i-g_i^+ )&=0	\\
+\mu_i^- (g_i^--g_i )&=0	\\
+\mu_ij (X_ij (\delta_i-\delta_j )-U_ij )&=0	\\
+\mu_ji (X_ij (\delta_j-\delta_i )-U_ij )&=0
+\end{align}
+
+These optimality conditions allow us to characterize what an optimal dispatch would be for a least cost power flow solution.
+
+\subsubsection{Dual Variables}
+	The dual variables at an optimal solution represent the marginal cost of the given constraint.  First, look at the solution when the transmission and ramping constraints are inactivate so that $\mu_i^-=\mu_i^+=\mu_ij=0$ for all $i$ and $j$.  The stationarity conditions give us $\alpha_i+ \beta_i g_i+ \lambda_i=0$ so that $\lambda_i$ represents the marginal cost of the generation at node $i$.  Further, from $\frac{\partial \Lambda}{\partial \delta_i}=0$ we have that $\lambda_i=\lambda$, that is all marginal costs of generators are equal, satisfies the stationarity requirement and is a minimum.  As the generators begin to get constrained, the marginal cost of generation plus the marginal cost of the ramping constraint represents the new LMP.  As transmission gets constrained, equal LMPs no longer solve the system of equations and price difference between nodes can be seen.
+
+	In order to value regulation and reserves, we need an understanding of what the underlying uncertain ramping will do.  Although this valuation procedure is geared towards short term services, regulation and reserves, a risk-free interest rate should be used to discount future cash flows.  This will prove useful as this methodology should work well for longer time scales as well.  
+
+\subsection{Underlying Uncertainty}
+For this paper, assume that the underlying process of demand is log normally distributed, which may be reasonable since demand cannot drop below 0.  This implies that the growth rate for any increment in time is normally distributed.  The demand can then be modeled as Brownian Motion and the process can be approximated by using binomial lattices.  Suppose the underlying uncertain ramping has a drift rate $\mu_r$ and volatility $\sigma$.  When the drift rate is positive, the demand is expected to increase at that rate.  The volatility represents the uncertainty of the underlying process.  When the volatility is 0, the demand is known for certain and no premium should be owed.    
+
+	In order to make calculations possible, a discrete version can be constructed using a binomial distribution to approximate this process.  By creating a two period model which approximates the outcomes for $\Delta t$ in the future, one can drive $\Delta t  \downarrow 0 $ and the number of periods $N_T \rightarrow \infty$, and an arbitrarily good approximation of the underlying can be made.  That means if a two period model can be solved, a lattice of two period models can be solved in order to find a better approximation of the solution.  Using the volatility of the underlying, up and down factors will be used to model what happens in the uncertain future.  Let $\rho^+=\exp ⁡(\sigma \Delta t^.5)$ be the up factor and $\rho^-=\exp⁡ (\sigma \Delta t^.5)$ be the down factor.  Then, to model the demand at time $t_0+ \Delta t$, use $d_0$ as the demand profile at time $t_0$, and then the demand in the up state is $d^+=\rho^+ d_0$ and the down state $d^-=\rho^- d_0$.  By using the probabilities $\nu_+= .5+ .5(\mu_r/\sigma)(\Delta t^.5 )$ and $\nu_-  =1-\nu_+$, the growth rate for the demand process will be normally distributed with mean $\mu_rT$ and variance $\sigma^2 T$.
+Suppose you want to approximate the demand from now until time $T$ with time increments $\delta t$.  This can be done using $N_t=T/\Delta t$ period lattice.  The number of states in period $n$ is $2^n$.  A lattice can be recombining, the number of states at period $n$ is $n+1$, if the up factor is equal to 1 over the down factor, that is $\rho^+=1/\rho^-$ .  In this situation, after two time periods and either an up and down movement or a down and up movement, the demand is equal to $d_0$ again.  However, in our situation using a recombining lattice would be difficult because all of the states at a given time period would need to be solved concurrently due to the generator ramping rate constraints.  The generator’s ramping rates imply that the generator configuration in the up state can be no more than 2 times the ramping rate of the generator.  This is because both of these states come from the same parent node, at which the generator must be producing at some level $g_0$.  From the ramping rate constraints, we know that $g^+-g_0\le \delta$ and $g_0-g^-\le \delta $ where $\delta$ is the per period ramping rate.  This can be reduced to $g^+-g^-\le2\delta  $.
+At period $n$, the probability of being in a state with $k$ down movements and $n-k$ up movements can be represented using binomial coefficients.  The probability of being in that state is $ \pi (n,k) =  {n \choose k } \pi_+^{n-k} \pi_-^k$.
+
+\subsection{Valuation Procedure}
+After modeling the uncertainty, we have a lattice that represents the evolution of demand over the given time interval.  By starting at the final state and finding the optimal generation configuration, we can work back using the two period model to find the generator configuration at the parent node.  In order to ensure feasibility in individual generator scheduling, we need additional constraints.  One constraint is that the child states can have generators which are no further apart than $2\delta$.  The other constraint is that the configuration cannot ramp further than possible over the entire time interval.  That is, at period $n$, $g^+\le \min (g_0 + n \delta, G^+)⁡ $ where $G^+$ is the maximum output from the generator.  Also, the same applies for the down ramping abilities, $g^- \ge \max (g_0 - n \delta,0) $
+
+\subsubsection{Model Uncertainty}
+	Using the current demand as well as predictions of $\mu_r$ and $\sigma$, the possible future states of this uncertain demand process can be realized.  This demand process can be viewed in terms of aggregated demand, or possibly a multi-variate geometric Brownian Motion where there are multiple possibly correlated underlying demand processes, such as the uncertain ramping at each node.  
+
+\subsubsection{Value Capabilities}
+	In order to value the flexibility of these generators, it is first important to be able to value the initial underlying without flexibility.  Let $c^+,c^-$ be the cost of least cost dispatch of the up state and down state of some 2 period model.  Then net present value of meeting todays demand as well as demand in the next state is $c_0+ \exp⁡ (-r_f ∆t) \pi_+ c^+ + \pi_- c^-)$, where $\exp⁡ (-r_t \Delta t)$ is the risk free discount rate per period.
+
+\subsubsection{Three Bus Example}
+In order to find a simple example that displays the properties of the alternative type of market, many assumptions were made.  To keep the example simple, assumptions are made in order to ensure only equality constraints.  In this case, Lagrangian Multipliers, a special case of KKT conditions, can be used to solve the quadratic program.  Matlab was used to solve the system of equations.  The Matlab code is attached to the end of this document.
+
+\subsubsection{Assumptions}
+The first assumption was that the only ramping capable assets available are the generators.  This allowed the use of one bid function for ramping capable assets.  The same process can be done for other cost functions, adjusting the objective as needed.  The second assumption was that the generators were either ramping capable and able to ramp an arbitrary amount or fixed and cannot adjust the output at all.  After these assumptions were made, this optimization problems results in a system of equations and the solution can be found by a simple matrix inversion.
+
+\subsubsection{Results}
+I haven’t been able to find what I search for.  The foundation is here to find a way to properly value these resources, but I have run out of time.  I could try to show some of the results, but I have yet to find an elegant way to assign the costs and distribute the rewards properly.  The search continues. 
+
+\subsubsection{Flexibility of Model}
+This model can be used on different time scales to solve different problems.  A longer time scale could be used to solve the unit commitment problem.  The decision to turn on any one asset is related to its start-up time, stopping time, as well as the expected and possible future outcomes of demand.  Perhaps for coal generators which can take days to fully start up, a 3 day time horizon could be used.
+
+This model may also work on aggregated and disaggregated scales.  That is, when looking at least cost dispatch, the system may want resources that are negatively correlated with uncertain ramping.  This gives a target for each node in that system.  Looking at some node that is just an aggregation point for a collection of assets, these assets will want to positively co-vary with whatever the target is for the aggregation point.
+This model could be used to value reliability requirements.  By using an underlying probabilistic framework that models the failure rates of components, the cost of the following price shocks could be brought back to time zero to find a lower limit to the amount you should spend on reliability concerns.
+
+\subsubsection{Conclusion}
+The least cost dispatch problem was used to start to develop an alternative market model to value the ramping capabilities of power system assets.  The KKT conditions were used to find out information of optimal solutions.  The dual variables are used to find the marginal costs of generation and various constraints.  An underlying Brownian Motion process for demand is used to model uncertainty.  The framework for a two period model is used on a three bus example to show the balance of payments for different assets.  Future work will include developing more general framework and solving specific examples related to various situations on the electricity markets.
+

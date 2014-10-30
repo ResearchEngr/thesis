@@ -1,0 +1,30 @@
+\section{Modeling Cascading Power Failures}
+
+Historically, cascading power failures have been a hard problem to understand, and since they are rare, the process was not studied much.  However, after the Northeast Blackout of 2003, more focus has been devoted to this problem.  
+
+The simplest models of the cascading process are strictly topological models with some mechanism to fail components such as a failed node leads to its neighbors to fail with a given probability.  While these models can capture interesting effects due to degree distribution and clustering, they lack important information about the electrical parameters of the topology as well as loading patterns.   
+
+After discussing historical topological models, Hines, Cotilla. et. al. \cite{hines_2010}, \cite{cotilla_2012} provide a rebuttal to strictly topological models.  Here, topological measures will be looked at in addition to the electrical information behind the topology of the grid. Then, pseudo-topological measures such as electrical distance and centrality will be developed and their importance discussed.
+
+Finally, the Oak Ridge National Laboratory, Power System Engineering Research Center of Wisconsin University, and Alaska University (OPA) type models will be developed.  These models use the electrical parameters as well as demand and generation information to solve the power flow problem.  The results of this are loading patterns on the topology of the power grid.  Using these loading patterns as well as a deterministic or probabilitic failure mechanism, another level of complexity can be added to the cascading failure model.  The following quote from Hines et. al. \cite{hines_2011} supports the use of this type of model.
+
+\begin{quote}
+While a perfect model of cascading failure would accurately represent the continuous dynamics of rotating machines, the discrete dynamics associated with relays that disconnect stressed components from the network, the non-linear algebraic equations that govern flows in the network, and the social dynamics of operators working to mitigate the effects of system stress, all power system models simplify these dynamics to some extent. Unlike simple topological metrics, our model does capture the effects of Ohm's and Kirchhoff's laws, by using linear approximations of the non-linear power flow equations \cite{bergen_1986}. Similar models have been used to study cascading failure in a number of recent papers \cite{carreras_2004}, \cite{dobson_2007}, \cite{mei_2009}.
+\end{quote}
+
+In addition to the fast time scale cascading model, the OPA work included a slow time scale model, which responded to these cascading failures by engineering improvements.  It is the dynamic interactions of these two forces that leads to an equilibrium in which blackouts of all sizes occur and the size follows a power law distribution.
+
+In order to use OPA models, power flows need to be calculated.  First, the balanced three phase AC power flow equations will be discussed along with its strengths and weakness.  In order to reduce the computational complexity of the model, a Decoupled (DC) power flow model will be developed by making a few simplifying assumptions.
+
+Using the power flow model, an econmic dispatch model can be made to dispatch the generators at least cost, while remaining within its operating constraints.  This dispatch model will be used to connect the reliability issues of the power grid with economic ones.
+
+\input{topo_model}
+
+\input{opa_model}
+
+\input{power_flow}
+
+\input{design_problems}
+
+
+

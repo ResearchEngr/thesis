@@ -1,0 +1,224 @@
+
+\chapter{Model of Cascading Failures}
+
+\section{abstract}
+If an exogenous event impacts the topology or operating characteristics of an electric power grid, the currents reroute themselves according to the laws of physics.  The change in flows may result in power lines reaching capacity, overloading, and eventually failing.  This in turn will re-route the flows and may set off another round of line failures.  A sequence of failures in stages is known as a cascade.  We discuss a simulation-optimization-based approach for designing power grids to minimize the impact of cascades caused by line outages.
+ \ldots
+
+
+\section{Introduction}
+There are high costs associated with failures in the electric grid through a cascading process.  All of the largest blackouts underwent the cascading process to become as large as they did.  This work will provide the basis for an optimization procedure based on cascading power failures. We would like to propose a function which will represents performance measures about cascading power failures.  The characteristics of the power failures will be driven by the OPA Simulation.  This has been shown to have the same load shed distribution as real, historical data for the electric grid.  After deciding on performance measures, developed a method to compare two systems under similar simulation conditions.  This helped reduce the varience in the performance parameters, which will improve performance in the optimization procedure. Now an outer optimization loop can be set up to optimize this blackbox simulation.
+\section{Big F Model}\label{big f}
+This is the function we would like to work with.
+\begin{equation}\label{f}
+  \mathbb{F} \left( x, \xi, \mathbb{D}, \omega \right)
+\end{equation}
+\begin{itemize}
+\item $x$ - design variable, branch flow limits and generator constraints \newline
+ $x$ is the variable we would like to optimize.
+\item $\xi$ - initial exogenous event, which starts the cascade process \newline
+ $\xi$ is contained in a set $\Xi$ of possible initial outages, and is sampled from that set for each individual scenario \newline
+ Currently $\Xi$ is the set of all possible combinations of two initial outages 
+\item $\mathbb{D}$ - demand scenario for each node \newline
+ $\mathbb{D}$ represents the demand profile for the system.  $\mathbb{D}_{tot}$ defines the overall total demand in the system and $\mathbb{D}_z$ define the proportion of demand in each zone.  \newline
+ For $Z$ zones, \newline
+$\mathbb{D} = 
+ \left( 
+	\begin{array}{lr}
+				\mathbb{D}_{tot} \\
+				\mathbb{D}_{1} \\
+				\mathbb{D}_{2} \\
+				\vdots \\
+				\mathbb{D}_{Z} 
+	\end{array}
+ \right) $ \newline
+
+\item $\omega$ - how the cascade evolves through the system \newline
+ $\omega$ is driven by the OPA Model in Section \ref{opa} 
+\end{itemize}
+
+
+
+\section{DC Power Flow Model}\label{dc flow}
+Given a set of bounds on demand, generation, and branch flow, this linear program calculates the power injected into every node and the corresponding power flow on each branch. \newline
+\newline
+$N$ Nodes \newline
+$M$ Branches \newline
+\newline
+Let $i,j = 1,2,...,N$  \newline
+Let $k = 1,2,...,M$ and is of the form $k := [u,v]$ \newline
+where $u,v$ are two different nodes \newline
+And $K_i$ is the set of branches connected to node $i$ \newline
+
+\begin{equation}\label{lp}
+D_{tot}^* = \mbox{ Max } D_{tot} 
+\end{equation}
+\centerline{such that}
+
+
+\begin{center}
+$D_{tot} = \sum_i{d_i} $ \\
+\mbox{ } \\
+\begin{tabular}{cc}
+  
+$a_u - a_v - X_k f_k = 0 $ & $\forall k \in \mathbb{K}, k:=\left[ u, v \right]$  \\
+$p_i + \sum_{k \in K_i } S_k f_k = 0 $ & $\forall \left\{ \left( i,k \right) \mbox{ : }  i=u \mbox{ or } i=v \right\} $\\
+$p_i + d_i - g_i = 0$ & $\forall i \in \mathbb{I}$ \\
+\\
+$-D_i \leq p_i \leq G_i$ & $\forall i \in \mathbb{I}$ \\
+$-A_i \leq a_i \leq  A_i $ & $\forall i \in \mathbb{I}$ \\
+$-F_k \leq f_k \leq  F_k $ & $\forall k \in \mathbb{K}$ \\
+$ 0 \leq g_i \leq G_i$ & $\forall i \in \mathbb{I}$ \\
+$ 0 \leq d_i \leq D_i$ & $\forall i \in \mathbb{I}$ \\
+
+\end{tabular}
+\end{center}
+
+\centerline{
+ $S_k = 
+ \left\{ 
+	\begin{array}{lr}
+				1 & \mbox{if } i = u \mbox{ (send bus)} \\
+			 -1, & \mbox{if } i = v \mbox{ (rec bus)}
+	\end{array}
+ \right. $ }
+ 
+ 
+ \subsection{Relation to Big-F Model}
+ $x$ from (\ref{f}) is then a set of $F_k$ and $G_i$ for $k = 1,2,...,M$ and $i = 1,2,..,N$ which enforces the maximum flow on any branch and the maximum generation at any node \newline 
+ \newline
+  $\mathbb{D}$ from (\ref{f}) constrains $D_i$ by the following
+ \begin{itemize}
+ \item  $\mathbb{D}_{tot} = \sum_i D_i $ 
+ \item $\mathbb{D}_{z} = \alpha \sum_{i \in I_z} D_i $
+ \end{itemize}
+ Where \newline
+ $I_z$ is the set of all $i$ contained in zone $z$
+ \begin{itemize}
+ \item $\bigcup_z I_z = \left\{ 1, 2, ..., M \right\}$
+ \item $\bigcap_z I_z = \emptyset $ 
+ \end{itemize}
+ Once $\mathbb{D}_{tot}$ and $\mathbb{D}_z$ have been realized, define the following scale factors
+ 
+\begin{itemize}
+ \item  $\alpha = \mathbb{D}_{tot} / \sum_z \mathbb{D}_z $
+ \item $\beta_z = \mathbb{D}_z / \sum_{i \in I_z} D'_i $ where $D'_i$ is original demand \newline
+ \end{itemize}
+  Then \newline
+  $ D_i = \alpha \beta_z D'_i $  for $ \left\{ (i,z) : i=1,2,...N \mbox{ and } i \in I_z \right\}$ 
+
+		
+
+\section{OPA Simulation}\label{opa}
+In order to begin the simulation, an initial outage $\xi$, demand scenario $\mathbb{D}$, evolution details $\omega$, as well as failure probability $p$ are needed.  The simulation proceeds as follows.  \newline
+
+\begin{enumerate}
+\item Solve ( \ref{lp} ) to find base case $D_{tot,0}^*$
+\item $\xi$ occurs and corresponding changes to the grid are made \newline
+\newline Stage s=1,2,....
+\item \label{start} Solve ( \ref{lp} ) to find power injects and branch flows for adjusted grid
+\item Set next outage $\mathbb{O}_s = \emptyset$ \newline
+For each $k = 1,2,...,M$,   \newline 
+ $\mathbb{O}_s = 
+ \left\{ 
+	\begin{array}{lr}
+				\mathbb{O}_s + \left\{ k \right\}, & \mbox{if } \left( f_k = F_k \mbox{ or } -f_k = F_k \right)  \mbox{ with probability } p \\
+			  \mathbb{O}_s, & \mbox{o/w }
+	\end{array}
+ \right. $ 
+\item $
+	\begin{array}{lr}
+				\mbox{If }  \mathbb{O}_s \neq \emptyset \mbox{, then adjust the grid by } \mathbb{O}_s , s=s+1, \mbox{ and goto step \ref{start}} \\
+			  \mbox{Else, } S=s \mbox{, record } D_{tot,S}^* \mbox{, and goto step \ref{done}}
+	\end{array} $
+\item \label{done}	Load Shed for this trial, \newline
+\begin{equation} \label{ls}
+ L = D_{tot,0}^* - D_{tot,S}^* 
+\end{equation}		
+\end{enumerate}
+
+
+
+\subsection{Line Outage}
+When a line is outaged, the branch flow is set to 0 and the angle constraint between the connected nodes is relaxed. \newline
+\newline
+	For $\forall k \in \mathbb{O}, $
+	\begin{itemize}
+	\item	 $ f_k = 0 $
+	 \item BgNmbr $ <= a_u - a_v - X_k f_k <= \mbox{BgNmbr} $ 
+  \end{itemize}
+
+
+\section{Calibrating the Grid}\label{calibrate}
+In order to create a useful data set, we take advantage of the knowledge that power grids are required, and thus engineered, to withstand any $N$ - 1 contingency, that is, any line or generator can be taken out of the system and it is still possible to meet all demand.  The following algorithm ensures that the grid is capable of withstanding any continigency, $\xi$ in the $N$ - 1 set. $\gamma$ represents the typical execess capacity on a power line.\newline
+
+\begin{algorithmic}
+\STATE $ \mbox{Stabilize } \gets 0 $
+\STATE $ \xi \mbox{ occurs, grid adjustments made } $
+\WHILE{Stabilize = 0}
+	\STATE $N_{fail} \gets 0$
+	\FOR{$k=1,2,...,M$}
+		\IF{$ f_k = F_k $ or $ - f_k = F_k $}
+				\STATE $ F_k \gets \gamma F_k $
+				\STATE $N_{fail} \gets N_{fail} + 1 $
+		\ENDIF  
+	\ENDFOR
+	
+		\IF{$ N_{fail} = 0 $}
+				\STATE $ \mbox{Stabilize } \gets 1 $
+		\ENDIF
+
+
+\ENDWHILE
+
+\end{algorithmic}
+
+\section{Performance Measures}\label{pm}
+$F$ represents one of the possible performance measures.  \newline
+For $t=1,2,...,T$ trials to calculate the performance measure, and $l=1,2,...,N_{loops}$ \newline
+Currently
+\begin{itemize}
+\item Mean Load Shed \newline
+$\hat{L} = \sum_t L_t / T $
+\item $\alpha$ V@R \newline
+   $L_{V@R} (\alpha) =  \mbox{max} \left\{ l \in \mathbb{R} : \sum_t 1_{L_t \leq l } \leq \left( 1 - \alpha \right) T \right\}$
+\item $\alpha$ CV@R \newline
+  $ \sum_{\forall t: L_t \geq L_{V@R}(\alpha)}  L_t / N$ where $N = \sum_t 1_{ \left\{ L_i \geq L_{V@R} \right\}}$
+
+	
+\end{itemize}
+
+\section{Variance Reduction Techniques}\label{var}
+In order to optimize our design variable $x$, we need to compare the expected response on the basis of some performance parameter of different systems under similar experimental conditions.  Thus, for each system we run through a list of trials $t \in \mathbb{T}$, which is the same for each system design.  A trial $t$ is a combination of an initial outage, $\xi$, a demand profile, $\mathbb{D}$, and an evolution through the cascade, $\omega$.  The first two parts are relatively straight forward to implement. \\
+\newline
+Define $Z_t = F_{1,l} - F_{2,t} $\newline
+Then $\hat{Z} = \sum_t Z_t / T $ - Mean Difference in Performance Measure \newline
+$ S = \sqrt{ \frac{\sum_t  \left( Z_t - \hat{Z} \right)^2 }{  \left( T-1 \right)  }} $ \newline
+$ LB = \hat{Z} - t_{\alpha,T-1} \frac{S}{\sqrt{T}} $ \newline
+$ UB = \hat{Z} + t_{\alpha,T-1} \frac{S}{\sqrt{T}} $ \newline
+So\newline
+$ P ( LB \leq Z \leq UB ) >= (1-\alpha) $
+\subsection{Common Random Number}\label{crn}
+ To ensure that $\omega$ is calculated under similiar experimental conditions, we employ a common random number approach.  For each trial $t$, every branch $k$ has a seed for a stream of random numbers.  In round $r$, the $r$th random number in the $k$th random number stream should be used.\\
+ \begin{algorithmic}
+ \FOR{ $k \in \mathbb{K} $}
+ 		\IF{ $f_k = F_k \mbox{ or } f_k = -F_k $}
+ 					\STATE Random Number Seed $ \gets RNS_{t,k} $
+ 					\FOR{ $temp \in 1,2, ..., r -1 $}
+ 							\STATE Generate Random Number
+ 					\ENDFOR
+ 					\STATE $p \gets U \left[ 0, 1\right] $
+ 					\STATE ${k} \mbox{ added to outage if } Fail(p) = 1 $
+ 		\ENDIF
+ \ENDFOR
+ \end{algorithmic}
+\section{Implementation}\label{imp}
+Implemented in C++ with CPLEX
+
+\section{Results}\label{results}
+In this section we describe the results.
+
+\section{Conclusions}\label{conclusions}
+We are close to being ready to optimize...
+
+s

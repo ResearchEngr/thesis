@@ -1,0 +1,27 @@
+
+\begin{figure}
+ \centering
+	\begin{tikzpicture}
+		\begin{axis}[xlabel=$LS$ (MW), ylabel=$P($Load Shed $> LS )$
+				,legend pos=north east
+				,grid=major,
+				,xmin=-25,xmax=400
+				,title=\mbox{Load Shed Distribution} ]
+
+
+ 	\addplot[black,line width=3pt] table[x=mv, y=mp] {./data/calibrate.txt};
+	\addlegendentry{MSIP}
+	
+	\addplot[red,line width=2pt] table[x=sv, y=sp,mark=square] {./data/calibrate.txt};
+	\addlegendentry{SIM}
+
+
+
+
+
+		\end{axis}	
+	\end{tikzpicture}
+  \caption{Load Shed Distribution for the OPA simulation and MSIP formulation}
+ \label{dist}
+\end{figure}
+

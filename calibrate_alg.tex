@@ -1,0 +1,24 @@
+
+\begin{algorithm}
+\caption{A $N-1$ robust grid}
+\begin{algorithmic}
+\STATE $ \mbox{Stabilize } \gets 0 $
+\STATE $ \xi \mbox{ occurs, grid adjustments made } $
+\WHILE{Stabilize = 0}
+	\STATE $N_{fail} \gets 0$
+	\FOR{$k=1,2,...,M$}
+		\IF{$ f_k = F_k $ or $ - f_k = F_k $}
+				\STATE $ F_k \gets \gamma F_k $
+				\STATE $N_{fail} \gets N_{fail} + 1 $
+		\ENDIF  
+	\ENDFOR
+	
+		\IF{$ N_{fail} = 0 $}
+				\STATE $ \mbox{Stabilize } \gets 1 $
+		\ENDIF
+
+
+\ENDWHILE
+
+\end{algorithmic}
+\end{algorithm}

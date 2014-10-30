@@ -1,0 +1,49 @@
+
+\section{Multi-Stage Stochastic Program}
+
+In order to formulate this as a Stochastic Program, a mixed-integer program is needed to describe the cascading process.  It will aproximate the full OPA model, and in the limit equal.  \\
+
+\subsection{Mixed-Integer Program}
+Assume the cascade will occur in a finite number of stage, and tet $\cN$ be the set  of stages for a cascade.  The predecessor of stage $n \in \cN$ is $\rho (n)$.  The operator will have limited control over the changes it can make to the grid constraints.  This decision-dependent uncertainty complicates the modeling effort.  In this model, binary variables $z$, are used to indicate line availability.
+\begin{equation} 
+\left| f_n \right| \leq u z_n 
+\end{equation}
+where $\leq$ is component wise for each $e \in \cE$.  
+
+When a line burns out, the phase angles and the adjoing verticies no longer are linked.  A big M constraint is introduced to account for this feature.
+\begin{equation}
+\left| \theta_{i,n} - \theta_{j,n} + s_e f_{e,n}  \right| \leq M ( 1 - z_{e,n} ) 
+\end{equation}
+where $(i,j)=e \in \cE$ and $\theta_{i,n}$ is the phase angle for $i \in \cV, n \in \cN$.  The big M is designed to enforce a logic condition while reducing the size of the relaxation.  In this case, $M = 2*\overline{\theta} + s u_n$.s
+
+Once a line burns out, it is no longer available for the child stages.
+\begin{equation}
+z_n \leq z_{ \rho (n) } 
+\end{equation}
+
+Also, once load has been shed, it is no longer avaiable at child nodes. 
+\begin{equation}
+d_{ \rho } (n) \leq d_n
+\end{equation}
+
+In this model, lines at each stage have an {\em effective capacity} $r ( \omega )$, which is the capacity at which the line will fail under outcome $\omega$.
+\begin{equation}    
+	\left| f_{\rho (n)} - r ( \omega_n ) \right| \leq M ( 1 - z_n )
+\end{equation}
+
+In general, the vectors $(\theta(\omega_2), \ldots \theta(\omega_t))$
+are $|E|$-dimensional random vectors that form a stochastic process.
+(Sample space is $\Omega = \Omega_2 \times \Omega_3 \times \ldots
+\times \Omega_T$).  We suspect that a reasonable assumption is
+stagewise indepdence of the random variables $\omega_t$.  Perhaps also
+reasonable is independence of $\theta_e(\omega_e) \forall e \in E$.
+
+The stochastic program we present .  It {\em does} have knowledge of
+all of the outcomes, the decision made at node $n$ {\em must be the
+  same} -- must be obeyed for all child nodes.
+
+\subsection{Multiple Contingencies}
+Expand model to multiple contingencies
+
+\subsection{Objectives}
+Use weighted sum of load shed, weighting dependant on stage in cascade.

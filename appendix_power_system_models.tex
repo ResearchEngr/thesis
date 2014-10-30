@@ -1,0 +1,212 @@
+
+\chapter{Power System Models}
+
+\section{DC Power Flow}
+$N$ Nodes \newline
+$M$ Branches \newline
+\newline
+Let $i,j = 1,2,...,N$  \newline
+Let $k = 1,2,...,M$ and is of the form $k := [u,v]$ \newline
+where $u,v$ are two different nodes \newline
+And $K_i$ is the set of branches connected to node $i$ \newline
+
+\begin{equation}\label{lp}
+D_{tot}^* = \mbox{ Max } D_{tot} 
+\end{equation}
+\centerline{such that}
+
+
+\begin{center}
+$D_{tot} = \sum_i{d_i} $ \\
+\mbox{ } \\
+\begin{tabular}{cc}
+  
+$a_u - a_v - X_k f_k = 0 $ & $\forall k \in \mathbb{K}, k:=\left[ u, v \right]$  \\
+$p_i + \sum_{k \in K_i } S_k f_k = 0 $ & $\forall \left\{ \left( i,k \right) \mbox{ : }  i=u \mbox{ or } i=v \right\} $\\
+$p_i + d_i - g_i = 0$ & $\forall i \in \mathbb{I}$ \\
+\\
+$-D_i \leq p_i \leq G_i$ & $\forall i \in \mathbb{I}$ \\
+$-A_i \leq a_i \leq  A_i $ & $\forall i \in \mathbb{I}$ \\
+$-F_k \leq f_k \leq  F_k $ & $\forall k \in \mathbb{K}$ \\
+$ 0 \leq g_i \leq G_i$ & $\forall i \in \mathbb{I}$ \\
+$ 0 \leq d_i \leq D_i$ & $\forall i \in \mathbb{I}$ \\
+
+\end{tabular}
+\end{center}
+
+\centerline{
+ $S_k = 
+ \left\{ 
+	\begin{array}{lr}
+				1 & \mbox{if } i = u \mbox{ (send bus)} \\
+			 -1, & \mbox{if } i = v \mbox{ (rec bus)}
+	\end{array}
+ \right. $ }
+
+\section{Mixed Integer Cascade Formulation}
+
+For the following Sets
+\begin{itemize}
+\item $ \cG \equiv $ Generators 
+\item $ \cD \equiv $ Demand Nodes 
+\item $ \cB \equiv $ Buses 
+\item $ \cS \equiv $ Scenarios 
+\item $ \cN \equiv $ Nodes of Scenario Tree\\
+	$\rho \left( n \right) \equiv $ Predecessor of node $ n \in \cN $
+\item $ \cV \equiv $ Vertices $ = \cG \cup \cD \cup \cB $
+\item $ \cE \equiv $ Edges, $ \cE \subseteq (\cV{V} \times \cV )$\newline
+	$  a = ( i , j )  $,  where the arc has orientation: $(i,j)$ is ordered. 
+\item Time stages $\{2,\ldots T\}$ in which the cascade occurs.
+\end{itemize}
+
+Parameters
+
+\begin{itemize}
+\item $X_e \equiv $ Reactance of edge $e \in \cE$
+\item $ \overline{P}_i, \underline{P}_i \equiv $ Upper and lower bounds on power produced at $ i \in \cG $
+\item $ U_{ij} \equiv$ Nominal Capacity of line $(i,j) \in \cE$
+\item $ R_{ijn} \equiv$  Effective capacity of $(i,j) \in \cE$ at node $n \in \cN$
+\end{itemize}
+
+
+Variables
+
+\begin{itemize}
+\item $f_{ijn} \equiv $ Flow in direction $(i,j) \in \cE$ at node $ n \in \cN $
+\item $p_{in} \equiv $ Power injected at generator $i \in \cG$ at node $n \in \cN$
+\item $\theta_{in} \equiv $ Phase angle at vertex $i \in \cV$ at node $n \in \cN$
+\item $d_{in} \equiv $ Power delivered at vertex $i \in \cV$ at node $n \in \cN$
+\item $z_{ijn} \equiv  
+	\left\{ 
+	\begin{array}{lr}
+			1 & \mbox{if edge } (i,j) \in \cE \mbox{ is available at node } n \in \cN\\
+			 0 & \mbox{otherwise}
+	\end{array}
+	\right.$
+\item $y_{in} \equiv  
+	\left\{ 
+	\begin{array}{lr}
+			1 & \mbox{if generator } i \in \cG] \mbox{ is on at node } n \in \cN\\
+			 0 & \mbox{otherwise}
+	\end{array}
+	\right.$
+\end{itemize}
+
+Model
+
+
+$
+\begin{array}{cc}
+
+\displaystyle\sum_{(i,j) \in \delta^+(i)}f_{ijn} - \sum_{(i,j) \in \delta^-(i)}{f_{ijn}} \equiv  
+	\left\{ 
+	\begin{array}{l}
+			p_{in} \\
+			 -d_{in} \\
+			 0
+	\end{array}
+	\right.  
+		&
+	\begin{array}{r}
+			\forall i \in \cG], \forall n \in \cN \\
+			 \forall i \in \cD, \forall n \in \cN \\
+			\forall i \in \cB, \forall n \in \cN 
+	\end{array}\\
+
+ -M(1-z_{ijn}) \le \theta_{in} - \theta_{jn} + X_{ij} f_{ijn} \le M (1-z_{ijn}) 
+	& \forall (i,j) \in \cE, \forall n \in \cN  \\
+
+-U_{ij} z_{ijn} \le f_{ijn} \le U_{ij} z_{ijn} 
+	&  \forall (i,j) \in \cE, \forall n \in \cN \\
+
+z_{ijn} \le 1-w_{ijn}  
+	&  \forall (i,j) \in \cE, \forall n \in \cN \\
+
+z_{ijn} \le 1 - x_{ijn} 
+	&  \forall (i,j) \in \cE, \forall n \in \cN \\
+
+f_{ij\rho(n)} - R_{ijn} \le M x_{ijn} 
+	&  \forall (i,j) \in \cE, \forall n \in \cN \backslash \left\{ 1 \right\} \\
+
+f_{ij\rho(n)} + R_{ijn} \ge - M x_{ijn} 
+	&  \forall (i,j) \in \cE, \forall n \in \cN \backslash \left\{ 1 \right\} \\
+
+x_{ijn} \ge x_{ij\rho(n)}  
+	&  \forall (i,j) \in \cE, \forall n \in \cN \backslash \left\{ 1 \right\} \\
+
+\underline{P_i} y_{in} \le p_{in} \le \overline{P_i} y_{in} 
+	&  \forall i \in \cG], \forall n \in \cN \\
+
+\displaystyle \sum_{i \in \cD}{ \sum_{n \in \cN_{t+1} }{ d_{in} } }\le \sum_{i \in \cD}{ \sum_{n \in \cN_t }{ d_{in} } } 
+	&  \forall t \in \left\{ 1, ..., T-1 \right\}  \\
+
+x_{ijn}, w_{ijn}, z_{ijn} \in \left\{ 0,1 \right\} 	
+	&  \forall  (i,j) \in \cE, \forall n \in \cN \\
+
+y_{in} \in \left\{ 0,1 \right\}
+	&  \forall  i \in \cG], \forall n \in \cN \\
+
+d_{in} \ge 0 	
+	&  \forall  i \in \cD, \forall n \in \cN 
+
+\end{array}
+$
+
+
+
+  \section{Economic Unit Commitment with Energy Storage}
+
+Notation:  \\
+Sets:
+	\begin{itemize}
+	\item $\mathcal{I} = \left\{ 1,2,...I \right\} $  - Nodes
+	\item  $\mathcal{G} = \left\{ 1,2,...G \right\} $ - Generators
+	\item  $\mathcal{T} = \left\{ 1,2,...T \right\} $ - Time Intervals
+	\end{itemize}
+Variables:
+	\begin{itemize}
+	\item $P_{it}$: Active power injected into node i at time t
+	\item $P_{git}$: Power from generator g, node i at time t
+	\item $Y_{it}$: Generator g on at node i at time t if 1, else 0
+	\item $\delta_{it}$: Phase angle relating current and voltage
+	\item $E_{it}$: Energy stored node i at time t
+	\item $S_{it}$: Power injected into storage node i at time t
+	\item $D_{it}$: Energy dispatched from storage
+	\end{itemize}
+Data:
+	\begin{itemize}
+	\item $L_{it}$: Active power withdrawn from node i at t
+	\item $B_{ij}$: Admittance of grid line from i to j
+	\item $F_{g}$: Fixed cost for generator g while operating
+	\item $V_{g}$: Variable cost for g per unit of energy
+	\item $U_{g}$: Maximum power production from g 
+	\item $\alpha_{g}$: Ramping constraint for generator g
+	\item $\eta$: Efficiency of energy storage
+	\end{itemize}
+Model:
+
+\begin{tabular}{ c c c}
+$ \ \ \ \ \ \displaystyle \mbox{minimize   } \sum_{t \in \mathcal{T}} \sum_{i \in \mathcal{I}} \sum_{g \in \mathcal{G}} \biggl[  F_g Y_{git} + V_g P_{git} \biggr] $ \ \ \ \ \ \ \ & \ \ \ \ \ & \ \ \  \ \  (Objective) 
+\end{tabular}
+\\
+
+\begin{tabular}{ l c c  r}
+%$\displaystyle \sum_{t \in \mathcal{T}} \sum_{i \in \mathcal{I}} \sum_{g \in \mathcal{G}} \biggl[  F_g Y_{git} + V_g P_{git} \biggr] $ & \ \ \ & & (Objective) \\ \\
+$P_{it} = \sum_{j \in \mathcal{I}}  B_{ij} ( \delta_{it} - \delta_{jt} )   - D_{it} $ && for $\forall i \in \mathcal{I},\forall t \in \mathcal{T} $& (Phase Angle Relation) \\
+$  \sum_{g \in \mathcal{G}}  P_{git}  - S_{it} - L_{it} - P_{it} = 0 $ && for $\forall i \in \mathcal{I},\forall t \in \mathcal{T} $& (Conservation of Energy) \\
+\\
+
+$  P_{git} - \alpha_g \leq P_{gi(t+1)} \leq P_{git} + \alpha_g $ && for $\forall i \in \mathcal{I},\forall t \in \mathcal{T}, \forall g \in \mathcal{G} $& (Ramping Constraint) \\
+$  P_{git} \leq Y_{git}U_g $ && for $\forall i \in \mathcal{I},\forall t \in \mathcal{T}, \forall g \in \mathcal{G} $& (Generator Capacity) \\
+$  P_{git} \geq 0 $ && for $\forall i \in \mathcal{I},\forall t \in \mathcal{T}, \forall g \in \mathcal{G} $& (Nonnegative Production) \\
+$ Y_{git} \in \left\{ 0 , 1 \right\} $ && for $\forall i \in \mathcal{I},\forall t \in \mathcal{T}, \forall g \in \mathcal{G} $& (Unit Commitment) \\
+\\
+$E_{i(t+1)} = E_{it} - D_{it} + \eta S_{it} $ && for $\forall i \in \mathcal{I},\forall t \in \mathcal{T} $& (Energy Conservation)  \\
+$E_{it} \geq 0, D_{it} \geq 0, S_{it} \geq 0 $ && for $\forall i \in \mathcal{I},\forall t \in \mathcal{T} $& (Nonnegativity Requirments)  
+\end{tabular}
+
+
+
+\input{opa_alg}
+
+\input{calibrate_alg}

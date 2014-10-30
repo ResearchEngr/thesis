@@ -1,0 +1,135 @@
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+
+
+%Battery 1
+\path (0,0) coordinate (EBL1);
+\path (1,0) coordinate (EBR1);
+\path (0,2.3) coordinate (EML1);
+\path (1,2.3) coordinate (EMR1);
+\path (0,3) coordinate (ETL1);
+\path (1,3) coordinate (ETR1);
+\path(.5,3.2) node (E1) {$ e_{n t-1} $};
+\path (1,1.6) coordinate(EUP1);
+\path (1,1.4) coordinate(EDOWN1);
+\path (1.7,1.4) coordinate(EDOWNM1);
+\path (-.94, 2.1) node[text width=1.9cm,text centered]{\scriptsize Storage Level at $t-1$ } coordinate(labelE1);
+
+
+\draw (EBL1) -- (ETL1) -- (ETR1) -- (EBR1) -- cycle;
+\path[draw,
+	  pattern=flexible hatch,
+        hatch distance=5pt,
+        hatch thickness=0.5pt,
+        draw=blue,
+        pattern color=cyan] 
+	(EBL1) -- (EML1) -- (EMR1) -- (EBR1) -- cycle;
+
+%Battery 2
+\path (5,0) coordinate (EBL2);
+\path (6,0) coordinate (EBR2);
+\path (5,1.5) coordinate (EML2);
+\path (6,1.5) coordinate (EMR2);
+\path (5,3) coordinate (ETL2);
+\path (6,3) coordinate (ETR2);
+\path(5.5,3.2) node (E2) {$ e_{nt} $};
+\path (5,1.6) coordinate(EUP2);
+\path (5,1.4) coordinate(EDOWN2);
+\path (4.3,1.4) coordinate(EDOWNM2);
+\path (6.7, 2.1) node[text width=1.9cm,text centered]{\scriptsize Storage Level at $t$ } coordinate(labelE2);
+
+\draw (EBL2) -- (ETL2) -- (ETR2) -- (EBR2) -- cycle;
+\path[draw,
+	  pattern=flexible hatch,
+        hatch distance=5pt,
+        hatch thickness=0.5pt,
+        draw=blue,
+        pattern color=cyan] 
+	(EBL2) -- (EML2) -- (EMR2) -- (EBR2) -- cycle;
+
+%Dispatch
+\path (1.5,-.5) coordinate(DTL);
+\path (2.5,-.5) coordinate(DTR);
+\path (1.5,-.7) coordinate(DML);
+\path (2.5,-.7) coordinate(DMR);
+\path (1.5,-1.5) coordinate(DBL);
+\path (2.5,-1.5) coordinate(DBR);
+\path (.7, -1) node[text width=1.5cm,text centered]{\scriptsize Energy Dispatched } coordinate(labelD);
+\path (1.7,-.5) coordinate(DUP);
+\path (1.9,-1.5) coordinate(DDOWNT);
+\path (2.1,-1.5) coordinate(DDOWNA);
+
+\draw (DTL)  -- (DTR)  -- (DBR) -- (DBL) -- cycle;
+
+\path[draw,
+	  pattern=flexible hatch,
+        hatch distance=5pt,
+        hatch thickness=0.5pt,
+        draw=blue,
+        pattern color=cyan] 
+	(DBL) -- (DML) -- (DMR) -- (DBR) -- cycle;
+
+%Dispatch Travel
+\path (.7,-2.5) coordinate(TTL);
+\path (1.7,-2.5) coordinate(TTR);
+\path (.7,-2.7) coordinate(TML);
+\path (1.7,-2.7) coordinate(TMR);
+\path (.7,-3.5) coordinate(TBL);
+\path (1.7,-3.5) coordinate(TBR);
+\path (0, -3) node[text width=1.5cm,text centered]{\scriptsize Travel } coordinate(labelT);
+\path (1.5,-2.5) coordinate(TUP);
+
+\draw (TTL)  -- (TTR)  -- (TBR) -- (TBL) -- cycle;
+
+\path[draw,
+	  pattern=flexible hatch,
+        hatch distance=5pt,
+        hatch thickness=0.5pt,
+        draw=blue,
+        pattern color=cyan] 
+	(TBL) -- (TML) -- (TMR) -- (TBR) -- cycle;
+
+%Dispatch Arbitrage
+\path (2.3,-2.5) coordinate(ATL);
+\path (3.3,-2.5) coordinate(ATR);
+\path (2.3,-2.7) coordinate(AML);
+\path (3.3,-2.7) coordinate(AMR);
+\path (2.3,-3.5) coordinate(ABL);
+\path (3.3,-3.5) coordinate(ABR);
+\path (3.9, -3) node[text width=1.5cm,text centered]{\scriptsize Sold to Grid } coordinate(labelA);
+\path (2.5,-2.5) coordinate(AUP);
+
+\draw (ATL)  -- (ATR)  -- (ABR) -- (ABL) -- cycle;
+
+%\path[draw,
+%	  pattern=flexible hatch,
+%        hatch distance=5pt,
+%        hatch thickness=0.5pt,
+%        draw=blue,
+%        pattern color=cyan] 
+%	(TBL) -- (TML) -- (TMR) -- (TBR) -- cycle;
+
+%Storage
+\path (3.5,-.5) coordinate(STL);
+\path (4.5,-.5) coordinate(STR);
+\path (3.5,-1.5) coordinate(SBL);
+\path (4.5,-1.5) coordinate(SBR);
+\path (5.2, -1) node[text width=1.5cm, text centered]{ \scriptsize Energy Stored } coordinate(labelS);
+\path (4.3,-.5) coordinate(SUP);
+
+\draw (STL)  -- (STR)  -- (SBR) -- (SBL) -- cycle;
+
+
+%Arrows
+\draw[->,thick] (EUP1) -- (EUP2);
+\draw[->,thick] (EDOWN1) -- (EDOWNM1) -- (DUP) node[above right] { $d_{nt} $};
+\draw[->,thick] (SUP)node[above left] { $\eta s_{nt} $} -- (EDOWNM2) -- (EDOWN2) ;
+\draw[->,thick] (DDOWNT) -- (TUP) node[above left] { $d^T_{nt} $ };
+\draw[->,thick] (DDOWNA) -- (AUP) node[above right] { $d^A_{nt} $ };
+
+\end{tikzpicture}
+\caption{Energy storage device transition diagram.  This represents the device being used for travel in time period $t$.}
+\label{fig:esd}
+\end{figure}

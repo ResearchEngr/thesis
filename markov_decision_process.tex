@@ -1,0 +1,20 @@
+
+\section{Markov Decision Process}
+Stages $\cT = \left\{    1, 2, \ldots, T
+		\right\}	$			\\
+State Space $\cS = \left\{	0 , 1   
+			\right\}^{ \magE }$	\\
+Action Space $\cA = \left\{     \mbox{ Discrete set of possible power flows }
+			\right\}		$			\\
+Probability transition matrix, describes failure of branches based on state and choosen power flow \\
+Reward for chosing a particular power flow 
+\subsection{Hidden Failures}
+A partially observable markov decision process would work very well here for an extension. \\
+belief space on availability of components	\\
+$( S, A, P, R, \theta, \Omega)$, a Partially Observable Markov Decision Process (POMDP) \\
+S - State space \\
+A - Action Space \\
+P - Transition matrix \\
+R - Observation space, $ R_{j \theta}^a $, prob observe $\theta$ in state $i$, chosing action $a$ \\
+$\theta$ - Observations to make		\\
+$\Omega$ - Reward function		

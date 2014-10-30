@@ -1,0 +1,35 @@
+
+\begin{center}
+NOTATION
+\end{center}
+
+\begin{tabular}{ l l }
+Sets & \\
+$ \cG $  &  Generators  \\
+$ \cD $  & Demand Nodes \\
+$ \cB  $ &  Buses \\
+$ \cS  $  & Scenarios \\
+$ \cN  $  & Nodes of Scenario Tree\\
+$\rho \left( n \right) $  & Predecessor of node $ n \in \cN $  \\
+$ \cV  $ &  Vertices $ = \cG \cup \cD \cup \cB $  \\
+$ \cE  $  & Edges, $ \cE \subseteq (\cV \times \cV )$, e = (i, j)  \\
+$ \cT $ & Time stages\\
+ & \\
+Parameters & \\
+ $X_e $  & Reactance of edge $e \in \cE$  \\
+$ \overline{P}_i $ & Upper bounds on power produced at $ i \in \cG $  \\
+$ \underline{P}_i $ & Lower bounds on power produced at $ i \in \cG $  \\
+$ U_{e} $ & Nominal Capacity of line $e \in \cE$  \\
+$ R_{en} $  & Effective capacity of $e \in \cE$ at node $n \in \cN$  \\
+ & \\
+Variables & \\
+
+$f_{ijn}$ & Flow in direction $(i,j) \in \cE$ at node $ n \in \cN $  \\
+$p_{in} $ & Power at generator $i \in \cG$ at node $n \in \cN$  \\
+$\theta_{in} $ &  Phase angle at vertex $i \in \cV$ at node $n \in \cN$  \\
+$d_{in} $ &  Power at vertex $i \in \cV$ at node $n \in \cN$  \\
+$z_{ijn}  $ & $  \mbox{if edge } (i,j) \in \cE \mbox{ available at node } n \in \cN $ \\
+$y_{in} $ & $  \mbox{if generator } i \in \cG] \mbox{ is on at node } n \in \cN $ \\  
+		
+
+\end{tabular}

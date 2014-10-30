@@ -1,0 +1,84 @@
+
+
+\chapter{Power System Analysis}
+ 
+The modern economy is developed upon many different infrastructures, such as highways and power transmission systems, which facilitate production and services.  Often times these infrastructures are public goods which everyone benefits from, but would be unable to create alone.  As nations have grown more advanced over the centuries, they have found new and better transportation systems on which trade was founded and is now used in supply chains and distribution in all major industries.  Disruption of these systems have tremendous impact on local communities, states, countries, and world wide.  In another perspective, efficient development and operation of these systems can help all sectors of the economy by facilitating their operations.  As such, it is important to understand the systems and develop models which can help guide the decision making processes in the development and operation of these infrastructures.
+
+Throughout history, societies have slowly advanced energy systems which provide valuable services such as heating and work.  The original fuel, wood, provided a source of heat which was used for staying warm and cooking food.  This turned out to be advantagous, and spread throughout populations.  Eventually coal and then petreoleum began replacing biomass for energy production.  In addition to replacing, these new fuels were able to tackling new problems and tremendous growth was seen in energy use throughout the 20th century.  Recenetly, with advances in extraction techniques, natural gas is now a key player and driving decisions across the energy industry.  An important service these energy systems provide is electricity.
+
+Electricty is relied upon in homes, communities, and industry.  Common uses include cooling, heating, and cooking in the house to motors, pumps, and specialized processes in industry. It is extremely versatile in use and can provide nearly every energy service.  Also, electricity is able to travel long distances almost instaneously, with a small cost to efficiency.  In order to provide electricity, the demand of energy must be met instaneously by generating assets using fuel such as coal, natural gas, uranium-235, wind, and solar radiation.  In addition, the two points must be connected with conductors in transmission systems, which are designed to minimize energy losses with regulation and cost concerns.
+\section{Objective}
+
+There has been renewed interest in cascading power failures, which are the cause of large blackouts, due to the tremendous cost of these rare events.  In order to understand the mechanism for blackouts, a  model of cascading power failures will be developed.  The main objective, with the help of this model, design decision making framework which guide planning in the development of power systems which are more robust to cascading failures. 
+\section{Power Systems}
+
+The most basic components of power systems can be broken into three categories; Generation which includes power assets such as a coal plant, transmission systems which transfer the power created to the point of consumtion, and the load which consumes the power to create a useful service.
+
+Common types of generation:
+Coal - good baseload power, long term economic reserves, slow ramp rates, large emissions
+Natural Gas - fast ramp rates, good for fast changes in demand, $\frac{1}{2}$ emissions coal, domestic resource utilizing piping for transfer
+Nuclear Power - nuclear fission which creates heat to spin turbine, extremely energy dense fuel, small quantity of long lived waste products
+Hydro - most developed renewable energy, easily dispatchable, large ( biggest are 5-10 times large coal plant)
+Wind - play on variation in heating of earth, commonn turbines are 1.5 MW with around 30 % capacity factor
+Solar - direct conversion of incoming solar radiation into electricty.  Most efficient 42%, common 20%, cheap 10%
+
+Transmission system components:
+\begin{itemize}
+\item Transmission lines
+\item Transformers
+\item Capacity banks
+\end{itemize}
+
+Important loads:
+AC, heating, cooking, refrigeration, pumps, motors
+
+\section{Models}
+
+Let $\cG$ be a set of grid constraints for a given network topology.  With the set of vertices $\cV$, and the set of branches $\cE$, the grid constraints can be described as 
+\begin{equation}\label{gt}
+ \cG = \{ g | g = (u, s,\overline p,\underline p ),
+		  u \in \mathbb{R}^{ \left| \cE \right| },
+		  s \in \mathbb{R}^{ \left| \cE \right| },
+		 \overline p ,\underline p  \in \mathbb{R}^{ \left| \cV \right| } 
+	\}
+\end{equation}
+where $u$ are branch capacities,$s$ are susceptances, $\overline p$ and $\underline p$ are generator minimums and maximums. \\
+
+\subsection{DC Power Flow}
+Let $\cD$ be a set of demand projections, then $d_{nom}\in \mathbb{R}^{N}$ is a vector of power demands for $d_{nom} \in \cD$.  With this information, the DC power flow model will take power injects and branch capacities to find a set of branch flows which are energy conserving and proportional to the susceptance of the power lines. For an operator $\cDC : \mathbb{R}^{\left| g \right| } \times \mathbb{R}^{\left| \cV \right|} \rightarrow \mathbb{R}^{\left| \cE \right|} \times \mathbb{R}^{\left| \cV \right|} $ that maximes load served
+\begin{equation}\label{dc}
+( f, d ) = \cDC ( g , d_{nom} )
+\end{equation}
+where $f$ is a vector of branch flows and $d$ is a vector of load served for a grid constraint $g$ and given demand projection $d_{nom}$.  The following constraints describe the $\cDC$ operator
+\begin{align}
+	p_i^\prime = p_i - d_i \\
+	(\theta_i - \theta_j ) s_e = f_e \\
+	\sum_{ i \in \delta^+ } f_{ij} - \sum_{ i \in \delta^- } f_{ij} = p^\prime \\
+ 	\left| f_e \right| \le u_e, 	d_i \ge 0 \\
+	p_i \in \left[ \underline{p_i} , \overline{p_i} \right]
+\end{align}
+
+$\cDC$ is known to be a multifunction, since there may be multiple branch flows that obey the laws of physics.  This issue is normally resolved by using an objective such as minimizing cost along with information about the cost function of generators.  
+
+\input{calibrate_n_1}
+
+\subsection{Busbar electricity cost}
+NPV calculation for power asset
+fixed cost, variable cost
+iso and markets
+\begin{itemize}
+\item power purchase contracts
+\item day ahead market
+\item hour ahed market
+\item real time market
+\end{itemize}
+
+
+%\subsection{DC power flow}
+%simple yet powerful
+%\subsection{AC power flow}
+%nonlinear, difficult
+%\subsection{lagrange}
+%old way of finding market costs 
+
+\input{case_studies}

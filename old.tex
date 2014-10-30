@@ -1,0 +1,689 @@
+\section{Abstract Presentation}
+If an exogenous event impacts the operating characteristics of an
+electric power grid, power flows reroute themselves according to the
+laws of physics.  The re-routed flows may cause lines to become
+overloaded, setting off stages of additional line failures.
+Cascading failures of power grids, leading to large-scale
+blackouts, have taken place during the past decade, both in the
+U.S. and abroad.  
+
+\section{Abstract MSIP Paper}
+The primary objective of this research effort is to model 
+
+By modeling the cascade and resource actions together, an outcome of
+the research may be to understand the effects of recourse decisions on
+the distribution of blackout size.
+
+
+
+
+Our short term goal is to estimate how much different policies (other
+than doing a ``greedy'' minimal load shed at each iteration, as in
+OPA) may mitigate the total final blackout.
+
+
+
+
+\chapter{Cascading Power Failures}
+
+
+
+
+\section{Introduction}
+There are high costs associated with failures in the electric grid through a cascading process.  All of the largest blackouts underwent the cascading process to become as large as they did.  This work will provide the basis for an optimization procedure based on cascading power failures. We would like to propose a function which will represents performance measures about cascading power failures.  The characteristics of the power failures will be driven by the OPA Simulation.  This has been shown to have the same load shed distribution as real, historical data for the electric grid.  After deciding on performance measures, developed a method to compare two systems under similar simulation conditions.  This helped reduce the varience in the performance parameters, which will improve performance in the optimization procedure. Now an outer optimization loop can be set up to optimize this blackbox simulation.
+\section{Big F Model}\label{big f}
+This is the function we would like to work with.
+\begin{equation}\label{f}
+  \mathbb{F} \left( x, \xi, \mathbb{D}, \omega \right)
+\end{equation}
+\begin{itemize}
+\item $x$ - design variable, branch flow limits and generator constraints \newline
+ $x$ is the variable we would like to optimize.
+\item $\xi$ - initial exogenous event, which starts the cascade process \newline
+ $\xi$ is contained in a set $\Xi$ of possible initial outages, and is sampled from that set for each individual scenario \newline
+ Currently $\Xi$ is the set of all possible combinations of two initial outages 
+\item $\mathbb{D}$ - demand scenario for each node \newline
+ $\mathbb{D}$ represents the demand profile for the system.  $\mathbb{D}_{tot}$ defines the overall total demand in the system and $\mathbb{D}_z$ define the proportion of demand in each zone.  \newline
+ For $Z$ zones, \newline
+$\mathbb{D} = 
+ \left( 
+	\begin{array}{lr}
+				\mathbb{D}_{tot} \\
+				\mathbb{D}_{1} \\
+				\mathbb{D}_{2} \\
+				\vdots \\
+				\mathbb{D}_{Z} 
+	\end{array}
+ \right) $ \newline
+
+\item $\omega$ - how the cascade evolves through the system \newline
+ $\omega$ is driven by the OPA Model in Section \ref{opa} 
+\end{itemize}
+
+
+
+\section{DC Power Flow Model}\label{dc flow}
+Given a set of bounds on demand, generation, and branch flow, this linear program calculates the power injected into every node and the corresponding power flow on each branch. \newline
+\newline
+$N$ Nodes \newline
+$M$ Branches \newline
+\newline
+Let $i,j = 1,2,...,N$  \newline
+Let $k = 1,2,...,M$ and is of the form $k := [u,v]$ \newline
+where $u,v$ are two different nodes \newline
+And $K_i$ is the set of branches connected to node $i$ \newline
+
+\begin{equation}\label{lp}
+D_{tot}^* = \mbox{ Max } D_{tot} 
+\end{equation}
+\centerline{such that}
+
+
+\begin{center}
+$D_{tot} = \sum_i{d_i} $ \\
+\mbox{ } \\
+\begin{tabular}{cc}
+  
+$a_u - a_v - X_k f_k = 0 $ & $\forall k \in \mathbb{K}, k:=\left[ u, v \right]$  \\
+$p_i + \sum_{k \in K_i } S_k f_k = 0 $ & $\forall \left\{ \left( i,k \right) \mbox{ : }  i=u \mbox{ or } i=v \right\} $\\
+$p_i + d_i - g_i = 0$ & $\forall i \in \mathbb{I}$ \\
+\\
+$-D_i \leq p_i \leq G_i$ & $\forall i \in \mathbb{I}$ \\
+$-A_i \leq a_i \leq  A_i $ & $\forall i \in \mathbb{I}$ \\
+$-F_k \leq f_k \leq  F_k $ & $\forall k \in \mathbb{K}$ \\
+$ 0 \leq g_i \leq G_i$ & $\forall i \in \mathbb{I}$ \\
+$ 0 \leq d_i \leq D_i$ & $\forall i \in \mathbb{I}$ \\
+
+\end{tabular}
+\end{center}
+
+\centerline{
+ $S_k = 
+ \left\{ 
+	\begin{array}{lr}
+				1 & \mbox{if } i = u \mbox{ (send bus)} \\
+			 -1, & \mbox{if } i = v \mbox{ (rec bus)}
+	\end{array}
+ \right. $ }
+ 
+ 
+ \subsection{Relation to Big-F Model}
+ $x$ from (\ref{f}) is then a set of $F_k$ and $G_i$ for $k = 1,2,...,M$ and $i = 1,2,..,N$ which enforces the maximum flow on any branch and the maximum generation at any node \newline 
+ \newline
+  $\mathbb{D}$ from (\ref{f}) constrains $D_i$ by the following
+ \begin{itemize}
+ \item  $\mathbb{D}_{tot} = \sum_i D_i $ 
+ \item $\mathbb{D}_{z} = \alpha \sum_{i \in I_z} D_i $
+ \end{itemize}
+ Where \newline
+ $I_z$ is the set of all $i$ contained in zone $z$
+ \begin{itemize}
+ \item $\bigcup_z I_z = \left\{ 1, 2, ..., M \right\}$
+ \item $\bigcap_z I_z = \emptyset $ 
+ \end{itemize}
+ Once $\mathbb{D}_{tot}$ and $\mathbb{D}_z$ have been realized, define the following scale factors
+ 
+\begin{itemize}
+ \item  $\alpha = \mathbb{D}_{tot} / \sum_z \mathbb{D}_z $
+ \item $\beta_z = \mathbb{D}_z / \sum_{i \in I_z} D'_i $ where $D'_i$ is original demand \newline
+ \end{itemize}
+  Then \newline
+  $ D_i = \alpha \beta_z D'_i $  for $ \left\{ (i,z) : i=1,2,...N \mbox{ and } i \in I_z \right\}$ 
+
+		
+
+\section{OPA Simulation}\label{opa}
+In order to begin the simulation, an initial outage $\xi$, demand scenario $\mathbb{D}$, evolution details $\omega$, as well as failure probability $p$ are needed.  The simulation proceeds as follows.  \newline
+
+\begin{enumerate}
+\item Solve ( \ref{lp} ) to find base case $D_{tot,0}^*$
+\item $\xi$ occurs and corresponding changes to the grid are made \newline
+\newline Stage s=1,2,....
+\item \label{start} Solve ( \ref{lp} ) to find power injects and branch flows for adjusted grid
+\item Set next outage $\mathbb{O}_s = \emptyset$ \newline
+For each $k = 1,2,...,M$,   \newline 
+ $\mathbb{O}_s = 
+ \left\{ 
+	\begin{array}{lr}
+				\mathbb{O}_s + \left\{ k \right\}, & \mbox{if } \left( f_k = F_k \mbox{ or } -f_k = F_k \right)  \mbox{ with probability } p \\
+			  \mathbb{O}_s, & \mbox{o/w }
+	\end{array}
+ \right. $ 
+\item $
+	\begin{array}{lr}
+				\mbox{If }  \mathbb{O}_s \neq \emptyset \mbox{, then adjust the grid by } \mathbb{O}_s , s=s+1, \mbox{ and goto step \ref{start}} \\
+			  \mbox{Else, } S=s \mbox{, record } D_{tot,S}^* \mbox{, and goto step \ref{done}}
+	\end{array} $
+\item \label{done}	Load Shed for this trial, \newline
+\begin{equation} \label{ls}
+ L = D_{tot,0}^* - D_{tot,S}^* 
+\end{equation}		
+\end{enumerate}
+
+
+
+\subsection{Line Outage}
+When a line is outaged, the branch flow is set to 0 and the angle constraint between the connected nodes is relaxed. \newline
+\newline
+	For $\forall k \in \mathbb{O}, $
+	\begin{itemize}
+	\item	 $ f_k = 0 $
+	 \item BgNmbr $ <= a_u - a_v - X_k f_k <= \mbox{BgNmbr} $ 
+  \end{itemize}
+
+
+\section{Calibrating the Grid}\label{calibrate}
+In order to create a useful data set, we take advantage of the knowledge that power grids are required, and thus engineered, to withstand any $N$ - 1 contingency, that is, any line or generator can be taken out of the system and it is still possible to meet all demand.  The following algorithm ensures that the grid is capable of withstanding any continigency, $\xi$ in the $N$ - 1 set. $\gamma$ represents the typical execess capacity on a power line.\newline
+
+\begin{algorithmic}
+\STATE $ \mbox{Stabilize } \gets 0 $
+\STATE $ \xi \mbox{ occurs, grid adjustments made } $
+\WHILE{Stabilize = 0}
+	\STATE $N_{fail} \gets 0$
+	\FOR{$k=1,2,...,M$}
+		\IF{$ f_k = F_k $ or $ - f_k = F_k $}
+				\STATE $ F_k \gets \gamma F_k $
+				\STATE $N_{fail} \gets N_{fail} + 1 $
+		\ENDIF  
+	\ENDFOR
+	
+		\IF{$ N_{fail} = 0 $}
+				\STATE $ \mbox{Stabilize } \gets 1 $
+		\ENDIF
+
+
+\ENDWHILE
+
+\end{algorithmic}
+
+\section{Performance Measures}\label{pm}
+$F$ represents one of the possible performance measures.  \newline
+For $t=1,2,...,T$ trials to calculate the performance measure, and $l=1,2,...,N_{loops}$ \newline
+Currently
+\begin{itemize}
+\item Mean Load Shed \newline
+$\hat{L} = \sum_t L_t / T $
+\item $\alpha$ V@R \newline
+   $L_{V@R} (\alpha) =  \mbox{max} \left\{ l \in \mathbb{R} : \sum_t 1_{L_t \leq l } \leq \left( 1 - \alpha \right) T \right\}$
+\item $\alpha$ CV@R \newline
+  $ \sum_{\forall t: L_t \geq L_{V@R}(\alpha)}  L_t / N$ where $N = \sum_t 1_{ \left\{ L_i \geq L_{V@R} \right\}}$
+
+	
+\end{itemize}
+
+\section{Variance Reduction Techniques}\label{var}
+In order to optimize our design variable $x$, we need to compare the expected response on the basis of some performance parameter of different systems under similar experimental conditions.  Thus, for each system we run through a list of trials $t \in \mathbb{T}$, which is the same for each system design.  A trial $t$ is a combination of an initial outage, $\xi$, a demand profile, $\mathbb{D}$, and an evolution through the cascade, $\omega$.  The first two parts are relatively straight forward to implement. \\
+\newline
+Define $Z_t = F_{1,l} - F_{2,t} $\newline
+Then $\hat{Z} = \sum_t Z_t / T $ - Mean Difference in Performance Measure \newline
+$ S = \sqrt{ \frac{\sum_t  \left( Z_t - \hat{Z} \right)^2 }{  \left( T-1 \right)  }} $ \newline
+$ LB = \hat{Z} - t_{\alpha,T-1} \frac{S}{\sqrt{T}} $ \newline
+$ UB = \hat{Z} + t_{\alpha,T-1} \frac{S}{\sqrt{T}} $ \newline
+So\newline
+$ P ( LB \leq Z \leq UB ) >= (1-\alpha) $
+\subsection{Common Random Number}\label{crn}
+ To ensure that $\omega$ is calculated under similiar experimental conditions, we employ a common random number approach.  For each trial $t$, every branch $k$ has a seed for a stream of random numbers.  In round $r$, the $r$th random number in the $k$th random number stream should be used.\\
+ \begin{algorithmic}
+ \FOR{ $k \in \mathbb{K} $}
+ 		\IF{ $f_k = F_k \mbox{ or } f_k = -F_k $}
+ 					\STATE Random Number Seed $ \gets RNS_{t,k} $
+ 					\FOR{ $temp \in 1,2, ..., r -1 $}
+ 							\STATE Generate Random Number
+ 					\ENDFOR
+ 					\STATE $p \gets U \left[ 0, 1\right] $
+ 					\STATE ${k} \mbox{ added to outage if } Fail(p) = 1 $
+ 		\ENDIF
+ \ENDFOR
+ \end{algorithmic}
+\section{Implementation}\label{imp}
+Implemented in C++ with CPLEX
+
+\section{Results}\label{results}
+In this section we describe the results.
+
+\section{Conclusions}\label{conclusions}
+We are close to being ready to optimize...
+
+
+
+\section{Multi Stage Stochastic Model of Cascading Power Failures}
+This program can be used to evaluate a set of design scenarios for either transmission line expansion or operating reserves in order to minimize the potential for cascading failures under a set of outage contingencies.
+\subsection{Design Parameters}
+capacity of lines, capacity of generators, level of operating reserves
+\subsection{Strengths of Model}
+concurrently analysis against multiple contingencies with respect to cascading failures
+
+\subsection{Model for single contingency}
+This is mixed integer formulation for OPA simulation
+
+\subsection{General Model}
+Combines multiple contingencies with addition of the design linking variable
+
+\subsection{Objectives}
+Greedy objective , others
+
+\section{Modeling Limitations}
+
+We will assume that the blackout occurs in a fixed finite number of
+stages, where at each stage the operators have the ability to take
+some recourse actions.  Specifically, in order to mitigate the effect
+of the blackout, the operators may choose to do
+load shedding, reducing the amount of power that a customer
+receives, or  generation dispatch, changing the amount of
+generation capacity (within limit) at the generation points in the
+network. 
+
+
+In the OPA model, cascades are simulated by
+solving a linear program that satisfies the power flow equations and
+attempts to minimize the load shed.  Then, once new power flows are
+determined, a certain percentage of the lines that are at capacity
+fail, and the process repeats until stable.  This simple simulation
+process, once calibrated, has been shown to accurately capture the
+historical distribution of blackout sizes.
+
+A distinguishing features of the uncertainty in the model is that the
+line failures are not completely random, but in a loose sense controlled
+by the power flows injected into the network.  This em
+  decision-dependent uncertainty is complicates the modeling effort.
+In our model, the complication is handled with the addition of binary
+variables.
+
+
+
+
+\section{IP Formulation}
+
+\subsection{Sets}
+
+\begin{itemize}
+\item $ \cG \equiv $ Generators 
+\item $ \cD \equiv $ Demand Nodes 
+\item $ \cB \equiv $ Buses 
+\item $ \cS \equiv $ Scenarios 
+\item $ \cN \equiv $ Nodes of Scenario Tree\\
+	$\rho \left( n \right) \equiv $ Predecessor of node $ n \in \cN $
+\item $ \cV \equiv $ Vertices $ = \cG \cup \cD \cup \cB $
+\item $ \cE \equiv $ Edges, $ \cE \subseteq (\cV{V} \times \cV )$\newline
+	$  a = ( i , j )  $,  where the arc has orientation: $(i,j)$ is ordered. 
+\item Time stages $\{2,\ldots T\}$ in which the cascade occurs.
+\end{itemize}
+
+
+
+
+
+The underlying random elements in our stochastic process are whether
+or not each line will fail as a function of the magnitude of the load
+on the line.  Each line $e \in E$ has a (nominal/rated) capacity
+$u_e$, but in reality, this line limit may be exceeded, and the
+probability of a line failure should be a monotonically increasing
+function of the load on the line.
+
+and the power 
+flow equations ensure that the flow never exceeds this capacity.  In
+our stochastic model, each line $e \in E$ has an {\em effective
+  capacity} $R_e(\omega)$ which is the capacity at which the
+line will fail under outcome $\omega$.  For example, to implement the
+OPA model, where lines fail with probability $p$ if $f_{e} = u_{e}$,
+one could set
+\[ 
+R_e = \begin{cases} 
+u_e - \epsilon & \mbox{ with probability } p\\
+u_e + \epsilon & \mbox{ with probability } 1-p
+\end{cases}
+\]
+In general, the vectors $(\theta(\omega_2), \ldots \theta(\omega_t))$
+are $|E|$-dimensional random vectors that form a stochastic process.
+(Sample space is $\Omega = \Omega_2 \times \Omega_3 \times \ldots
+\times \Omega_T$).  We suspect that a reasonable assumption is
+stagewise indepdence of the random variables $\omega_t$.  Perhaps also
+reasonable is independence of $\theta_e(\omega_e) \forall e \in E$.
+
+The stochastic program we present .  It {\em does} have knowledge of
+all of the outcomes, the decision made at node $n$ {\em must be the
+  same} -- must be obeyed for all child nodes.
+
+This poses a problem for modeling directly the exact OPA distribution,
+as it is likely that an optimal solution will be to reduce the load on
+each line by epsilon, and thus completely stop the cascade.
+
+More generally, we can consider a cumulative distribution function
+$F_e(f_e)$ to define the probability that a line fails as a function of
+its load $f_e$.
+
+
+
+
+(We need to talk about the underlying probability space).
+
+
+
+
+
+\begin{itemize}
+\item $G=(V,E)$ is a graph containing the (original?) network topology
+\item $\cD \subset V$ is the subset of demand nodes.
+\item Time stages $\{2,\ldots T\}$ in which the cascade occurs.
+\item Let $N_t$ be the set of nodes in the scenario tree at stage $t \in
+\{2, \ldots, T\}$
+\item $N = \cup_{t=2}^T N_t$ is the set of nodes in the scenario tree
+\item We denote $p_n$ as the (conditional) probability of
+the sequence of outcomes leading to node $n$ in the scenario occuring
+\item $\rho(n)$ is the predecessor of node $n$ in the scenario tree.
+\item $\theta_{en}$ is the effective capacity of edge $e \in E$ at
+  node $n \in N$
+\end{itemize}
+
+
+
+
+\subsection{Parameters}
+
+\begin{itemize}
+\item $X_e \equiv $ Reactance of edge $e \in \cE$
+\item $ \overline{P}_i, \underline{P}_i \equiv $ Upper and lower bounds on power produced at $ i \in \cG $
+\item $ U_{ij} \equiv$ Nominal Capacity of line $(i,j) \in \cE$
+\item $ R_{ijn} \equiv$  Effective capacity of $(i,j) \in \cE$ at node $n \in \cN$
+\end{itemize}
+
+
+\subsection{Variables}
+
+\begin{itemize}
+\item $f_{ijn} \equiv $ Flow in direction $(i,j) \in \cE$ at node $ n \in \cN $
+\item $p_{in} \equiv $ Power injected at generator $i \in \cG$ at node $n \in \cN$
+\item $\theta_{in} \equiv $ Phase angle at vertex $i \in \cV$ at node $n \in \cN$
+\item $d_{in} \equiv $ Power delivered at vertex $i \in \cV$ at node $n \in \cN$
+\item $z_{ijn} \equiv  
+	\left\{ 
+	\begin{array}{lr}
+			1 & \mbox{if edge } (i,j) \in \cE \mbox{ is available at node } n \in \cN\\
+			 0 & \mbox{otherwise}
+	\end{array}
+	\right.$
+\item $y_{in} \equiv  
+	\left\{ 
+	\begin{array}{lr}
+			1 & \mbox{if generator } i \in \cG] \mbox{ is on at node } n \in \cN\\
+			 0 & \mbox{otherwise}
+	\end{array}
+	\right.$
+\end{itemize}
+
+
+\subsection{Model}
+
+
+$
+\begin{array}{cc}
+
+\displaystyle\sum_{(i,j) \in \delta^+(i)}f_{ijn} - \sum_{(i,j) \in \delta^-(i)}{f_{ijn}} \equiv  
+	\left\{ 
+	\begin{array}{l}
+			p_{in} \\
+			 -d_{in} \\
+			 0
+	\end{array}
+	\right.  
+		&
+	\begin{array}{r}
+			\forall i \in \cG], \forall n \in \cN \\
+			 \forall i \in \cD, \forall n \in \cN \\
+			\forall i \in \cB, \forall n \in \cN 
+	\end{array}\\
+
+ -M(1-z_{ijn}) \le \theta_{in} - \theta_{jn} + X_{ij} f_{ijn} \le M (1-z_{ijn}) 
+	& \forall (i,j) \in \cE, \forall n \in \cN  \\
+
+-U_{ij} z_{ijn} \le f_{ijn} \le U_{ij} z_{ijn} 
+	&  \forall (i,j) \in \cE, \forall n \in \cN \\
+
+z_{ijn} \le 1-w_{ijn}  
+	&  \forall (i,j) \in \cE, \forall n \in \cN \\
+
+z_{ijn} \le 1 - x_{ijn} 
+	&  \forall (i,j) \in \cE, \forall n \in \cN \\
+
+f_{ij\rho(n)} - R_{ijn} \le M x_{ijn} 
+	&  \forall (i,j) \in \cE, \forall n \in \cN \backslash \left\{ 1 \right\} \\
+
+f_{ij\rho(n)} + R_{ijn} \ge - M x_{ijn} 
+	&  \forall (i,j) \in \cE, \forall n \in \cN \backslash \left\{ 1 \right\} \\
+
+x_{ijn} \ge x_{ij\rho(n)}  
+	&  \forall (i,j) \in \cE, \forall n \in \cN \backslash \left\{ 1 \right\} \\
+
+\underline{P_i} y_{in} \le p_{in} \le \overline{P_i} y_{in} 
+	&  \forall i \in \cG], \forall n \in \cN \\
+
+\displaystyle \sum_{i \in \cD}{ \sum_{n \in \cN_{t+1} }{ d_{in} } }\le \sum_{i \in \cD}{ \sum_{n \in \cN_t }{ d_{in} } } 
+	&  \forall t \in \left\{ 1, ..., T-1 \right\}  \\
+
+x_{ijn}, w_{ijn}, z_{ijn} \in \left\{ 0,1 \right\} 	
+	&  \forall  (i,j) \in \cE, \forall n \in \cN \\
+
+y_{in} \in \left\{ 0,1 \right\}
+	&  \forall  i \in \cG], \forall n \in \cN \\
+
+d_{in} \ge 0 	
+	&  \forall  i \in \cD, \forall n \in \cN 
+
+\end{array}
+$
+
+
+Other stuff
+
+
+
+
+In order to minimize the average total load-shed, for example, an
+objective would be to 
+
+\[ \max \sum_{n \in N_T} p_n \sum_{i \in \cD d_{in}} \]
+
+\begin{align}
+z_{en} &\leq z_{e\rho(n)} \quad \forall n \in N \setminus \{1\}, 
+\forall e \in E \label{eq:deadparent} \\
+f_{en} &\leq u_e z_{en} \quad \forall n \in N, \quad
+\forall e \in E \label{eq:vub} \\
+f_{e\rho(n)} - \theta_{en} &\leq M(1-z_{en}) \quad \forall n \in N
+\setminus \{1\},  \forall e \in E \label{eq:burnout}\\
+F(p_n,z_n) &= f_n \quad \forall n \in N \label{eq:powerflow}
+\end{align}
+
+The equations \eqref{eq:deadparent} model the fact that once a line
+burns out, it is out for the remainder of the cascade, \eqref{eq:vub}
+enforce no flow on an arc if it has burned out, \eqref{eq:burnout}
+models the fact that a child node's arcs will be unavailable if the
+parent node's arcs is over the (random) threshold capacity for that
+scenario.  Finally, the equations \eqref{eq:powerflow} are the
+powerflow equations that determine the flows $f$ as a function of the
+power injections $p$ and remaining lines (encoded in $z$.)
+
+
+\section*{Extensions/To Do/Commentary}
+
+\begin{itemize}
+\item We need to decide on a flow model \eqref{eq:powerflow}.  DC is
+  probably all we can handle at this point.
+\item Line Switching could be added easily
+\item Compare against a rolling two stage model?
+\item We could even try to model ``recovery'' as starting at a fixed
+  stage $T+1$? But it is a hard question to answer, as the number of
+  stages $T$ in a real cascade would not be known.
+\item Try different (more robust) objectives.   Many different
+  objectives (like cVAR, or mean downside blackout size) could be
+  incorporated. 
+\item This will be a {\em very} hard problem to solve, but maybe with
+  some progresive-hedging type heuristics, we can get some reasonable
+  solutions. 
+\item Another good question is to discuss the generation of a real
+  policy.  This is all based on sampling, so it is unclear what the
+  solution means.  Perhaps we can copy some of Dan's affine policy
+  stuff.  I am thinking that a reasonable policy might be to suggest
+  that each generator shed $\alpha\%$ more load than suggested by the
+  minimum load shed solution.
+\end{itemize}
+
+
+\section{Power Flow Equations}
+
+%Plagzrized from somewhere on web
+A power system is described by using three different types of nodes
+and the node interconnections. The three different types of nodes,
+which are also referred to as busses, include the $P-Q$ bus, $P-V$ bus,
+and the slack bus. The $P-Q$ bus is used to represent a load. The $P-Q$
+bus has the total injected complex power specified that includes both
+the real power (P) and the reactive power (Q). The P-V bus, which
+represents a generator, has the real power (P) and the voltage
+magnitude (V) specified. The slack bus, which also represents a
+generator, has the voltage magnitude (V) and phase angle (q)
+specified. The scope of this project will include systems with one
+slack bus and multiple P-Q and P-V busses.
+
+
+
+\section{Simulation-Based Optimization}
+
+(These are just some notes for Jeff to keep track of the ideas...)
+
+When dealing with a design of a power grid on a network $N=(V,E)$ to
+mitigate the negative impact of a cascading event, the load shed is a
+function
+\begin{equation}
+\label{eq:f}
+F(x,\xi,D,\omega)
+\end{equation}
+of a number of different types of variables:
+\begin{itemize}
+\item $x \in \mathbb{R}^{|E|}_+$ is the additional capacity to be
+  added to the lines in the network.  We will assume that we have a
+  budget constraint of the form;
+\[ X = \{x \in \mathbb{Z}^{|E|}_+ \ | \ a^Tx \leq b \} \]
+\item $\xi \in \Xi$ is a (random) variable modeling the initial
+  (triggering) event of the cascade.  We will typically assume that
+  $\xi$ models a small number of lines being removed from the
+  network. 
+\item $D$ is a random variable modeling the demands at the nodes of
+  the network 
+\item $\omega$ is a random variable modeling how the cascade event
+  unfolds.   This is done via simulation---an 'open-loop' OPA
+  procedure---requiring the solution of a sequence of linear
+  programs. 
+\end{itemize}
+
+
+Our goal is to design the network to minimize the likelihood of a
+major blackout in the case of a 'major' initial event. 
+Specifically, let 
+\[ G_\kappa(x,\xi) = \Prob_{D,\omega} [F(x,\xi,D,\omega) > \kappa] \]
+be the probability that the blackout size exceed $\kappa$ if the
+initial line capacities are bolstered by an amount $x$ and the initial
+event $\xi \in \Xi$ occurs.   In this context, it likely makes sense
+to be ``robust'' with respect to line failure events, so we are
+interested in the worst case function
+\[ H(x) = \max_{\xi \in \Xi} G(x,\xi), \]
+which gives the  probability that the blackout size exceed $\kappa$ in
+the worst case if line capacities of $x$ are added to the network. 
+With this notation, our optimization problem, is then to 
+\[ \min_{x \in X} H(x) \]
+
+\begin{itemize}
+\item The aggregating function of the blackout size random variable
+$\Prob_{D,\omega}(\cdot)$ (with respect to random demands and cascade
+evolution) may 
+later be replaced with a measure such as Average (or Conditional)
+Value at Risk.
+\end{itemize}
+
+
+\subsection{Recent Ideas}
+
+\begin{itemize}
+\item Is it possible to use some of the ideas of Roger Wets on
+  estimating densities of random variables based on only a few
+  observations (and additional shape information about the variable).
+  The trouble is that we have one random variable for each $x$, $D$,
+  and $\xi$ so estimation only one may not help our design problem.
+  It would be great if we could build some sort of surrogate for
+  optimization. 
+\item We could possibly try and do importance sampling in the
+  following way: At OPA round $r$, suppose that there are $K_r$ lines
+  at capacity, which implies that the expcted number of filed lines is
+  $\alpha K_r$. 
+\begin{itemize}
+\item This gives a simple ideas to do variance reduction: using Latin
+  Hypercube for example
+\item We could also do imoprtance sampling, since if $X_r$ is a random
+  variable for the number of lines failing at round $r$, then $X \sim
+  \mbox{ Bernoulli}(K_r, \alpha)$ and we can compute the probability
+  of more lines failing and thus get an unbiased estimate using
+  importance sampling
+\end{itemize}
+\end{itemize}
+
+\subsection{Notes from April 18}
+
+An important question to answer from a modeling perspective is what is
+a relevant statistic to try to optimize.  One suggestion from Ian
+Dobson was to 
+\[ \min_{x \in X} \Prob_{D,\xi,\omega} [F(x,\xi,D,\omega) \geq
+  \tau], \]
+where $\tau$ is something like 5\% of the total demand.
+
+Another simple idea is to minimize the expected value, as is common in
+stochastic programming:
+\[ \min_{x \in X} \Expect_{D,\xi,\omega} [F(x,\xi,D,\omega)]. \]
+
+Perhaps the best measure is the robust measure
+\[ \min_{x \in X} \Prob_{D,\omega} \left[ \max_{\xi \in \Xi}
+  F(x,\xi,D,\omega) \geq \tau \right], \]
+where $\Xi$ is a set of all possible bad ``contingencies'' that the
+policy-maker wishes to include.  If $|\Xi|$ is of moderate size,
+evaluating 
+\[ W(x,D,\omega) \defeq \max_{\xi \in \Xi} F(x,\xi,D,\omega) \]
+may be done by enumeration.
+In fact, if $|\Xi|$ is small, many interesting statistics could be
+computed.  For example:
+\[ \min_{x \in X} \Prob_{D, \omega} \left[ \cvar_{\xi,0.95}
+  (F(x,\xi,D,\omega) \geq \tau) \right], \]
+where $\cvar_{\xi,0.95} (F(x,\xi,D,\omega)$ is the weighted average of
+the $5\%$ of the worst cases.
+
+It seems as if regardless of our approach, it may be very useful to
+read and understand the seminal works by Calafirori and Campi and
+Luedtke on the topic of SAA for chance constraints.
+
+
+\subsection{Evaluating a Design}
+We also talked about how to evaluate a final design $x^*$.  Some ideas:
+
+\begin{itemize}
+\item Resample: use our OPA with DC/power flow
+\item Resample: use OPA with with AC power flow
+\item Change OPA parameter $\alpha$
+\item Other software tools?  Other models for cascading?
+\end{itemize}
+
+\subsection{Optimizing a Design}
+Finally, we need to understand how to do optimization in this context
+
+\begin{itemize}
+\item The (Nonconvex) robust optimization paper of Bertsimas {\it et
+  al.} should be useful
+\item We have some ideas about how to do importance sampling.  We will
+  understand the importance of importance samploing once Eric does
+  some computational experiments to estimate statistics of the
+  blackout function
+\item We like the idea of trying to create a surrogate model to
+  suggest the next iterate.  Ian's work on estimating the mean
+  propagation rate $\mu$ would be useful, but we (likely) need to
+  estimate this constant as a function of $\mu(x,D)$ the design and
+  the initial load.
+\end{itemize}
+
+
+
+

@@ -1,0 +1,27 @@
+\begin{algorithm}\label{opa_alg}
+\caption{Load Shed using OPA model}
+\begin{algorithmic} 
+
+\REQUIRE $\xi, g_0, d_0, p$
+\STATE $\cO \leftarrow \xi, t \leftarrow 0$
+\WHILE{$\cO \neq \emptyset$} 
+	\FOR{$i \in \cO$}
+		\STATE $\cE \leftarrow \cE \backslash i$ 
+	\ENDFOR
+
+	\STATE $ ( f_{t+1}, d_{t+1} ) \leftarrow \cDC( g_t, d_t ) $
+	\STATE $\cO = \emptyset$
+	\FOR{$ i \in \cE $}			%for all branches
+		\IF{$ f_{t+1, i} = u_i $ }		%if flow is equal to max capacity
+			\STATE $p_{t+1,i} \leftarrow U[0,1]$  		%roll dice for power failure
+			\IF{$ p_{t+1,i} \leq p$}
+				\STATE $\cO \leftarrow i$
+			\ENDIF
+		\ENDIF
+	\ENDFOR
+	\STATE $t \leftarrow t+1$
+\ENDWHILE
+\STATE Load Shed $ l = \left| d_0 - d_t \right|$
+
+\end{algorithmic}
+\end{algorithm}

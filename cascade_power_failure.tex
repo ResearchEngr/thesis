@@ -1,0 +1,165 @@
+\chapter{Cascading Power Failures}
+
+A cascading failure is a process in which the failure of a set of components weakens the system and increases the likelihood of future failures of components.  The application to power systems has seen interest due to the large cost to society when one does occur.  It has recently been studied in multiple papers, including a series where Dobson et. al. develop their OPA model.  This models the interaction between the short term force of blackouts and the long term effects of growth and economics for developing the power system.  \\
+
+In 2001, Dobson et. al. argued that the power system has self-organized into a dynamic equillabrium where blackouts of all sizes occur \cite{Dobson_2001}.  Their following paper furthers their case for this model representing behavior from the North American power systems.  They note that the average frequency of blackouts in the United states is 13 days and has been the same for 30 years \cite{Carreras_2004}, which appears to represent an equillibrium.  The distribution of blackouts from North American Electrical Reliability Council (NERC) data for the last 15 years follows a power tail curve with an exponent of around $-1.3\pm.2$ \cite{Carreras_2004}.  The model approximates the interaction between the physical system, economic, regulatory, and political responses and blackouts.  The results were consistent with available North American data \cite{Carreras_2004}. \\
+
+This work will develop a planning model that will incorporate the effects of cascading power failures.  The end-use of this model will be developing transmission capacity effectively and designing operating standards for power systems.  It will use the OPA model to examine the effects of cascading power failures in power systems under a set of contingencies.  Two different approaches will be used, a simulation-based optimization algorithm and a multi-stage stochastic program.  \\
+
+The simulation-based approach will directly use OPA model and will solve the problem in a timely manner.  The OPA model will be devleloped in respect to the variables of design, demand, contingencies, and the random process of cascading.  It is a flow based model which approximates the power flow of a topological network with known power injects at the nodes using the DC power flow model.  Hard capacity constraints are used and lines at maximum capacity are outaged with a given probability.  This process repeats based on the new topology until the system becomes stable (no outages). Since the output of this simulation is random, statistics will be used to estimate the confidence of the output.  By varying demand and continencies, the model will find a good design which is robust to cascading power failures.  \\
+
+The multi-stage stochastic program will approximate the OPA model with a mixed-integer program that models the stages of the cascading process.  Since tochastic programs are known to be computationally intensive with even a modest size in a limited number of stages, this approach will be less scalable to large grid.  By using probablistic models of cascading failures, \cite{Dobson_2005} it may be possible to reduce this to a two-stage stochastic program.  The first stage of the model will be design.  Variables for capacity expansion or operating standards will be resolved before any knowledge of the cascading process is known.  This resulting power system will then be hit with multiple contingencies, in which load shed and particularly cascading failures may occur.  The resulting loss of load will be penalized based on the stage of the cascade.  The objective of this program will be to optimize the design variables within a give budget that minimizes the weighted load shed.  
+
+TRANSITION PARAGRAPH TO UNDERSTANDING REAL WORLD EXAMPLE TO DRIVE MODELING EFFORTS
+
+\input{northeast_blackout}
+
+\input{cascade_example}
+
+\section{OPA Model math}
+
+Now the notation developed for power grid analysis will be used to describe the short term, OPA model.  This part of the model describes how the power system responds to an initial exogenous event with respect to the cascading process.  The process starts with an operating grid being hit by an exogenous event.  This event causes the initial set of line failures.  The DC power flow model will be solved with the new grid constraints in order to find the resulting power flows.  Now, if any of the power flows are at their line capacity, they will fail with a given probability.  This may create a set of line outages, which will affect the grid constraints and the process will repeat.  The cascade ends when the set of line outages is empty. \\
+
+Let $\xi \in \Xi$ be an initial set of outages, $g_0$ the initial grid constraints, $d_0$ the nominal demand vector,  and $p$ be the probability of line outage given the line is at max capacity.  Using the OPA algorithm \ref{opa_alg}, one realization of load shed, $l_\omega$, will be calculated for the given parameters.  Since this is a random process, let $\Omega$ be the set of possible realizations from the OPA model.  In our case, the paths through the process are decided by using a realization from uniform, i.i.d, random numbers.  These numbers represent whether the line will fail or not, given it is loaded at max capacity.  So, $\Omega \subset [0,1]^{ \left| \cE \right| * T } $, where T is the number of stages for a given cascade.  
+
+\subsection{Decision Dependent Uncertainty}
+A particular realization of $\omega$ will determine the effects on the resulting grid topology and constraints for a set of outages, $\cO$.
+\begin{align}
+\cGR : \R^{ \magG \magE \magomega  }   \rightarrow  \R^{ \magG }  \\
+	g ' = \cGR ( g , f , \omega  )
+\end{align}
+This determine the progression of load served through a set of stages, $\cT$ in a cascade.  Since there are a finite number of branchs, $\magT$ is bounded.  Let $\rho( t ) \equiv $ predecessor stage, then the initialization follows
+\begin{align}
+	g_0, \xi, d_{nom}, p \\
+	( f_0, d_0 ) = \cDC ( g_0, d_{dom} ) 	\\
+	g_1 \leftarrow \xi \circ g_0
+\end{align}
+where the last equation is the effects of the initial outages on the grid constraint set.
+
+EFFECTIVE CAPACITY GOES HERE
+
+\subsection{Cascade Dynamics}
+Let $t$ be a stage in the cascade, the following is true for all stages in the cascade. 
+\begin{align}
+	( f_t , d_t ) = \cDC ( g_{ \rho (t) } , d_{ \rho (t) } )		\\
+	g_t \leftarrow \cGR ( g_{ \rho (t) } , f_t , \omega_t )	
+\end{align}
+When the cascade stabilizes, $ g_t = g_{ \rho (t) } $, the cascade process is finished and let $t^* \leftarrow t$.\\
+
+
+\subsection{Load Shed}
+Finally, the load shed from the particular realization of OPA can be found.
+\begin{equation}
+	l = d_0  -  d_{ t^* }
+\end{equation}
+
+
+
+Let OPA represent an operator which moves from a set of initial parameters of grid constraints, initial event, demand projection, and path through state space to a real value which represents load shed through the cascading process.  That is,
+\begin{align}
+OPA : \R^{ \magG  \magE  \magV  \magomega }  \rightarrow  \R \\
+l = OPA ( g, \xi, d, \omega )
+\end{align}
+
+\subsection{Capacity Expansion}
+Capacity expansion affects the grid constraints by allowing the following
+\begin{equation}\label{capexp}
+	u^i = u + x
+\end{equation}
+Where $x$ is a vector representing additions in unit capacity to a given branch.  $x$ can be further constrained to allow for conditions such as allowing a finite number of branch changes.  
+
+%Let $ y \in {0,1}^{ \R^{ \left| \cE  \right| } } $  
+%\begin{equation}
+%	\begin{align}
+		
+
+%	\end{align}
+%\end{equation}
+
+\subsection{Operating Reserves}
+The power injects at generators are constrained temporally based on the distribution of operating reserves.  For $p_n$ power injects and $r_{n}$ reserves
+\begin{equation}
+	p_{n} \leq p_{ \rho (n) } + r_{ \rho (n) }
+\end{equation}
+For a given reserve margin $\gamma \in [0,1]$
+\begin{equation}
+	\magr\leq \gamma \magp
+\end{equation}
+
+\subsection{Redispatch}
+It can also be useful to measure and control the amount of redispatch possible between stages in the cascade process.
+\begin{equation}
+	\delta_n = p_n - p_{ \rho (n) }
+\end{equation}
+RAMPING CONSTRAINTS GO HERE
+
+
+\subsection{Objective}
+Let the following be the load shed function.
+\begin{equation}
+  l = L(x, \xi, \cD, \omega )
+\end{equation}
+with $l \in \R^{\magV} $ being the load shed, $x$ the design variable, $\xi$ an initial outage, $\cD$ a nominal demand, and $\omega$ a path through the sample space.
+
+An important question to answer from a modeling perspective is what is
+a relevant statistic to try to optimize.  One suggestion from Ian
+Dobson was to 
+\[ \min_{x \in X} \Prob_{D,\xi,\omega} [L(x,\xi,D,\omega) \geq
+  \tau], \]
+where $\tau$ is something like 5\% of the total demand.
+
+Another simple idea is to minimize the expected value, as is common in
+stochastic programming:
+\[ \min_{x \in X} \Expect_{D,\xi,\omega} [L(x,\xi,D,\omega)]. \]
+
+Perhaps the best measure is the robust measure
+\[ \min_{x \in X} \Prob_{D,\omega} \left[ \max_{\xi \in \Xi}
+  L(x,\xi,D,\omega) \geq \tau \right], \]
+where $\Xi$ is a set of all possible bad ``contingencies'' that the
+policy-maker wishes to include.  If $|\Xi|$ is of moderate size,
+evaluating 
+\[ W(x,D,\omega) \defeq \max_{\xi \in \Xi} L(x,\xi,D,\omega) \]
+may be done by enumeration.
+In fact, if $|\Xi|$ is small, many interesting statistics could be
+computed.  For example:
+\[ \min_{x \in X} \Prob_{D, \omega} \left[ \cvar_{\xi,0.95}
+  (L(x,\xi,D,\omega) \geq \tau) \right], \]
+where $\cvar_{\xi,0.95} (F(x,\xi,D,\omega)$ is the weighted average of
+the $5\%$ of the worst cases.
+
+\input{multi_stage_stochastic_program}
+
+\input{markov_decision_process}
+
+\input{simulation_based_analysis}
+
+
+\section{Computational Results}
+
+\subsection{Operating Reserves}
+
+	For final stage, 5000 sec solve time, Nominal Demand:3668  \\
+
+\begin{table}
+\caption{ Optimizing Operating Reserves }
+\centering
+     \begin{tabular}{ | c | c | c | c | c | c |}
+	\hline
+	Reserves &  \multicolumn{2}{ | c | }{Load Shed} & \multicolumn{2}{ | c | }{Line Outages} & MIP Gap \\
+	Allowed &  \multicolumn{1}{ | c }{Avg} &\multicolumn{1}{  c | }{Max}&  \multicolumn{1}{ | c }{Avg} &\multicolumn{1}{  c | }{Max}&Remaining \\
+	\hline
+	.15  &  846.73 & 979.07 & 25$\frac{1}{3}$ & 28 & .1103 \\
+	\hline
+	.10  &  924.20 & 1064.03 & 27$\frac{1}{9}$ & 32 & .1144\\
+	\hline
+	.05  &  953.35 & 1124.19 & 28$\frac{1}{9}$ & 33 & .1114 \\
+	\hline
+     \end{tabular}
+
+\end{table}
+
+
+   \begin{center}
+     \includegraphics[scale=.75]{reserve1.jpg} \\
+     \includegraphics[scale=.75]{reserve15.jpg}
+   \end{center}

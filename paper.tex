@@ -1,0 +1,46 @@
+\include{header}
+
+\title{ Analysis of Power Systems \\ \large{Protecting Against Cascading Power Failures} }
+
+\author{Eric Anderson \\
+{\small\em \copyright \  Draft date \today }}
+
+ \date{ }
+\begin{document}
+
+\maketitle
+ \addcontentsline{toc}{chapter}{Contents}
+
+\pagestyle{headings}
+\pagenumbering{roman}
+
+
+\tableofcontents
+
+\listoffigures
+\listoftables
+
+
+%\include{preface}
+
+\pagestyle{plain}
+\pagenumbering{arabic}
+
+\include{introduction}
+\include{lit_review}
+\include{stochastic_cascade}
+\include{derivative_free_optimization}
+\include{market_power_system}
+
+\appendix
+\appendixpage
+\addappheadtotoc
+ \addcontentsline{toc}{section}{Bibliography}
+
+\bibliographystyle{plain}	
+\bibliography{ref}		
+
+\include{notation}
+\include{definitions}
+
+\end{document}

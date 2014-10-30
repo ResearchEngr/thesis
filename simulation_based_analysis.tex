@@ -1,0 +1,61 @@
+
+\section{Simulation Based Analysis}
+	This section will develop the statistical tools to understand the output of this random process.  The mean load shed, $\hat l $, and the $\alpha$ value at risk, $l_\alpha$, will be calculated based on a set of trials.  In order to find the confidence in the metric, sets of the metrics from many experiments will be used.
+
+\subsection{Load Shed}
+
+	Let $\cL$ be a set of output from the OPA algorithm \ref{opa_alg}. The the load shed of the experiment is  
+\begin{equation}
+	\hat l = \frac{\sum_{i \in \cL} l_i }{ \magL }   
+\end{equation}
+
+	The $\alpha$ value at risk is also a useful quantity to measure.  This value represents the $(1-\alpha)$ percentile of trials in a given experiment.  Since blackouts occur with a power law distribution, it will be important to calculate the value of the rare events.
+\begin{equation}
+	VaR_{\alpha}(\cL) = \mbox{max} \left\{  l \in \R : \sum_i 1_{l_i \leq l } \leq ( 1 - \alpha ) \magL \right\}  
+\end{equation}
+
+	The conditional value at risk is the weighted sum of all trials with a load shed equal to or greater than the $VaR_{\alpha}$.
+\begin{equation}
+		CVaR_{alpha}(\cL) = \sum_{ l \in \cL : l \geq VaR_{\alpha}(\cL)} l
+\end{equation}
+
+
+\subsection{Sample Variance}
+
+For two sets of metrics, a refrence experiment, $\cM_0$, and a designed system experiment, $\cM$.
+\begin{equation}
+	\hat m = \frac{\sum_{m \in \cM, m_0 \in \cM_0} ( m - m_0 )}{ \magM }
+\end{equation}
+
+The standard deviation can then be calculated and an $alpha \%$ confidence interval can be found.
+\begin{equation}
+ StDv( \cM ) = \sqrt{ \frac{\sum  \left( m - m_0 - \hat{m} \right)^2 }{  \left( \magM-1 \right)  }} 
+\end{equation}
+
+With the following bounds, $ \underline{ \hat{m} } = \hat{m} - t_{\alpha,\magM-1} \frac{S}{\sqrt{\magM}} $, 
+			$ \overline{ \hat{m} } = \hat{m} + t_{\alpha,\magM-1} \frac{S}{\sqrt{\magM}} $ \newline
+The following statement holds true.
+\begin{equation}
+ P (  \underline{ \hat{m} } \leq m \leq  \overline{ \hat{m} } ) \geq (1-\alpha) 
+\end{equation}
+
+
+\subsection{Common Random Number}\label{crn}
+ To ensure that $\omega$ is calculated under similiar experimental conditions, we employ a common random number approach.  For each trial $t$, every branch $k$ has a seed for a stream of random numbers.  In round $r$, the $r$th random number in the $k$th random number stream should be used.\\
+ \begin{algorithmic}
+ \FOR{ $k \in \mathbb{K} $}
+ 		\IF{ $f_k = F_k \mbox{ or } f_k = -F_k $}
+ 					\STATE Random Number Seed $ \gets RNS_{t,k} $
+ 					\FOR{ $temp \in 1,2, ..., r -1 $}
+ 							\STATE Generate Random Number
+ 					\ENDFOR
+ 					\STATE $p \gets U \left[ 0, 1\right] $
+ 					\STATE ${k} \mbox{ added to outage if } Fail(p) = 1 $
+ 		\ENDIF
+ \ENDFOR
+ \end{algorithmic}
+
+
+It seems as if regardless of our approach, it may be very useful to
+read and understand the seminal works by Calafirori and Campi and
+Luedtke on the topic of SAA for chance constraints.

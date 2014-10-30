@@ -1,9 +1,24 @@
-# LaTex Compile 
-.aux
-.log
-.bbl
-.blg
-.out
-.pdf
-.idx
+# Standard
+*~
 
+# LaTex Compile 
+*.aux
+*.aux*
+*.log
+*.bbl
+*.blg
+*.out
+*.pdf
+*.idx
+*.gz
+*.gz*
+*.toc
+*.lof
+*.lot
+*.dep
+*.md5
+
+# Excel Files
+*.xlsx
+
+*.bak

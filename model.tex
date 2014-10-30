@@ -1,0 +1,66 @@
+\section*{Model}
+The first stage problem is to schedule the dispatch of the energy storage device.  Then, the random variable $\omega = ( T_t, P_t )$ is realized.  The second stage meets the travel schedule, while maximizing profits from arbitrage.
+
+
+{  \centering
+
+\begin{longtable}{ r l }
+\multicolumn{2}{c}{\bf Sets}		\\
+\hline
+$ \cT = \left\{ 1, 2, \cdots, 24 \right\} $	& Time Periods \\
+					& with $t-1 \equiv$ previous time period	\\
+$ \cN = \left\{ 0, 1, \cdots, S \right\}  $	& Nodes of Scenario Tree, with $S$ scenarios \\
+					& and $n = 0$ is the first stage node\\
+					& with $\rho(n) \equiv$ predecessor node  \\
+ 	&	\\
+
+\multicolumn{2}{c}{\bf Parameters}		\\
+\hline
+$ P_{nt} $		&	Price of electricity at time $t \in \cT$ in node $n \in \cN$	\\
+			&	--- $P_{0t}$ are the day ahead prices 	\\
+			&	--- $P_{nt}$ are realized Random Variables, $n \in \cN \setminus \left\{ 0 \right\}$ \\
+$ T_{nt} $		&	Travel schedule demands	\\
+$P^{sub}_t$		&	Price of travel substitute	\\
+$ E_{0}, E_{24}$	&	Boundary conditions on battery	\\
+$\overline{E},\underline{E}$&Battery charging limits		\\
+$\eta$			&	Efficiency of battery	\\
+$\alpha$	&	Battery charge, discharge rate per time period  \\
+	&	\\
+
+\multicolumn{2}{c}{\bf Variables}		\\
+\hline
+
+$ e_{nt} $		&	Energy storage level at $n,t$, $e_{nt} \in \left\{ \underline{E} , \overline{E} \right\}$	\\
+$ s_{nt} $		&	Energy stored at time $t$ and node $n$,  $s_{nt} \in \left\{ 0  , \alpha \right\}$ \\
+$ d_{nt} $		&	Energy dispatched from storage device \\
+$ d^T_{nt} $		&	Energy dispatched used for travel 	\\
+$ d^A_{nt} $		&	Energy dispatched for sale to power system   $e_{nt} \in \left\{ 0 , \alpha \right\}$ \\
+$ \delta^s_{nt} $	&	Energy stored mismatch from schedule, $n \in \cN \setminus \left\{ 0 \right\}$	\\
+$ \delta^d_{nt} $	&	Energy dispatched mismatch from schedule, $n \in \cN \setminus \left\{ 0 \right\}$	\\
+$ y_{nt}$		&	Availability of car, $y_{nt} \in \left\{ 0, 1 \right\} $\\
+			&	--- $y_{nt} = 1$ if car is plugged in to grid 	\\
+$ z_{nt} $		&	Use substitute for travel, $z_{nt}\in \left\{ 0, 1 \right\} $\\
+			&	--- $z_{nt} = 1$ if a substitute is used to travel 	\\
+	&	\\
+
+\multicolumn{2}{c}{\bf Constraints}		\\
+\hline
+$e_{nt} = e_{n t-1} + \eta s_{nt} - d_{nt} $	&	Energy Conservation with battery efficiency losses	\\
+$d_{nt} = d^T_{nt} + d^A_{nt}	$		&	Energy dispatched routing, travel or arbitrage \\
+$d^T_{nt} \ge T_{nt} ( 1 - z_{nt} ) 		$		&	Travel demands, if $z_{nt} = 0$, then $d^T_{nt} \ge T_t$	\\
+$d^A_{nt} \le \alpha y_{nt}	$		&	Car availability, if $y_{nt} = 0$, then $d^A_{nt} = 0$		\\
+$s_{nt} \le \alpha y_{nt}	$		&	Car availability, if $y_{nt} = 0$, then $s_{nt} = 0$		\\
+$d^T_{nt}	\le	T_{nt} (1 - y_{nt} ) $		&	Car Traveling, if $d^T_{nt} \ge 0$, then $y_{nt} = 0$		\\
+$\delta^s_{nt} = s_{nt} - s_{\rho(n) t} $		&	Mismatch between real time operation and schedule 	\\
+$\delta^d_{nt} = d^A_{nt} - d^A_{\rho(n) t} $		&	Mismatch between real time operation and schedule 	\\
+
+
+	&	\\
+
+\multicolumn{2}{c}{\bf Objective}		\\
+\hline
+$ \sum_{t \in \cT} ( d^A_{0t} - s_{0t} ) P_{0t} $	&	First stage profit	\\
+$ \mathbb{E}_\cN [  \sum_{t \in \cT}( \delta^d_{nt} - \delta^s_{nt} ) P_{nt}	]$&	Expected profit over scenario tree $\cN \setminus \left\{ 0 \right\}$
+
+\end{longtable}
+}

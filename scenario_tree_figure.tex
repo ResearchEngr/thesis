@@ -1,0 +1,30 @@
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+
+\draw (0,0) node(ROOT)[circle,draw]{\small $n_0$ };
+\draw (3,3) node(ONE)[circle,draw]{ \small $n_1$ };
+\draw (3.25,1.5) node(TWO)[circle,draw]{ \small $n_2$ };
+\draw (3.25,.85) node(DOTONE){ \large $\vdots$ };
+\draw (3.25,0) node(N)[circle,dashed,draw]{ \small $n$ };
+\draw (3.15,-.65) node(DOTTWO)[rotate=-15]{ \large $\vdots$ };
+\draw (3,-1.5) node(S)[circle,draw]{ \small $n_S$ };
+
+\draw (1.85,2.15) node(OMG1){ \small $\omega_1$ };
+\draw (2.1,1.15) node(OMG2){ \small $\omega_2$ };
+\draw (2.1,.15) node(OMG){ \small $\omega$ };
+\draw (1.85,-.7) node(OMGS){ \small $\omega_S$ };
+
+\draw[thick, ->] (ROOT) -- (ONE) ;
+\draw[thick,->] (ROOT) -- (TWO);
+\draw[thick,dashed, ->] (ROOT) -- (N);
+\draw[thick,->] (ROOT) -- (S);
+
+%\draw[thick,dashed] (TWO) -- (N);
+%\draw[thick,dashed] (N) -- (S);
+
+\end{tikzpicture} 
+\caption{Scenario Tree for Two Stage Problem}
+  \label{fig:mip}
+\end{figure}

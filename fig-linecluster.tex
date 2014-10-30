@@ -1,0 +1,23 @@
+%\documentclass{standalone}
+%\usepackage{tikz}
+%\usepackage{pgfplots}
+%\begin{document}
+\foreach \i in {n3}
+{
+	\begin{tikzpicture}[scale=1,line width=1]
+	\begin{axis}[scale=1.23 , ylabel=Load Shed, xlabel=Capacity , legend style={at={(1.5,.97)},anchor=north east}]
+
+		\addplot+[opacity=1,mark size=2,solid,thick,black] table[x=run, y=ex] {./data/clusters/\i.dat};
+	\addlegendentry{Expect}
+%		\addlegendentryexpanded{$\i$ - St. Dv.}	
+	\end{axis}
+	\begin{axis}[ axis y line*=right,title=\mbox{  Line $\i$ },scale=1.23, legend style={at={(1.5,.85)},anchor=north east} ,ylabel=Frequency, y label style={at={(1.25,.5)}} ]	
+	\foreach \j in {163,164,165,166,168,170,171,173,175,176}{
+		\addplot+[opacity=.4, mark size=.4, solid] table[x=name, y=\j] {./data/clusters/\i.ldat};
+		\addlegendentryexpanded{Line $\j$}
+	}
+
+	\end{axis}	
+	\end{tikzpicture}
+}
+%\end{document}

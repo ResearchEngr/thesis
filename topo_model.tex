@@ -1,0 +1,62 @@
+\subsection{Topologic Model}
+
+This section will first discuss historical topoligical models and then describe common topological measures.  These measures will be used to compare to other network structures.  Using these measures, it is shown that power grids differ from many other common network structures and thus need to be analyzed on there own.  
+
+\subsubsection{Historical Topological Models}
+
+These topological models used flow estimates instead of power flow calculations.
+
+In 2004, Albert et. al. \cite{albert_2004} worked on large blackouts in response to August 2003 and developed a deterministic model of failures based on topological measures.  They used 4 methods of removing nodes from the grid one at a time, randomly, highest degree, highest load, and cascading.  The main simplyfing assumption is that if a generator is connected to a load, its power is available.  In addition, power is routed along the shortest path from generation to load.  Then, in order to monitor the effects of the failure patterns, connectivity loss is recorded, which represent the average decrease in number of generators connected to a substation.  They conclude by noting possible solutions of increasing redundancy and capacity of the system or decreasing reliance on transmission by using more generation at the distrubtion substation level.
+
+Kinney and others developed another method for estimating power flows on a given topology \cite{kinney_2005}.  They introduce the concept of efficiency for power lines and use the harmonic composition of the efficiency of lines to calculate an efficiency measure for any given path.  Now, the electricity is distributed to a load from a generator along the most efficient path.  Then, they modeled an efficiency degradation based on loading through time as well as tolerance measures to outage lines probabilistically.
+
+A handful of these topological models with flow estimates were done in between 2003 and 2010.  Some were predicated on behaving like other networks such as scale-free networks \cite{zhao_2004}, \cite{wang_2009} or small-world networks \cite{ding_2006}.  Others used matching models with a profit function to protect against cascading failures \cite{sun_2008} or novel recourse strategies such as deliberate weak lines for network islanding \cite{duenas-osorio_2009}. 
+
+\subsubsection{Topological Measures}
+
+The topology of a power grid can be described as a unweighted, undirected graph $\cG$ with verticies $\cV$ and edges $\cE \subset (\cV \times \cV)$ which connect the verticies.  A particular grid will be denoted by a subscript, such as $\cG_{EI} = \left\{ \cV_{EI}, \cE_{EI} \right\}$, which would be the graph that represents the Eastern Interconnect.  The verticies $\cV$ on the graph can represent demand nodes, generator nodes, and buses in the transmission network.  The edges $\cE$ represent elements such as transmission lines and transformers.  For convenience, we will define $n_v = \magV$ and $n_e = \magE$.
+
+A useful tool for describing topological measures on graphs is the adjacency matrix, $A$.  The elements $a_{ij}$ of $A$ represent weather nodes $i$ and $j$ are connected, such that if $(i,j) \in \cE$ then $a_{ij} = 1$, else $a_{ij}=0$.  The degree $k_i$ of a node measures how connected it is to the rest of the network, with
+\begin{equation}
+k_i = \sum_{j=1}^{n_v} a_{ij}
+\end{equation}
+A common measure to compare different graphs is the average degree $\hat{k} = 2 n_e/n_v$.  Cotilla et. al. \cite{cotilla_2012}, using data for EI from NERC in 2012 and data for WI and TI from FERC in 2005, found the average degree of the networks, which is tabulated in \ref{tab:topo_info}.  This tells us that our power grids are sparsely connected, with around 2.5 transmission elements connecting each vertex, noting that parallel lines are counted as one.  The following statistical analysis of topological measures was done by Cotilla et. al. \cite{cotilla_2012} in order to show that power grids are neither small-world networks nor scale free networks.
+
+\begin{table}
+\centering
+\begin{tabular}{| c | c c c c c c c|}
+\hline
+Grid & Verticies & Edges & $\hat{k}$  &  $k_{max}$ & $C$ & $L$ & $d_{max}$ \\
+\hline
+$\cG_{EI}$	& 41,228	&	52,075	&	2.53	&	29	&	0.068	&	31.9	&	94	\\
+$\cG_{WI}$	& 11,432	&	13,734	&	2.4	&	22	&	0.073	&	26.1	&	61	\\
+$\cG_{TI}$ 	& 4,513	&	5,532		&	2.45	&	18	&	0.031	&	14.9	&	37	\\
+\hline
+\end{tabular}
+\caption{Topological measures for the three US power grids}
+\label{tab:topo_info}
+\end{table}
+
+
+There are many statistical measures used to compare our power grid graphs to other common graph structure.  The first measure is the distribution of the degree, $k_i$, of all the nodes.  One type of network to compare to is a scale-free network which have a power-law degree distribution.  These networks have highly connected central hubs, which are inherent weak points to the network.  However, high-degree nodes are far less common in power grids than would be expected with a scale-free network.    
+
+Two additional measures, which are distance metrics, are diameter and characteristic path length.  The distance $d_{ij}$ between $i$ and $j$ is the minimum number of links needed to traverse from vertex $i$ to vertex $j$.  The diameter is then 
+\begin{equation}
+d_{max} = \max_{ij} d_{ij}
+\end{equation}
+ and the characteristic path length is 
+\begin{equation}
+L = \frac{1}{n_v (n_v -1)} \sum_{\forall i,j | i \neq j} d_{ij}
+\end{equation}
+In addition, the average nodal distance $\hat{d} = \sum_{j=1}^{n_v} d_{ij}$ can be used.  As the size of small-world networks increase, the characteristic path length increases roughly with $\ln n_v$, which means the distances between verticies grows slowly.  However, the power grid's path length always grows faster than $\ln n_v$ and falls between small-world networks and regular grids, which scale linearly with $n_v$.
+
+Another useful measure will be the cluster coefficient which gives insight into neighborhoods of nodes.  Let $e_i$ be the number of edges connected to vertex $i$ and its immediate neighbors $N_i$ by the following $e_i =\sum_{\forall j,k \in \left\{ N_i \cup i \right\}} a_{jk}/2$.  Then the clustering of node $i$ is
+\begin{equation}
+c_i = \frac{e_i}{(k_i(k_i-1))/2}
+\end{equation}
+and the cluster coefficient of the graph is $C = \frac{1}{n} \sum_{i=1}^{n_v} c_i$.  Power networks were found to have less clustering then small world networks but much larger than random grids, which may be due relatively few long distance lines.
+
+The final measure used was degree assortativity, which is the correlation of the degree of two connected nodes.  Power networks were found to have small, negative degree asortativity.  This was due to distribution feeders, which have a large number of radial lines connecting single loads to the substation.  This behavior was not found in small-world networks.
+
+Hines et. al. \cite{hines_2010} conclude that while these topological measures are useful for understanding the structure and perhaps indicating general vulnerabilities, they can lead to erroneous conclusions.  For example, Kinney et. al. \cite{kinney_2005} and Albert et. al. \cite{albert_2004} draw different conclusions about such things as the effects of single outages using similar data.  Power flow based models are more realistic and thus more useful for vulnerability analysis.  However, these measures are similar to electrical topological measures that will be discussed later and can be very useful.
+

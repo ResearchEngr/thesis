@@ -1,0 +1,24 @@
+% Aug 4th TABLE ------------------------------------------------------------------
+
+\begin{landscape}
+\begin{table}
+\centering
+
+\pgfplotstableset{ 
+every head row/.style={before row={\hline  \rowcolor[gray]{.75} }
+			,after row=\hline\hline},
+every last row/.style={after row=\hline},
+every first column/.style={
+column type/.add={|}{}     },
+every last column/.style={
+column type/.add={}{|}    },
+every odd row/.style={ before row=\rowcolor[gray]{.925} }
+ }
+
+
+\pgfplotstabletypeset{./data/lmp_aug_4_2010.dat}
+
+\caption{August 4, 2010 LMP data}
+\label{tab:aug4}
+\end{table}
+\end{landscape}

@@ -1,0 +1,111 @@
+\documentclass[11pt]{report}
+\usepackage{standalone}
+\usepackage{amsmath,amssymb,amsfonts} % Typical maths resource packages
+\usepackage{graphicx}                 % Packages to allow inclusion of graphics
+\usepackage{color}                    % For creating coloured text and background
+\usepackage[table]{xcolor}
+\usepackage{hyperref}                 % For creating hyperlinks in cross references
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{longtable}
+\usepackage{import}
+\usepackage{lscape}
+\usepackage{booktabs,colortbl}
+\usepackage{tikz}
+\usetikzlibrary{patterns}
+\usepackage{pgfplots}
+\usepackage{pgfplotstable}
+
+\usepackage{cleveref}
+\usepackage{caption}
+\usepackage{subcaption}
+    
+\graphicspath{{./img/}}
+
+
+
+%\setlength{\textwidth}{15cm}
+\parindent 1cm
+\parskip 0.2cm
+\topmargin 0.2cm
+\oddsidemargin 1cm
+\evensidemargin 0.5cm
+\textwidth 15cm
+\textheight 21cm
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{definition}[theorem]{Definition}
+
+
+%\newcommand{\mag}[1][mag]{ \left| {#1} \right| }
+\newcommand{\magf}{ \left| f \right| }
+\newcommand{\magp}{ \left| p \right| }
+\newcommand{\magr}{ \left| r \right| }
+\newcommand{\magomega}{ \left|  \omega  \right| }
+\newcommand{\magE}{ \left| \mathcal{E} \right| }
+\newcommand{\magG}{ \left| \mathcal{G} \right| }
+\newcommand{\magL}{ \left| \mathcal{L} \right| }
+\newcommand{\magM}{ \left| \mathcal{M} \right| }
+\newcommand{\magT}{ \left| \mathcal{T} \right| }
+\newcommand{\magV}{ \left| \mathcal{V} \right| }
+
+\newcommand{\R}[1]{\mathbb{R}^{#1}}
+\def\S{\mathbb{ S}}
+\def\I{\mathbb{ I}}
+
+
+\newcommand{\cA}{\mathcal{A}}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cD}{\mathcal{D}}
+\newcommand{\cCALI}{\mathcal{CALI}}
+\newcommand{\cDC}{\mathcal{DC}}
+\newcommand{\cGR}{\mathcal{GR}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cF}{\mathcal{F}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cL}{\mathcal{L}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cO}{\mathcal{O}}
+\newcommand{\cS}{\mathcal{S}}
+\newcommand{\cT}{\mathcal{T}}
+\newcommand{\cV}{\mathcal{V}}
+\newcommand{\cX}{\mathcal{X}}
+\newcommand{\cU}{\mathcal{U}}
+
+\newcommand{\Expect}{\mathbb{E}}
+\newcommand{\Prob}{\mathbb{P}}
+\newcommand{\cvar}{\mathbb{CV}{\mathsf @}\mathbb{R}}
+\newcommand{\grad}{\bigtriangledown}
+\newcommand{\lb}{\left\{}
+\newcommand{\rb}{\right\}}
+
+\newcommand{\defeq}{\stackrel{\rm def}{=}}
+
+
+
+
+\tikzset{
+        hatch distance/.store in=\hatchdistance,
+        hatch distance=10pt,
+        hatch thickness/.store in=\hatchthickness,
+        hatch thickness=2pt
+    }
+
+\makeatletter
+    \pgfdeclarepatternformonly[\hatchdistance,\hatchthickness]{flexible hatch}
+    {\pgfqpoint{0pt}{0pt}}
+    {\pgfqpoint{\hatchdistance}{\hatchdistance}}
+    {\pgfpoint{\hatchdistance-1pt}{\hatchdistance-1pt}}%
+    {
+        \pgfsetcolor{\tikz@pattern@color}
+        \pgfsetlinewidth{\hatchthickness}
+        \pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+        \pgfpathlineto{\pgfqpoint{\hatchdistance}{\hatchdistance}}
+        \pgfusepath{stroke}
+    }
+
+\makeindex

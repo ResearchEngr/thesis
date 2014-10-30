@@ -1,0 +1,113 @@
+\documentclass{report}	
+
+%Formatting
+\usepackage{geometry}
+\geometry{letterpaper,
+          left   = 1.05in, % 1in min
+          right  = 1.05in,
+          top    = 1.05in,
+          bottom = 1.05in}
+\renewcommand{\baselinestretch}{1.1}
+
+
+%Packages
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{bm}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{endnotes}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\usepackage{cleveref}
+
+%Paths
+\graphicspath{{./img/}}
+\usepgfplotslibrary{external} 
+\tikzexternalize[prefix=tikz/]
+
+%Letter Commands from JCC
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\bE}{\mathbb{E}}
+\newcommand{\E}[2]{\mathbb{E}_{#1} \left[ #2 \right]}
+\newcommand{\bP}[2]{\mathbb{P}_{#1} \left[ #2 \right]}
+\newcommand{\dpO}{d\mathbb{P}_\Omega}
+\newcommand{\cB}{\mathcal{B}}
+\newcommand{\cE}{\mathcal{E}}
+\newcommand{\cG}{\mathcal{G}}
+\newcommand{\cH}{\mathcal{H}}
+\newcommand{\cJ}{\mathcal{J}}
+\newcommand{\cK}{\mathcal{K}}
+\newcommand{\cN}{\mathcal{N}}
+\newcommand{\cM}{\mathcal{M}}
+\newcommand{\cW}{\mathcal{W}}
+\newcommand{\cV}{\mathcal{V}}
+\newcommand{\feb}{f_e\left(\beta\right)}
+\newcommand{\fenb}{f_{en}\left(\beta\right)}
+\newcommand{\fehb}{f_e\left(\hat{\beta}\right)}
+\newcommand{\pfeb}{\frac{\partial}{\partial \beta_j}\feb}
+\newcommand{\pfenb}{\frac{\partial f_{en}\left(\beta \right)}{\partial \beta_j}}
+\newcommand{\pfehb}{\frac{\partial f_e\left(\hat{\beta} \right)}{\partial \beta_j}}
+\newcommand{\hye}{\hat{y}_e}
+\newcommand{\hse}{\hat{s}_e}
+\newcommand{\pe}{\pi_e}
+\newcommand{\pn}{\pi_n}
+\newcommand{\psen}{\psi_{en}}
+\newcommand{\rand}{\boldsymbol{\delta}}
+\newcommand{\ri}{\pmb{\delta^m}}
+\newcommand{\rf}{\pmb{\delta^y}}
+\newcommand{\rx}{\pmb{x}}
+\newcommand{\ry}{\pmb{y}}
+\newcommand{\rye}{\pmb{y_e}}
+\newcommand{\rD}{\pmb{\Delta}}
+\newcommand{\rdm}{\pmb{\delta^m}}
+\newcommand{\rdmk}{\pmb{\delta^m_k}}
+\newcommand{\rdy}{\pmb{\delta^y}}
+\newcommand{\hry}{\pmb{y}}
+\newcommand{\hy}{y}
+\newcommand{\rz}{\pmb{z}}
+\newcommand{\sD}{\sigma_\Delta^2}
+\newcommand{\se}{\sigma_e^2}
+\newcommand{\sn}{\sigma_n^2}
+\newcommand{\sen}{\sigma_{en}^2}
+\newcommand{\see}{\sigma_{ee}^2}
+\newcommand{\sko}{\sum_{k_1}}
+\newcommand{\skt}{\sum_{k_2}}
+\newcommand{\sigot}{\Sigma_{k_1,k_2}}
+\newcommand{\irzp}{\E{\Omega}{g(\hry_e)}}
+%\newcommand{\rw}{{w(\omega)}} %\newcommand{\rx}{{x(\omega)}} %\newcommand{\ry}{{y(\omega)}}
+\newcommand{\Ery}{\E{\Omega}{\ry}}
+\newcommand{\Erx}{\E{\Omega}{\rx}}
+\newcommand{\Erdm}{\E{\Omega}{\rdm}}
+\newcommand{\ErD}{\E{\Omega}{\rD}}
+\newcommand{\tB}{\tilde{B}}
+\newcommand{\tx}{\tilde{x}}
+\newcommand{\ttheta}{\tilde{\theta}}
+\newcommand{\grad}{\bigtriangledown}
+
+
+%Original Letter Commands
+\newcommand{\magf}{ \left| f \right| }
+\newcommand{\magp}{ \left| p \right| }
+\newcommand{\magr}{ \left| r \right| }
+\newcommand{\magomega}{ \left|  \omega  \right| }
+\newcommand{\magE}{ \left| \mathcal{E} \right| }
+\newcommand{\magG}{ \left| \mathcal{G} \right| }
+\newcommand{\magL}{ \left| \mathcal{L} \right| }
+\newcommand{\magM}{ \left| \mathcal{M} \right| }
+\newcommand{\magT}{ \left| \mathcal{T} \right| }
+\newcommand{\magV}{ \left| \mathcal{V} \right| }
+
+\newcommand{\R}[1]{\mathbb{R}^{#1}}
+\def\S{\mathbb{ S}}
+\def\I{\mathbb{ I}}
+
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother

@@ -1,0 +1,30 @@
+% MAY 5th ---------------------------------------------------------
+
+\begin{figure}
+ \centering
+	\begin{tikzpicture}
+		\begin{axis}[xlabel=$t$ (hour), ylabel=$P_{nt} \hspace{10px} (\frac{\mbox{\$}}{\mbox{MWh}}$)
+				,legend pos=outer north east 
+				,width=12cm
+				,extra y ticks={0, 40, 80, 120}
+				,extra tick style={grid=major}
+				,xmin=1,xmax=24
+				,title=\mbox{\textbf{ Day Ahead and Real Time LMPs }} ]
+
+	
+	\addplot+[color=red,smooth,mark=x,line width=2pt] table[x=time, y=n0,mark=square] {./data/lmp_may_5_2010.dat};
+	\addlegendentry{$n0$}
+
+\foreach \i in {1,...,15}
+{
+ 	\addplot+[opacity=.5, smooth,solid,color=black,mark=o] table[x=time, y=n\i] {./data/lmp_may_5_2010.dat};
+	\addlegendentryexpanded{$n\i$}
+}
+
+
+
+		\end{axis}	
+	\end{tikzpicture}
+  \caption{Locational Marginal Prices (LMP) for MG\&E serving Madison, Wisconsin.  The day ahead prices ($n0$) are from Wednesday, May 5th, 2010. }
+ \label{fig:lmp}
+\end{figure}
