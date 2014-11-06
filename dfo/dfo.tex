@@ -1,3 +1,324 @@
+\newcommand{\mypathdfo}{../thesis/dfo}
 \chapter{Design Problems Solution Methodology}
-solve
+
+
+\section{Literature Review}
+
+\input{\mypathdfo/opt_tools}
+
+\begin{itemize}
+\item Develop an efficient evaluation of cascading power failures for use in optimization procedure
+\begin{itemize}
+\item Computational implementation
+\item Variance reduction
+\item Large scale problems
+\end{itemize}
+\item Investigate the behavior of this model
+\begin{itemize}
+\item Lack of convexity for topology changes
+\item Non-monotonic behavior for line capacity additions
+\item Poor 1st stage approximators of total load shed
+\end{itemize}
+\item Create algorithm to find good solutions to design problems
+\begin{itemize}
+\item Finding good search directions
+\item Line search procedure for search directions
+\item Incorporation of problem specific information
+\end{itemize}
+\end{itemize}
+
+
+\section{Computational Techniques}
+
+This is how the simulation is done
+
+\subsection{Implementation}
+Parallel computation - condor
+C++ simulation code
+Python code for analysis
+
+\subsection{Variance Reduction}
+Important for reducing computation time
+\subsubsection{Common Random Numbers}
+very cool
+\subsubsection{Sampling Techniques}
+havent done yet
+
+
+\section{Model Behavior}
+To investigate the behavior of the model, we will begin by looking at the results from a single contingency.  Once this is better understood, the effects of multiple possible contingencies will be looked at.
+\subsection{Topology Information}
+anything can happen
+\subsubsection{Clustering}
+Lines tend to behave in groups which relate to underlying topology.
+Take advantage by looking at correlation between load shed and line outages
+
+
+\begin{figure}
+\begin{center}
+\input{\mypathdfo/fig-linecluster}
+\end{center}
+\caption{A cluster of a lines responsible for reducing system performance}
+\label{fig:cluster}
+\end{figure}
+
+This information can be used to aid in the simulation process.  By supplementing this information with topology information, interesting conclusions can be drawn.
+
+\subsection{Power-Law Distribution}
+risk measures
+The load shed from power outages follows a power law distribution.
+
+
+\subsection{Capacity Addition}
+To begin, we will look at what happens when you double capacity on each line.  (\ref{fig:grad})  Out of the 186 lines, 51 lines resulted in an improved system with respect to the cascading process, 47 were within the margin of error of the nominal system, and 88 reduced the system performance.
+\begin{figure}
+\begin{center}
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{ Load Shed for Capacity Addition on Coordinate Directions},legend pos=north east ,scale=1.12, xlabel=Line Number, ylabel=Load Shed (MW)]	
+			\addplot+[opacity=.6775, mark size=.915, only marks,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {./data/grad.dat};
+\addlegendentry{Coordinate Directions};
+			\addplot+[opacity=.1175, mark size=.915, red, only marks,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {./data/base.dat};
+\addlegendentry{Nominal System}
+	\end{axis}	
+	\end{tikzpicture}
+\caption{Comparing the total load shed for doubling capacity along the coordinate direction.}
+\label{fig:grad}
+\end{center}
+\end{figure}
+
+Lets look along a line in each group.
+\begin{figure}
+
+\begin{subfigure}[b]{0.3\textwidth}
+\centering
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 1},scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+\centering
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 2}, scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+\begin{center}
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 3},scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{center}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+\centering
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 1},scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+\centering
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 2}, scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+\begin{center}
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 3},scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{center}
+\end{subfigure}
+	\caption{Plotting expected load shed for capacity additions along coordinate directions.  }
+
+
+\end{figure}
+
+
+\subsubsection{Risk Measures}
+\begin{figure}
+
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{ Risk Measures },legend pos=outer north east, scale=1.6374568, xlabel=Capacity (MW), ylabel=Load Shed (MW)]			\addplot+[black,opacity=.5, mark size=.5,only marks] table[x=name, y=ex] {./data/done.dat};
+\addlegendentry{Expect}
+	\addplot+[blue,opacity=.5, mark size=.5,solid,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {./data/done.dat};
+\addlegendentry{St. Error}
+	\addplot+[red,opacity=.15, mark size=.5,solid,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=st] {./data/done.dat};
+\addlegendentry{St. Dev}
+	\addplot+[purple,opacity=.715, mark size=.5,solid] table[x=name, y=var] {./data/done.dat};
+\addlegendentry{5\% V@R}
+	\addplot+[purple,opacity=.815, mark size=.5,solid] table[x=name, y=cvar] {./data/done.dat};
+\addlegendentry{5\% CV@R}
+	\addplot+[purple,opacity=.8515, mark size=.5,solid] table[x=name, y=max] {./data/done.dat};
+\addlegendentry{Maximum}
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\caption{Value at Risk, Conditional Value at Risk, and Maximum risk measures for load shed distribution}
+\end{figure}
+
+The value at risk and conditional value at risk tend to track in a similar manner to the expect value.  The maximum can display much more erratic behavior and is unreasonable in a realistic setting with cost constraints.
+
+results
+reserve allocations?
+
+
+\subsection{1st Stage Approximators}
+Any good way to approximate the total effect of the cascading process?
+
+Correlation between number of lines outaged in 1st stage and the total load shed.
+\begin{figure}
+\begin{center}
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{ Load Shed versus First Stage Line Outages },xlabel=Number of Lines Outaged, ylabel=Load Shed]	
+ 			\addplot+[opacity=.3875, mark size=.65, only marks] table[x=numlines, y=ex] {./data/done.fst};
+	\end{axis}	
+	\end{tikzpicture}
+\caption{Relationship between load shed and the number of lines outaged in the first stage.}
+\label{fig:first}
+\end{center}
+\end{figure}
+
+Correlation between
+
+\begin{figure}
+\begin{center}
+\foreach \i in {0, 1, 5,10,15,20}{
+	\begin{tikzpicture}
+	\begin{axis}[ scale=.6575, xlabel=Load Served (MW) Stage \i , ylabel=Load Served (MW) Final ] %, xmin=1600,xmax=3700,ymin=1600,ymax=3400]	
+			\addplot+[opacity=.46775, mark size=.915, only marks] table[x=ls\i, y=ls30] {./data/long.corr};
+%		\addlegendentryexpanded{$\i$ - Ex)
+	\end{axis}	
+	\end{tikzpicture}
+%  \caption{Locational Marginal Prices (LMP) for MG\&E serving Madison, Wisconsin.  Wednesday, Aug 4th, 2010. }
+ %\label{fig:lmp}
+}
+
+\end{center}
+\end{figure}
+
+Good news, can estimate relative effects of cascade on different systems
+1st stage line flows
+\begin{figure}
+\begin{subfigure}[b]{\textwidth}
+\centering
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{ Line Flow by Line over Scenarios  },legend pos=north east ,scale=1.4572, ymax=500,xlabel=Line Number,ylabel=Flow (MW) ]	
+ 			\addplot+[opacity=.1297598375, mark size=.67, only marks] table[x=line, y=flow] {./data/small.lfi};
+	\addlegendentry{Scene. Flow}
+			\addplot+[red,opacity=.995, mark size=.915, only marks] table[x=line, y=flow] {./data/small.lfa};
+		\addlegendentry{Avg. Flow}
+	\end{axis}	
+	\end{tikzpicture}
+\end{subfigure}
+
+\begin{subfigure}[b]{\textwidth}
+\begin{center}
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{ Failure Probability by Line over Scenarios },legend pos=north east ,scale=1.4572, ymax=.55, xlabel=Line Number,ylabel=Proability of Failure ]	
+ 			\addplot+[opacity=.19758375, mark size=.67, only marks] table[x=line, y=prob] {./data/small.pob};
+	\addlegendentry{Scene. Prob}
+			\addplot+[red,opacity=.9895, mark size=.915, only marks] table[x=line, y=prob] {./data/small.pba};
+		\addlegendentry{Avg. Prob}
+
+
+	\end{axis}	
+	\end{tikzpicture}
+
+\end{center}
+\end{subfigure}
+ \caption{Line flows and failure probabilities for each scenario and  their averages}
+\label{fig:flows}
+\end{figure}
+
+This information can be used to tell if two operating points have different cascading properties.  By looking at the distance between two operating points, breakpoints can be found where the distance between operating points risk characteristics are extremely different from another, close, operating point.
+
+\section{Algorithm Design}
+\subsection{Search Direction}
+most outaged lines
+refine with 	-topology information
+		-electrical properties
+clustering
+		-line correlations
+\subsection{Line Search}
+breakpoint analsis
+
+
+\begin{figure}
+\begin{center}
+\foreach \i in {2, 3, 5,10,25,50}{
+	\begin{tikzpicture}
+	\begin{axis}[ scale=.8272, ,legend pos=south east, xlabel={\small Capacity (MW)}, ylabel={\small Load Shed (MW)},xmax=95]	
+			\addplot+[opacity=.456775, mark size=.915, only marks,error bars/.cd, y dir=both, y explicit] table[x=cap, y=ex, y error=se] {./data/breakpoint/done.dat};
+			\addplot+[red,opacity=.995, mark size=.915, line width=1.25] table[x=cap, y=ls] {./data/breakpoint/nbhd\i.dat};
+\addlegendentry{Num. Pts: \i};
+
+	\end{axis}
+	\end{tikzpicture}
+}
+  \caption{Approximation of function by finding breakpoints}
+\label{fig:break}
+
+\end{center}
+\end{figure}
+
+
+
+choosing N
+\subsection{Local Convergence}
+derivative free techniques
+find neighborhood with continuity
+drive towards local optimal
+search basis
+exploratory steps
+
+\subsection{Algorithm}
+All together now
+
+\section{Analysis of Model Output}
+
+\subsection{Modified Coordinate Search}
+Negative - No local convergence properties
+Old problem parameters, which is why the scales are so different
+
+\begin{figure}
+\begin{center}
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{  Opt Routine }  ]	
+ 	
+		\addplot+[opacity=.5, mark size=.5, smooth,solid,thick,black, error bars/.cd, y dir=both, y explicit] table[x=run, y=ex, y error=se] {./data/opt1.dat};
+		\addlegendentry{Ex}
+		\addplot+[opacity=.5,mark size=.75, smooth,solid, green] table[x=run, y=sd] {./data/opt1.dat};
+		\addlegendentry{St. Dv.}	
+%		\addlegendentry{Expectation}
+
+
+	\end{axis}	
+	\begin{axis}[ axis y line*=right, legend pos=outer north east]
+%
+		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=max] {./data/opt1.dat};
+		\addlegendentry{Max}	
+		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=var] {./data/opt1.dat};
+		\addlegendentry{VAR}	
+	\end{axis}
+
+
+	\end{tikzpicture}
+ \caption{Brute force search procedure along coordinate directions in the null space}
+ \label{fig:opt1}
+\end{center}
+\end{figure}
+
+
+%\end{document}
 
