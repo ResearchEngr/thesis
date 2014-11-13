@@ -1,0 +1,19 @@
+\textbf{Nonlinear Optimization}
+
+Newton rhapson
+\ref{ac-pf} are static power flow equations
+Each bus characterized by $P_i, Q_i, \delta_i, |V_i|$
+$4 n$ variables, supply $2 n$, find remaining $2 n -1$ using iterative numerical techniques and a slack bus for unique solution
+gauss-seidel
+newton raphson  look for $F(x) = 0$, approximate by tangent hyper plane, solved for correction $\Delta x$
+\begin{equation}
+\left[ \begin{array}{ c } \Delta P \\ \Delta Q \end{array}	\right]
+=
+\left[ \begin{array}{ c c } J_{P \theta} J_{PV} \\ J_{Q \theta} J_{QV} \end{array}	\right]
+\left[ \begin{array}{ c } \Delta \theta \\ \Delta V \end{array}	\right]
+=
+J \left[ \begin{array}{ c } \Delta \theta \\ \Delta V \end{array}	\right]
+\end{equation}
+
+fast decoupled load flow (approximation of newton rhapson technique)
+assume that $J_{PV}$ and $J_{Q\theta}$ are zero, that is, real power flow not sensitive to voltage changes and reactive power not sensitive to voltage angle changes

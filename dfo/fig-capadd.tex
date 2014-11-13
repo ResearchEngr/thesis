@@ -1,0 +1,67 @@
+\begin{center}
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{ Load Shed for Capacity Addition on Coordinate Directions},legend pos=north east ,scale=1.12, xlabel=Line Number, ylabel=Load Shed (MW)]	
+			\addplot+[opacity=.6775, mark size=.915, only marks,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {./data/grad.dat};
+\addlegendentry{Coordinate Directions};
+			\addplot+[opacity=.1175, mark size=.915, red, only marks,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {./data/base.dat};
+\addlegendentry{Nominal System}
+	\end{axis}	
+	\end{tikzpicture}
+\caption{Comparing the total load shed for doubling capacity along the coordinate direction.}
+\label{fig:grad}
+\end{center}
+\end{figure}
+
+Lets look along a line in each group.
+\begin{figure}
+
+\begin{subfigure}[b]{0.3\textwidth}
+\centering
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 1},scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+\centering
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 2}, scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+\begin{center}
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 3},scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{center}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+\centering
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 1},scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+\centering
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 2}, scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{subfigure}
+\begin{subfigure}[b]{0.3\textwidth}
+\begin{center}
+	\begin{tikzpicture}
+	\begin{axis}[title=\mbox{Line 3},scale=.4568]			\addplot+[opacity=.5, mark size=.5, smooth,solid] table[x=name, y=ex, y error=se] {./data/done.dat};
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+\end{center}
+\end{subfigure}
