@@ -2,11 +2,12 @@
 \newcommand{\mypathjccdata}{../thesis/jcc/data}
 \input{\mypathjcc/def}
 \chapter{Risk Models for Real-Time Dispatch}
-\section{Introduction}
 The current line threshold model for transmission elements places the economics and reliability of single lines above that of system.  A system risk measure needs to be developed and constrained so that there is a proper trade off between the cost and risk of a given dispatch point.  In this paper, we develop a line risk measure and then constrain and solve exactly via nonlinear programming in a static demand scenario and approximately in a demand scenario with a multivarate gaussian distribution.  A computational example will be used to discuss the cost-risk frontier created from our Joint Chance Constraint (JCC) model and compare it with other dispatch models, the Optimal Power Flow (OPF) and a chance constrained (CC) version.  
 
 The power grid operation and reliability requirements are done with fixed line limits.  However, line failure rates are dependent on power flow, environmental conditions, and other factors.  In order to incorporate this into operation and reliability models, we look to probabilistic risk measures and chance constraints. 
 
+
+\section{Literature Review}
 The connection between power flow and line failure rates can be looked at from many different directions.  The nominal capacity of transmission elements are based on thermal characteristics of the line as well as a set of environmental characteristics which represent the worst case scenario for different operating times.  Typically, there may be a summer rating and a winter rating for each transmission element, where the winter rating has colder ambient temperature, thus less heating and less sagging.  Dynamic line limits are being explored to account for current environmental conditions \cite{bucher_2013},\cite{yip_2009}, \cite{wang_2011},\cite{zhang_2002}.
 
 A research area which connects power flow with line failure risk is cascading power failures.  As transmission elements become loaded, the chance of failure increases. The line failure risk is typically a monotonically increasing function dependent on power flow.  This can be seen in paper on cascading power failures such as \cite{carreras_2002}, \cite{chen_2005}, \cite{dobson_2007}, \cite{newman_2011}, \cite{hines_2011}.
@@ -482,16 +483,16 @@ Cost & 567.1 & 574.0 & 572.2\\
 
 
 %%%%%%%% Section 6
-\section{Conclusion and Future Work}
+\section{Going Forward}
 
-\subsection{Conclusion}
+\subsection{Model Strengths}
 The primary strength of this model is the addition of a system risk constraint and the removal of line thresholds. Line thresholds are hard constraints that subject the system to price spikes.  The hard line constraints are somewhat arbitrary as the line will not fail when it is exceeded by a small amount.  Instead, an economic trade off should be made between individual lines to ensure the system risk is constrained at an adequate level.  The system risk measure allows for direct comparison of different dispatch points with respect to risk.
 
 The JCC model is computationally efficient in its full form.  It allows for creation of a cost-risk frontier that finds dispatch points that are better in both terms of risk and cost.  Under uncertainty, this model should be compared against the CC model, which is a probabilistic interpretation of line thresholds.  Probabilistic line thresholds exacerbate the economic problems of hard constraints by further tightening the constraints.  In both of these models, the variable slack distribution plays a small direct role in cost through the objective, however is crucial in ensuring the line and system risk constraints are met.  
   
 Combining the system risk measure and random power injects for the joint chance constrained model accounts for many things the traditional OPF model misses.  This model will give prices for system response to aggregated volatile injects, which is regulation and reserve support for different time periods.  Instead of having an ancillary service model which separates this, the JCC model directly accounts for it.  This will allow for valuing volatile injects, which will be important going forward as the grid integrates more uncertain generation (wind turbines) and demand (electric vehicles).
 
-\subsection{Future Work}
+\subsection{Possible Extensions}
 There are many avenues to improve and extend this model.  One first question would be, what does the failure density function look like.  We used a piecewise linear model, but perhaps other models better represent the true physics of the situations, such as a polynomial, ie $x^2$.  In addition, often the effective capacities are correlated.  Effective capacities are related to environmental conditions, such as high wind, which are geographically correlated.  During high wind periods, there is increased wind generation as well as increased effective capacities, which means that when the turbines are producing more energy, the nearby transmission lines are also capability of carrying more energy.  Finally, the volatile injects need to be priced and accounted for.  Volatile injects add stress to the grid which needs to be secured through additional resources.  These injects should bear the cost of the stress they add to the system.
 
 
