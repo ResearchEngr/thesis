@@ -1,0 +1,32 @@
+\textbf{Stochastic Trust Region}	(Chang and Wan) \cite{chang_2009}
+
+\begin{equation}
+\min_{x \in \mathbb{X}^p} g(x)
+\end{equation}
+with $g(x) = \Expect [ G(x,\omega) ]$, 
+$G(x, \omega)$ is stochastic response
+$\omega$ stochastic effect of system
+$x$ is controllable parameter
+\begin{equation}
+G(x, \omega) = g(x) + \epsilon_x
+\end{equation}
+$g(x)$ uknown deterministic function
+$\epsilon_x$ is random error induced by $\omega$, assume $\epsilon_x \sim F( \dot )$ where 
+$F( \dot )$ is a general distribution, mean zero and variance $\sigma_x^2$
+
+Assumptions
+$G$ expectation bounded above
+$g$ bounded below, twice differentiable, gradient and Hessian uniformly bounded
+for a sufficiently small neighborhood, $G$ can be modeled as a quadratic with error $\epsilon_x$ 
+--Taylor Teorem (Trench 2003)
+
+Strong Law of Large Numbers
+\begin{equation}
+\overline{G}_N (x) = \frac{ \sum_{i=1}^N G(x,\omega_i) }{N} \rightarrow g(x) \mbox{    w.p. 1}
+\end{equation}
+as $N \rightarrow \infty$ for every $x \in \mathbb{X}^p$
+
+Uses 2 stage process
+initially, just use first order points
+as trust region shrinks, there is transition points
+begin to sample more, construct second order model, and reduce trust region at successful iterates

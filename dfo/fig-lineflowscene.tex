@@ -1,0 +1,8 @@
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{ Line Flow by Line over Scenarios  },legend pos=north east ,scale=1.4572, ymax=500,xlabel=Line Number,ylabel=Flow (MW) ]	
+ 			\addplot+[opacity=.1297598375, mark size=.67, only marks] table[x=line, y=flow] {./data/small.lfi};
+	\addlegendentry{Scene. Flow}
+			\addplot+[red,opacity=.995, mark size=.915, only marks] table[x=line, y=flow] {./data/small.lfa};
+		\addlegendentry{Avg. Flow}
+	\end{axis}	
+	\end{tikzpicture}

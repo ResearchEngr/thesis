@@ -1,0 +1,10 @@
+\foreach \i in {2, 3, 5,10,25,50}{
+	\begin{tikzpicture}
+	\begin{axis}[ scale=.8272, ,legend pos=south east, xlabel={\small Capacity (MW)}, ylabel={\small Load Shed (MW)},xmax=95]	
+			\addplot+[opacity=.456775, mark size=.915, only marks,error bars/.cd, y dir=both, y explicit] table[x=cap, y=ex, y error=se] {./data/breakpoint/done.dat};
+			\addplot+[red,opacity=.995, mark size=.915, line width=1.25] table[x=cap, y=ls] {./data/breakpoint/nbhd\i.dat};
+\addlegendentry{Num. Pts: \i};
+
+	\end{axis}
+	\end{tikzpicture}
+}

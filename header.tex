@@ -1,27 +1,37 @@
 \documentclass[11pt]{report}
-\usepackage{standalone}
-\usepackage{amsmath,amssymb,amsfonts} % Typical maths resource packages
-\usepackage{graphicx}                 % Packages to allow inclusion of graphics
-\usepackage{color}                    % For creating coloured text and background
-\usepackage[table]{xcolor}
-\usepackage{hyperref}                 % For creating hyperlinks in cross references
+\usepackage[noend]{algpseudocode}
 \usepackage{algorithm}
 %\usepackage{algorithmic}
-\usepackage[noend]{algpseudocode}
-\usepackage{longtable}
-\usepackage{import}
-\usepackage{lscape}
+\usepackage{amsmath,amssymb,amsfonts} % Typical maths resource packages
 \usepackage{booktabs,colortbl}
+\usepackage{caption}
+\usepackage[table]{xcolor}
+\usepackage{color}                    % For creating coloured text and background
+\usepackage{comment}    
+\usepackage{cleveref}
+\usepackage{endnotes}
+\usepackage{hyperref}                 % For creating hyperlinks in cross references
+\usepackage{graphicx}                 % Packages to allow inclusion of graphics
+\usepackage{import}
+\usepackage{longtable}
+\usepackage{lscape}
 \usepackage{tikz}
-\usetikzlibrary{patterns}
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
-\usepackage{endnotes}
-\usepackage{cleveref}
-\usepackage{caption}
+\usepackage{standalone}
 \usepackage{subcaption}
-    
+\usepackage{textcomp}
+
 \graphicspath{{./img/}}
+
+
+\usetikzlibrary{arrows,shapes,positioning,shadows,trees,svg.path,patterns}
+
+
+%\usetikzlibrary{external} 
+%\tikzexternalize[prefix=tikz/]
+%\tikzset{external/system call={lualatex --shell-escape -halt-on-error -interaction=batchmode -jobname ``\image'' ``\def\tikzexternalrealjob{main}\input{main}''}}
+%\tikzset{external/export=false}
 
 
 
@@ -35,7 +45,7 @@
 \textheight 21cm
 
 
-%\newcommand{\mag}[1][mag]{ \left| {#1} \right| }
+\newcommand{\norm}[1]{ \left| \left| {#1} \right| \right|}
 \newcommand{\magf}{ \left| f \right| }
 \newcommand{\magp}{ \left| p \right| }
 \newcommand{\magr}{ \left| r \right| }
@@ -113,5 +123,17 @@
         \pgfpathlineto{\pgfqpoint{\hatchdistance}{\hatchdistance}}
         \pgfusepath{stroke}
     }
+
+
+
+\tikzset{
+  basic/.style  = {draw, text width=2cm, drop shadow, font=\sffamily, rectangle},
+  root/.style   = {basic, rounded corners=2pt, thin, align=center, fill=green!30, text width=2in},
+  level 2/.style = {basic, rounded corners=6pt, thin,align=center, fill=green!60, text width=8em},
+  oracle/.style = {basic, rounded corners=6pt, thin, fill=blue!30, text width=10em},
+  level 2 oracle/.style = {basic, rounded corners=6pt, thin, fill=blue!10, text width=5.5em},
+  level 3/.style = {basic, thin, align=left, fill=pink!60, text width=6.5em}
+}
+
 
 \makeindex

@@ -1,0 +1,32 @@
+\textbf{Randomized Stochastic Gradient} (Lan)
+
+stochastic descent
+zeroth order function values only
+gaussian smoothhing function  (nesterov)
+
+-mirror descent Meirovski 23,18
+-sample average approximation 16, 36
+-This
+-subgradient averaging 13, 15, 26
+
+\begin{equation}
+f^* := \inf_{x \in \R{n}} f(x)
+\end{equation}
+$f: \R{n} \rightarrow \R{}$ differentiable
+$\bigtriangledown$ Lipschitz continuous
+\begin{equation}
+|| \bigtriangledown f(y) - \grad f (x) || \le L || y - x ||
+\end{equation}
+
+stochastic gradient
+$G (x_k, \xi_k$, $\xi_k$ random variable, distribution $P_k$ supported on $\Xi \subset \R{d}$
+with following assumptions, get convergence results that are good
+\begin{align}
+\Expect \left[ G(x_k,\xi_k) \right] = \grad f (x_k)		\\
+\Expect \left[ || G(x_k,\xi_k) - \grad f(x)||^2 \right] \le \sigma^2
+\end{align}
+
+get $(\epsilon, \Lambda)$ solution, $\epsilon > 0$, $\Lambda \in (0,1)$
+st.
+Prob $\left\{ || \grad f(\overline{x}) ||^2 \le \epsilon \right\} \ge 1-\Lambda$
+is bounded

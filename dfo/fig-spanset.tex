@@ -1,0 +1,97 @@
+\begin{tabular}{c c}
+\begin{tikzpicture}[ 
+   scale=5,
+    axis/.style={very thick, ->, >=stealth'},
+    important line/.style={thick, color=red, ->},
+    dashed line/.style={dashed, thin},
+    pile/.style={thick, ->, >=stealth', shorten <=2pt, shorten
+    >=2pt},
+    every node/.style={color=black}
+    ]
+    % axis
+    \draw[axis] (-0.1,0)  -- (1.1,0) node(xline)[right]
+        {$x_1$};
+    \draw[axis] (0,-0.1) -- (0,1.1) node(yline)[above] {$x_2$};
+    % Lines
+    \draw[pile] (.5,.5) coordinate (x) -- (.775,.5)
+        coordinate (d2) node[right, text width=5em] {$d_2$};
+    \draw[pile] (.5,.5) coordinate (x) -- (.3,.3)
+        coordinate (d1) node[right, text width=5em] {$d_3$};
+    \draw[pile] (.5,.5) coordinate (x) -- (.3,.7)
+        coordinate (d3) node[right, text width=5em] {$d_1$};
+    \fill[red]  (x) +(0,0) coordinate (.5,.5) circle (.4pt)
+        node[above] {$x$};
+
+    \draw[important line] (.5,.5) coordinate (x) -- (.78,.925)
+        coordinate (gf) node[right, text width=5em] {$-\grad f(x)$};
+
+     \draw[dashed line] (d2) -- (.78,.5);
+     \draw[dashed line] (gf) -- (.78,.5);
+
+     \path[clip] (.5,.5) -- (.78,.5) -- (.78,.925);
+
+     \node[circle,draw=blue,minimum size=25pt] at (.5,.5) (circ) {};
+     \node at(.62,.55) {$\theta$};
+
+
+\end{tikzpicture}
+&
+\begin{tikzpicture}[ 
+   scale=5,
+    axis/.style={very thick, ->, >=stealth'},
+    important line/.style={thick, color=red, ->},
+    dashed line/.style={dashed, thin},
+    pile/.style={thick, ->, >=stealth', shorten <=2pt, shorten
+    >=2pt},
+    every node/.style={color=black}
+    ]
+    % axis
+    \draw[axis] (-0.1,0)  -- (1.1,0) node(xline)[right]
+        {$x_1$};
+    \draw[axis] (0,-0.1) -- (0,1.1) node(yline)[above] {$x_2$};
+    % Lines
+    \draw[pile] (.5,.5) coordinate (x) -- (.75,.5)
+        coordinate (d2) node[right, text width=5em] {$d_2$};
+    \draw[pile] (.5,.5) coordinate (x) -- (.5,.25)
+        coordinate (d3) node[right, text width=5em] {$d_3$};
+    \draw[pile] (.5,.5) coordinate (x) -- (.5,.75)
+        coordinate (d1) node[ text width=3em] {$d_1$};
+    \draw[pile] (.5,.5) coordinate (x) -- (.25,.5)
+        coordinate (d4) node[above right, text width=5em] {$d_4$};
+    \fill[red]  (x) +(0,0) coordinate (.5,.5) circle (.4pt)
+        node[above left] {$x$};
+
+    \draw[important line] (.5,.5) coordinate (x) -- (.78,.925)
+        coordinate (gf) node[right, text width=5em] {$-\grad f(x)$};
+
+     \draw[dashed line] (d1) -- (.5,.925);
+     \draw[dashed line] (gf) -- (.5,.925);
+
+     \path[clip] (.5,.5) -- (.78,.925) -- (.5,.925);
+
+     \node[circle,draw=blue,minimum size=25pt] at (.5,.5) (circ) {};
+     \node at(.535,.625) {$\theta$};
+\end{tikzpicture}
+\\
+$N+1$ points & $2N$ points 
+\end{tabular}
+%    \draw[important line] (.15,.85) coordinate (C) -- (.85,.15)
+%        coordinate (D) node[right, text width=5em] {$\mathit{NX}=x$};
+    % Intersection of lines
+ %   \fill[red] (intersection cs:
+%       first line={(A) -- (B)},
+%       second line={(C) -- (D)}) coordinate (E) circle (.4pt)
+%       node[above,] {$A$};
+    % The E point is placed more or less randomly
+%    \fill[red]  (E) +(-.075cm,-.2cm) coordinate (out) circle (.4pt)
+%        node[below left] {$B$};
+    % Line connecting out and ext balances
+%    \draw [pile] (out) -- (intersection of A--B and out--[shift={(0:1pt)}]out)
+%        coordinate (extbal);
+%    \fill[red] (extbal) circle (.4pt) node[above] {$C$};
+    % line connecting  out and int balances
+%    \draw [pile] (out) -- (intersection of C--D and out--[shift={(0:1pt)}]out)
+%        coordinate (intbal);
+%    \fill[red] (intbal) circle (.4pt) node[above] {$D$};
+%    % line between out og all balanced out :)
+ %   \draw[pile] (out) -- (E);

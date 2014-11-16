@@ -1,0 +1,21 @@
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{  Opt Routine }  ]	
+ 	
+		\addplot+[opacity=.5, mark size=.5, smooth,solid,thick,black, error bars/.cd, y dir=both, y explicit] table[x=run, y=ex, y error=se] {./data/opt1.dat};
+		\addlegendentry{Ex}
+		\addplot+[opacity=.5,mark size=.75, smooth,solid, green] table[x=run, y=sd] {./data/opt1.dat};
+		\addlegendentry{St. Dv.}	
+%		\addlegendentry{Expectation}
+
+
+	\end{axis}	
+	\begin{axis}[ axis y line*=right, legend pos=outer north east]
+%
+		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=max] {./data/opt1.dat};
+		\addlegendentry{Max}	
+		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=var] {./data/opt1.dat};
+		\addlegendentry{VAR}	
+	\end{axis}
+
+
+	\end{tikzpicture}

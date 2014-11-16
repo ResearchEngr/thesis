@@ -1,24 +1,323 @@
 \newcommand{\mypathdfo}{../thesis/dfo}
 \newcommand{\mypathdfodata}{../thesis/dfo/data}
+\newcommand{\scd}{\cD_\oplus}
+\newcommand{\btu}{\bigtriangleup}
 \chapter{Solving Design Problems}
 
-Want to do design problems on power grids.  Optimize these models. 
+The cascading model built in chapter \ref{msip-model} is too hard to optimize at the scale we need to model the uncertainty in the cascading process.  In order to work around this difficulty, we will decompose the multi-stage structure of this problem and simulate the entire cascading process.  The primary benefit is removing the temporal linked binary variables for line outages from the master problem and allowing for sequential evaluation of the decision dependent uncertainty.  This allows us to parallize the OPA evaluations and use a wider range of potential risk metrics and design problems for optimization as well as reasonable solve times.
 
-what characteristics does this model have
+In order to optimize design problems using the OPA simulation for risk metrics, we need to first understand the characterestics of the cascading process and the effects that generation, reserves, and line limits have on the resulting load shed distributions.  Then, we can taylor existing derivative free frameworks to optimize this simulation and utilize explotatory steps to improve local performance and global strategies to find near optimal decisions.
 
-not convex, not continuously differentiable, noisy 
+The OPA simulation provides fundamental difficulties to the optimization process.  The function evaluations can shown to be no convex nor continuously differentiable every.  It is inherently noisy and the load shed distribution is wide, often charactereized by it's power law distribution.  Some of these effects can be smoothed away by employing a wide range of potential initiating events, however it may be important to optimize against a small subset of events that have a higher likihood of occurance and are known to be risky.  In this case, the non convexity and discontinuoity are most apparent.
 
-need robust solution methodology 
-
+To begin, an overview of derivative free optimization will be giving.  Three classes will be looked at for their convergence properties and practicle applications.  Then, initial experimentation on the OPA model will be given as well as the implementation and variance reduction strategies.  Then a modified algorithm will be developed and finally compared against vanilla algorithms of DFO.  A primary undercurrent is the use of accessory information in the modified DFO algorithm.
 
 \section{Literature Review}
 
+\subsection{Derivative Free Optimization}
 
 
+\begin{equation}
+\min_{x \in \R{n}} f(x)
+\end{equation}
+history
+different types
+strength/weakness
+relevant literature for more information
+
+\begin{figure}
+\centering
+\input{\mypathdfo/fig-dfomethod}
+\caption{DFO methods for continuous variable optimization}
+\end{figure}
+
+\subsection{Direct Search}
+convergence in gradient line search methods
+
+-decent direction
+\begin{equation}
+-\grad f(x_k)^T d_k > 0
+\end{equation}
+Good direction cosine measure, angle condition
+\begin{equation}
+\frac{-\grad f(x_k)^T d_k}{\norm{\grad f(x_k) } \norm{d_k}} \geq c > 0
+\end{equation}
+automatically holds for steepest descent, where $d=-\grad f(x)$
+
+-step length Armijo-Goldstein-Wolfe conditions
+\begin{align}
+f(x_k + \alpha_k d_k) \le f(x_k) + c_1 \alpha_k \grad f(x_k)^T d_k  \label{step_length_1}\\
+\grad f (x_k + \alpha_k d_k)^T d_k \ge c_2 \grad f(x_k)^T d_k \label{step_length_2}
+\end{align}
+with $0 < c_1 < c_2 < 1$
+
+
+\subsection*{Now Without Derivatives}
+how do we get around no derivative
+positive spanning set (picture)
+\begin{figure}
+\centering
+\input{\mypathdfo/fig-spanset}
+\caption{Positive spanning sets for $\R{2}$}
+\end{figure}
+-characterize good spaning set, cosing measure
+-generating set for nearby active constraints (region a cone)
+\begin{figure}
+\centering
+\input{\mypathdfo/fig-genset}
+\caption{Generating set for polar cone to conform to local topology}
+\end{figure}
+with bound constraints, compass direction good at exploring boundary of feasible region
+
+show general GSS algorithm
+
+\begin{algorithm}
+\caption{Compass search, a generating set search,Kolda et. al. \cite{kolda_2003}}\label{dfo_genset}
+\begin{algorithmic}
+\Procedure{CS}{$f:\R{n} \rightarrow \R{}$}
+\State $x_0 \in \R{n}$ Initial guess
+\State $\bigtriangleup_{tol} >0$ Termination criteria
+\State $\bigtriangleup_0 > \bigtriangleup_{tol} >0$ Initial neighborhood
+\BState For each $k=1,2,...$
+
+\State Let $\scd =\left\{ \pm e_i| i=1,...,n\right\}$ be the set of coordinate directions
+\If{ $\exists d_k \in \scd$ such that $f(x_k + \btu_k d_k ) < f(x_k)$}
+\State $x_{k+1} \gets x_k + \btu_k d_x$
+\State $\btu_{k+1} = \btu_k$
+\Else
+\State $x_{k+1} \gets x_k$
+\State $\btu_{k+1} = \frac{1}{2} \btu_k$
+\If{$\btu_{k+1} < \btu_{tol}$} terminate \EndIf
+\EndIf
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+properties that allow for converge
+sketch of proof
+exploratory steps
+
+\subsection*{Mesh Adaptive}
+Conn pg 140
+
+\subsection{Model Based Search}
+trust regions
+Stochastic Trust Region \endnote{\input{\mypathdfo/end-stochtrust}}
+
+\subsection*{Gradient Models}
+Implicit filtering
+Simplex gradients
+Stochastic Approximation
+
+Stochastic Gradient \endnote{\input{\mypathdfo/end-stochgrad}}
+
+Stochastic Approximation \endnote{\input{\mypathdfo/end-stochapprox}}
+
+
+
+
+
+\section{Optimizing the OPA Simulation}
+
+
+\begin{itemize}
+\item Develop an efficient evaluation of cascading power failures for use in optimization procedure
+\begin{itemize}
+\item Computational implementation
+\item Variance reduction
+\item Large scale problems
+\end{itemize}
+\item Investigate the behavior of this model
+\begin{itemize}
+\item Lack of convexity for topology changes
+\item Non-monotonic behavior for line capacity additions
+\item Poor 1st stage approximators of total load shed
+\end{itemize}
+\item Create algorithm to find good solutions to design problems
+\begin{itemize}
+\item Finding good search directions
+\item Line search procedure for search directions
+\item Incorporation of problem specific information
+\end{itemize}
+\end{itemize}
+
+
+
+
+
+\begin{comment}
+\subsection*{Simulation Implementation}
+
+This is how the simulation is done
+
+\subsection*{Implementation}
+Parallel computation - condor
+C++ simulation code
+Python code for analysis
+
+\subsection{Variance Reduction}
+Important for reducing computation time
+Dobson splitting method, type of importance sampling
+sampling techniques
+
+\subsubsection{Common Random Numbers}
+reference textbook on simulation Simulation Modeling and Analysis (Averill M. Law) \cite{law_2007}
+
+
+\subsection*{Model Behavior}
+To investigate the behavior of the model, we will begin by looking at the results from a single contingency.  Once this is better understood, the effects of multiple possible contingencies will be looked at.
+\subsection*{Topology Information}
+anything can happen
+\subsubsection{Clustering}
+Lines tend to behave in groups which relate to underlying topology.
+Take advantage by looking at correlation between load shed and line outages
+
+\begin{figure}
+\centering
+\input{\mypathdfo/fig-linecluster}
+\caption{A cluster of a lines responsible for reducing system performance}
+\label{fig:cluster}
+\end{figure}
+
+This information can be used to aid in the simulation process.  By supplementing this information with topology information, interesting conclusions can be drawn.
+
+\subsection{Power-Law Failure Distribution}
+risk measures
+The load shed from power outages follows a power law distribution.
+
+
+\subsection*{Adding Capacity}
+To begin, we will look at what happens when you double capacity on each line.  (\ref{fig:grad})  Out of the 186 lines, 51 lines resulted in an improved system with respect to the cascading process, 47 were within the margin of error of the nominal system, and 88 reduced the system performance.
+\begin{figure}
+\input{\mypathdfo/fig-double}
+\end{figure}
+
+
+
+Lets look along a line in each group.
+\begin{figure}
+\input{\mypathdfo/fig-capadd}
+	\caption{Plotting expected load shed for capacity additions along coordinate directions.  }
+\end{figure}
+
+
+
+\subsection*{Risk Measures}
+\begin{figure}
+\input{\mypathdfo/fig-riskmeasure}
+\caption{Value at Risk, Conditional Value at Risk, and Maximum risk measures for load shed distribution}
+\end{figure}
+
+The value at risk and conditional value at risk tend to track in a similar manner to the expect value.  The maximum can display much more erratic behavior and is unreasonable in a realistic setting with cost constraints.
+
+results
+reserve allocations?
+
+
+\subsection*{1st Stage Approximators}
+Any good way to approximate the total effect of the cascading process?
+
+Correlation between number of lines outaged in 1st stage and the total load shed.
+\begin{figure}
+\centering
+\input{\mypathdfo/fig-firststage}
+\caption{Relationship between load shed and the number of lines outaged in the first stage.}
+\label{fig:first}
+\end{figure}
+
+Correlation between
+
+\begin{figure}
+\centering
+\input{\mypathdfo/fig-loadserve}
+ \caption{Load Served at Different Stages}
+\end{figure}
+
+Good news, can estimate relative effects of cascade on different systems
+1st stage line flows
+\begin{figure}
+\begin{subfigure}[b]{\textwidth}
+\centering
+\input{\mypathdfo/fig-lineflowscene}
+\end{subfigure}
+\begin{subfigure}[b]{\textwidth}
+\begin{center}
+\input{\mypathdfo/fig-failprobscene}
+\end{center}
+\end{subfigure}
+ \caption{Line flows and failure probabilities for each scenario and  their averages}
+\label{fig:flows}
+\end{figure}
+
+This information can be used to tell if two operating points have different cascading properties.  By looking at the distance between two operating points, breakpoints can be found where the distance between operating points risk characteristics are extremely different from another, close, operating point.
+
+\section{Algorithm Design}
+\subsection{Search Direction and Break Points}
+most outaged lines
+refine with 	-topology information
+		-electrical properties
+clustering
+		-line correlations
+\subsection*{Line Search}
+breakpoint analsis
+
+
+\begin{figure}
+\centering
+\input{\mypathdfo/fig-breakpoint}
+  \caption{Approximation of function by finding breakpoints}
+\label{fig:break}
+\end{figure}
+
+
+
+choosing N
+\subsection{Local Convergence}
+derivative free techniques
+find neighborhood with continuity
+drive towards local optimal
+search basis
+exploratory steps
+
+\subsection{Modified Coordinate Search}
+All together now
+
+\section{Computational Results}
+
+
+\subsection{Vanilla Optimization}
+
+
+\subsection{MCS Implementation}
+Negative - No local convergence properties
+Old problem parameters, which is why the scales are so different
+
+\begin{figure}
+\begin{center}
+\input{\mypathdfo/fig-optroute}
+ \caption{Brute force search procedure along coordinate directions in the null space}
+ \label{fig:opt1}
+\end{center}
+\end{figure}
+
+
+
+\section{Conclusion}
+
+
+Covariance matrix
+try instead of solving economic dispatch, solve min variance problem ??? analogous to CAPM, need to make modifcation though!!!! its all related sooo close
+
+
+look for a set of net power injects wich minimizes the variance in revenue/cost at all of the nodes, perhaps weighted by centrallity, otherwise weight evenly?
+what are characterstics of this set versus the one formed from economic dispatch over day ahead and real time markets
+what is difference in cost
+what is difference in reliability
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% old
 stochastic vs deterministic
-
-
-
 stochastic 
 -simulation based
 Berry Nelson
@@ -31,6 +330,13 @@ Random Gradient Descent
 Robust Stochastic Approximation Nemirouski Jouditsty Lan Shapiro
 Adaptive Robust Optimization for security constrained unit commitment Bertsimas Lituinov Sun Zhao Zheng
 Introduction to stochastic search and optimization Spall
+
+Stochastic versions (get stochastic book)
+Sample Approximation Average
+robust stochastic approximation (Nemirovsky Juditsty, Lan, Shapiro)
+Spoll  -Introduction to stochastic search and Optimization
+Adaptive Robust optimization for Security Constrained Unit Commitment  (Bertsimas, Lituinov, Sun, Zhao, Zheng)
+
 
 \subsubsection{Pattern Search}
 deterministic
@@ -56,22 +362,6 @@ local model based
 Nonlinear Optimization \endnote{\input{\mypathdfo/end-nonline}}
 
 
-\subsubsection{Variance Reduction}
-common random number
-reference textbook on simulation Simulation Modeling and Analysis (Averill M. Law) \cite{law_2007}
-Dobson splitting method, type of importance sampling
-
-Covariance matrix
-try instead of solving economic dispatch, solve min variance problem ??? analogous to CAPM, need to make modifcation though!!!! its all related sooo close
-
-
-look for a set of net power injects wich minimizes the variance in revenue/cost at all of the nodes, perhaps weighted by centrallity, otherwise weight evenly?
-what are characterstics of this set versus the one formed from economic dispatch over day ahead and real time markets
-what is difference in cost
-what is difference in reliability
-
-
-
 
 %%%%%%%%%%%%%%
 
@@ -79,11 +369,8 @@ what is difference in reliability
 
 
 
-
-
-
-
 --pattern search, using secondary simulation data, model based?, evolutionary, trust regions
+
 Direct Search Methods: then and now ( Lewis, Torczon, Trosset ) \cite{lewis_2000}
 
 \begin{equation}
@@ -183,6 +470,7 @@ for coordinate search $\kappa (G) = \frac{1}{\sqrt{n}}$
 -bound $\kappa (G)$ for convergence result
 
 Kolda Lewis Torczon (review) 2003
+
 convergence analysis, continuously differentiable
 $\bigtriangledown f$ lipschitz continuous
 
@@ -329,15 +617,8 @@ without continuous differentiability, HARD TO PROVE MUCH
 linearly constrained case $ Ax \le b$
 
 
-%%%%%%%%%%%%%%%
-
-
-Model Based
-Simplex Based  
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Derivative Free Optimization}
 Derivative Free Optimization  (Conn, Scheinberg, Vicente) 2009  \cite{conn_2009}
 
 analysis of variance (statistical test 203)
@@ -487,393 +768,17 @@ do not provide selection guarantees that frequentist procedures do
 
 
 
-%\subsubsection{Stochastic Approximation}
 
-Stochastic versions (get stochastic book)
-Sample Approximation Average
-robust stochastic approximation (Nemirovsky Juditsty, Lan, Shapiro)
-Spoll  -Introduction to stochastic search and Optimization
-Adaptive Robust optimization for Security Constrained Unit Commitment  (Bertsimas, Lituinov, Sun, Zhao, Zheng)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%%%%%%%%%%%%%%%%%
-Lan -  Randomized Stochastic Gradient
-stochastic descent
-zeroth order function values only
-gaussian smoothhing function  (nesterov)
 
--mirror descent Meirovski 23,18
--sample average approximation 16, 36
--This
--subgradient averaging 13, 15, 26
 
-\begin{equation}
-f^* := \inf_{x \in \R{n}} f(x)
-\end{equation}
-$f: \R{n} \rightarrow \R{}$ differentiable
-$\bigtriangledown$ Lipschitz continuous
-\begin{equation}
-|| \bigtriangledown f(y) - \grad f (x) || \le L || y - x ||
-\end{equation}
 
-stochastic gradient
-$G (x_k, \xi_k$, $\xi_k$ random variable, distribution $P_k$ supported on $\Xi \subset \R{d}$
-with following assumptions, get convergence results that are good
-\begin{align}
-\Expect \left[ G(x_k,\xi_k) \right] = \grad f (x_k)		\\
-\Expect \left[ || G(x_k,\xi_k) - \grad f(x)||^2 \right] \le \sigma^2
-\end{align}
 
-get $(\epsilon, \Lambda)$ solution, $\epsilon > 0$, $\Lambda \in (0,1)$
-st.
-Prob $\left\{ || \grad f(\overline{x}) ||^2 \le \epsilon \right\} \ge 1-\Lambda$
-is bounded
-
-%%%%%%%%%%%%%%%%%%%
-
-
-%\subsubsection{Stochastic Programming}
-
-%%%%%%%%%%%%%%%%%%%%
-Stochastic Trust Region	(Chang and Wan) \cite{chang_2009}
-\begin{equation}
-\min_{x \in \mathbb{X}^p} g(x)
-\end{equation}
-with $g(x) = \Expect [ G(x,\omega) ]$, 
-$G(x, \omega)$ is stochastic response
-$\omega$ stochastic effect of system
-$x$ is controllable parameter
-\begin{equation}
-G(x, \omega) = g(x) + \epsilon_x
-\end{equation}
-$g(x)$ uknown deterministic function
-$\epsilon_x$ is random error induced by $\omega$, assume $\epsilon_x \sim F( \dot )$ where 
-$F( \dot )$ is a general distribution, mean zero and variance $\sigma_x^2$
-
-Assumptions
-$G$ expectation bounded above
-$g$ bounded below, twice differentiable, gradient and Hessian uniformly bounded
-for a sufficiently small neighborhood, $G$ can be modeled as a quadratic with error $\epsilon_x$ 
---Taylor Teorem (Trench 2003)
-
-Strong Law of Large Numbers
-\begin{equation}
-\overline{G}_N (x) = \frac{ \sum_{i=1}^N G(x,\omega_i) }{N} \rightarrow g(x) \mbox{    w.p. 1}
-\end{equation}
-as $N \rightarrow \infty$ for every $x \in \mathbb{X}^p$
-
-Uses 2 stage process
-initially, just use first order points
-as trust region shrinks, there is transition points
-begin to sample more, construct second order model, and reduce trust region at successful iterates
-
-%%%%%%%%%%%%%%%%%%%%%
-
-
-reference textbook on stochastic programing
-Lectures on Stochastic Programing (Shapiro) \cite{shapiro_2009}
-
-
-Master Problem
-
-Stochastic Approximation and Gradient Estimation
-
-\begin{equation}
-x_{n+1} = \prod_\Theta \left[ x_n - a_n \hat{\grad} g(x_n) \right]
-\end{equation}
-$x_n$ solution at iteration $n$, $\hat\grad g(x_n)$ is estimate of gradient, $\lb a_n \rb$ sequance of positive real numbers called gain sequence, and $\prod_\Theta$ is projection onto feasibly region.
-
-SA alg first proposed by Robbins and Monro (1951) - root finding algorithm
-stochastic version of steepest descent algorithm
-but gradient in SA is noisy estimate, convergence requires $\Expect \left[ \hat \grad g(x_n) \right] - g(x_n) \rightarrow 0$ at a certain rate
-step size is often pre-determined, instead of adaptive
-convergence requires $\sum_{n=1}^\infty a_n = \infty$ and $\sum_{n=1}^\infty a_n^2 < \infty$, algorithm sensitive to choice of $\lb a_n \rb$.  $\lb a_n \rb $ too large and $x_n$ oscillatory, $\lb a_n \rb $ too small, $x_n$ barely changes
-
-simulation as black box $\grad g(x)$ by finite difference, use forward estimate with $d+1$ sim evals or central difference with $2d$ sim runs.
-when dimension of $x$ large, not efficient due to number of sims required for one gradient evaluation
-Spall (1992) proposed simultaneuous pertubation uses 2 sim runs to produce estimate
-Spall (1998) gives nice intro to theory and application
-
-When inside structure known, use this to get better gradient estimators
-Fu (2008) gives excellent overview, pertubation analysis (PA), likelihood ratio/score function (LR/SF)
-PA proposed by Ho and Cao (1983)
-\begin{equation}
-\grad g(x) = \grad \Expect [ Y(x) ] = \Expect [ \grad Y (x) ] 
-\end{equation}
-with $Y(x)$ stochastically lipschitz continuous and differentiable with prob 1.
-overcome bad properties of $Y(x)$
-smoothed pertubabtion analysis Gong and Ho (1987) Fu and Hu (1997)
-pathwise method Hong (2009) Hong and Liu (2009)
-
-LR/SF method in Reiman Weiss (1989) Glynn (1990)
-represent $Y(x) = h(Z)$, $Z$ is vector of random variables generated in sim and $h(Z)$ is performance measure intereseted in .  $f_z(z,x)$ denote probability density of $Z$.  Note $x$ is only in density function of $Z$ and not $h(\dot)$.
-then under some regularity conditoins
-\begin{align}
-\grad g(x) &= \grad \Expect [ h(Z) ] = \grad \int h(z) f_z(z,x) dz = \int h(z) \grad_x f_z(z,x) dz \\
-	&= \Expect [ h(Z) \grad_x \log [ f_z(Z,x) ] ]
-\end{align}
-if $f_z(z,x)$ is known, then LR SF estimate $\grad g(x)$ by $h(Z) \grad_x \log [ f_z(Z,x) ]$. requires only single simulation run to comput, is unbiased estimaor, and does not require $Y(x)$ to be stochastic lipschitz continuous, applicabiliity often wider than PA, however variance of estimator is often high
-
-Random Search Algorithms
-
-
-
-\section{Design Problems}
-
-
-\begin{itemize}
-\item Develop an efficient evaluation of cascading power failures for use in optimization procedure
-\begin{itemize}
-\item Computational implementation
-\item Variance reduction
-\item Large scale problems
-\end{itemize}
-\item Investigate the behavior of this model
-\begin{itemize}
-\item Lack of convexity for topology changes
-\item Non-monotonic behavior for line capacity additions
-\item Poor 1st stage approximators of total load shed
-\end{itemize}
-\item Create algorithm to find good solutions to design problems
-\begin{itemize}
-\item Finding good search directions
-\item Line search procedure for search directions
-\item Incorporation of problem specific information
-\end{itemize}
-\end{itemize}
-
-
-\subsection{Computational Techniques}
-
-This is how the simulation is done
-
-\subsection*{Implementation}
-Parallel computation - condor
-C++ simulation code
-Python code for analysis
-
-\subsection{Variance Reduction}
-Important for reducing computation time
-\subsubsection{Common Random Numbers}
-very cool
-\subsubsection{Sampling Techniques}
-havent done yet
-
-
-\section{Model Behavior}
-To investigate the behavior of the model, we will begin by looking at the results from a single contingency.  Once this is better understood, the effects of multiple possible contingencies will be looked at.
-\subsection{Topology Information}
-anything can happen
-\subsubsection{Clustering}
-Lines tend to behave in groups which relate to underlying topology.
-Take advantage by looking at correlation between load shed and line outages
-
-
-\begin{figure}
-\begin{center}
-\input{\mypathdfo/fig-linecluster}
-\end{center}
-\caption{A cluster of a lines responsible for reducing system performance}
-\label{fig:cluster}
-\end{figure}
-
-This information can be used to aid in the simulation process.  By supplementing this information with topology information, interesting conclusions can be drawn.
-
-\subsection{Power-Law Distribution}
-risk measures
-The load shed from power outages follows a power law distribution.
-
-
-\subsection{Capacity Addition}
-To begin, we will look at what happens when you double capacity on each line.  (\ref{fig:grad})  Out of the 186 lines, 51 lines resulted in an improved system with respect to the cascading process, 47 were within the margin of error of the nominal system, and 88 reduced the system performance.
-\begin{figure}
-\input{\mypathdfo/fig-double}
-\end{figure}
-
-Lets look along a line in each group.
-\begin{figure}
-\input{\mypathdfo/fig-capadd}
-	\caption{Plotting expected load shed for capacity additions along coordinate directions.  }
-\end{figure}
-
-
-\subsubsection{Risk Measures}
-\begin{figure}
-
-	\begin{tikzpicture}
-	\begin{axis}[ title=\mbox{ Risk Measures },legend pos=outer north east, scale=1.6374568, xlabel=Capacity (MW), ylabel=Load Shed (MW)]			\addplot+[black,opacity=.5, mark size=.5,only marks] table[x=name, y=ex] {./data/done.dat};
-\addlegendentry{Expect}
-	\addplot+[blue,opacity=.5, mark size=.5,solid,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {./data/done.dat};
-\addlegendentry{St. Error}
-	\addplot+[red,opacity=.15, mark size=.5,solid,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=st] {./data/done.dat};
-\addlegendentry{St. Dev}
-	\addplot+[purple,opacity=.715, mark size=.5,solid] table[x=name, y=var] {./data/done.dat};
-\addlegendentry{5\% V@R}
-	\addplot+[purple,opacity=.815, mark size=.5,solid] table[x=name, y=cvar] {./data/done.dat};
-\addlegendentry{5\% CV@R}
-	\addplot+[purple,opacity=.8515, mark size=.5,solid] table[x=name, y=max] {./data/done.dat};
-\addlegendentry{Maximum}
-%		\addlegendentryexpanded{$\i$ - Ex}
-	\end{axis}	
-	\end{tikzpicture}
-\caption{Value at Risk, Conditional Value at Risk, and Maximum risk measures for load shed distribution}
-\end{figure}
-
-The value at risk and conditional value at risk tend to track in a similar manner to the expect value.  The maximum can display much more erratic behavior and is unreasonable in a realistic setting with cost constraints.
-
-results
-reserve allocations?
-
-
-\subsection{1st Stage Approximators}
-Any good way to approximate the total effect of the cascading process?
-
-Correlation between number of lines outaged in 1st stage and the total load shed.
-\begin{figure}
-\begin{center}
-	\begin{tikzpicture}
-	\begin{axis}[ title=\mbox{ Load Shed versus First Stage Line Outages },xlabel=Number of Lines Outaged, ylabel=Load Shed]	
- 			\addplot+[opacity=.3875, mark size=.65, only marks] table[x=numlines, y=ex] {./data/done.fst};
-	\end{axis}	
-	\end{tikzpicture}
-\caption{Relationship between load shed and the number of lines outaged in the first stage.}
-\label{fig:first}
-\end{center}
-\end{figure}
-
-Correlation between
-
-\begin{figure}
-\begin{center}
-\foreach \i in {0, 1, 5,10,15,20}{
-	\begin{tikzpicture}
-	\begin{axis}[ scale=.6575, xlabel=Load Served (MW) Stage \i , ylabel=Load Served (MW) Final ] %, xmin=1600,xmax=3700,ymin=1600,ymax=3400]	
-			\addplot+[opacity=.46775, mark size=.915, only marks] table[x=ls\i, y=ls30] {./data/long.corr};
-%		\addlegendentryexpanded{$\i$ - Ex)
-	\end{axis}	
-	\end{tikzpicture}
-%  \caption{Locational Marginal Prices (LMP) for MG\&E serving Madison, Wisconsin.  Wednesday, Aug 4th, 2010. }
- %\label{fig:lmp}
-}
-
-\end{center}
-\end{figure}
-
-Good news, can estimate relative effects of cascade on different systems
-1st stage line flows
-\begin{figure}
-\begin{subfigure}[b]{\textwidth}
-\centering
-	\begin{tikzpicture}
-	\begin{axis}[ title=\mbox{ Line Flow by Line over Scenarios  },legend pos=north east ,scale=1.4572, ymax=500,xlabel=Line Number,ylabel=Flow (MW) ]	
- 			\addplot+[opacity=.1297598375, mark size=.67, only marks] table[x=line, y=flow] {./data/small.lfi};
-	\addlegendentry{Scene. Flow}
-			\addplot+[red,opacity=.995, mark size=.915, only marks] table[x=line, y=flow] {./data/small.lfa};
-		\addlegendentry{Avg. Flow}
-	\end{axis}	
-	\end{tikzpicture}
-\end{subfigure}
-
-\begin{subfigure}[b]{\textwidth}
-\begin{center}
-	\begin{tikzpicture}
-	\begin{axis}[ title=\mbox{ Failure Probability by Line over Scenarios },legend pos=north east ,scale=1.4572, ymax=.55, xlabel=Line Number,ylabel=Proability of Failure ]	
- 			\addplot+[opacity=.19758375, mark size=.67, only marks] table[x=line, y=prob] {./data/small.pob};
-	\addlegendentry{Scene. Prob}
-			\addplot+[red,opacity=.9895, mark size=.915, only marks] table[x=line, y=prob] {./data/small.pba};
-		\addlegendentry{Avg. Prob}
-
-
-	\end{axis}	
-	\end{tikzpicture}
-
-\end{center}
-\end{subfigure}
- \caption{Line flows and failure probabilities for each scenario and  their averages}
-\label{fig:flows}
-\end{figure}
-
-This information can be used to tell if two operating points have different cascading properties.  By looking at the distance between two operating points, breakpoints can be found where the distance between operating points risk characteristics are extremely different from another, close, operating point.
-
-\section{Algorithm Design}
-\subsection{Search Direction}
-most outaged lines
-refine with 	-topology information
-		-electrical properties
-clustering
-		-line correlations
-\subsection{Line Search}
-breakpoint analsis
-
-
-\begin{figure}
-\begin{center}
-\foreach \i in {2, 3, 5,10,25,50}{
-	\begin{tikzpicture}
-	\begin{axis}[ scale=.8272, ,legend pos=south east, xlabel={\small Capacity (MW)}, ylabel={\small Load Shed (MW)},xmax=95]	
-			\addplot+[opacity=.456775, mark size=.915, only marks,error bars/.cd, y dir=both, y explicit] table[x=cap, y=ex, y error=se] {./data/breakpoint/done.dat};
-			\addplot+[red,opacity=.995, mark size=.915, line width=1.25] table[x=cap, y=ls] {./data/breakpoint/nbhd\i.dat};
-\addlegendentry{Num. Pts: \i};
-
-	\end{axis}
-	\end{tikzpicture}
-}
-  \caption{Approximation of function by finding breakpoints}
-\label{fig:break}
-
-\end{center}
-\end{figure}
-
-
-
-choosing N
-\subsection{Local Convergence}
-derivative free techniques
-find neighborhood with continuity
-drive towards local optimal
-search basis
-exploratory steps
-
-\subsection{Algorithm}
-All together now
-
-\section{Analysis of Model Output}
-
-\subsection{Modified Coordinate Search}
-Negative - No local convergence properties
-Old problem parameters, which is why the scales are so different
-
-\begin{figure}
-\begin{center}
-	\begin{tikzpicture}
-	\begin{axis}[ title=\mbox{  Opt Routine }  ]	
- 	
-		\addplot+[opacity=.5, mark size=.5, smooth,solid,thick,black, error bars/.cd, y dir=both, y explicit] table[x=run, y=ex, y error=se] {./data/opt1.dat};
-		\addlegendentry{Ex}
-		\addplot+[opacity=.5,mark size=.75, smooth,solid, green] table[x=run, y=sd] {./data/opt1.dat};
-		\addlegendentry{St. Dv.}	
-%		\addlegendentry{Expectation}
-
-
-	\end{axis}	
-	\begin{axis}[ axis y line*=right, legend pos=outer north east]
-%
-		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=max] {./data/opt1.dat};
-		\addlegendentry{Max}	
-		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=var] {./data/opt1.dat};
-		\addlegendentry{VAR}	
-	\end{axis}
-
-
-	\end{tikzpicture}
- \caption{Brute force search procedure along coordinate directions in the null space}
- \label{fig:opt1}
-\end{center}
-\end{figure}
-
-
-
+\end{comment}
 
 \theendnotes
 
 \setcounter{endnote}{0}
+

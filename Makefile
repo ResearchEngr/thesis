@@ -12,7 +12,7 @@ all:
 one: 
 	$(TEX) -jobname=one "\includeonly{msip/msip}\input{$(PROJECT)}"
 two: 
-	$(TEX) -jobname=two "\includeonly{dfo/dfo}\input{$(PROJECT)}"
+	$(TEX) -jobname=two --shell-escape "\includeonly{dfo/dfo}\input{$(PROJECT)}"
 ftwo: 
 	$(TEX) -jobname=two "\includeonly{front,dfo/dfo}\input{$(PROJECT)}"
 three: 

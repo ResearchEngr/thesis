@@ -1,0 +1,37 @@
+\textbf{Stochastic Approximation and Gradient Estimation}
+
+\begin{equation}
+x_{n+1} = \prod_\Theta \left[ x_n - a_n \hat{\grad} g(x_n) \right]
+\end{equation}
+$x_n$ solution at iteration $n$, $\hat\grad g(x_n)$ is estimate of gradient, $\lb a_n \rb$ sequance of positive real numbers called gain sequence, and $\prod_\Theta$ is projection onto feasibly region.
+
+SA alg first proposed by Robbins and Monro (1951) - root finding algorithm
+stochastic version of steepest descent algorithm
+but gradient in SA is noisy estimate, convergence requires $\Expect \left[ \hat \grad g(x_n) \right] - g(x_n) \rightarrow 0$ at a certain rate
+step size is often pre-determined, instead of adaptive
+convergence requires $\sum_{n=1}^\infty a_n = \infty$ and $\sum_{n=1}^\infty a_n^2 < \infty$, algorithm sensitive to choice of $\lb a_n \rb$.  $\lb a_n \rb $ too large and $x_n$ oscillatory, $\lb a_n \rb $ too small, $x_n$ barely changes
+
+simulation as black box $\grad g(x)$ by finite difference, use forward estimate with $d+1$ sim evals or central difference with $2d$ sim runs.
+when dimension of $x$ large, not efficient due to number of sims required for one gradient evaluation
+Spall (1992) proposed simultaneuous pertubation uses 2 sim runs to produce estimate
+Spall (1998) gives nice intro to theory and application
+
+When inside structure known, use this to get better gradient estimators
+Fu (2008) gives excellent overview, pertubation analysis (PA), likelihood ratio/score function (LR/SF)
+PA proposed by Ho and Cao (1983)
+\begin{equation}
+\grad g(x) = \grad \Expect [ Y(x) ] = \Expect [ \grad Y (x) ] 
+\end{equation}
+with $Y(x)$ stochastically lipschitz continuous and differentiable with prob 1.
+overcome bad properties of $Y(x)$
+smoothed pertubabtion analysis Gong and Ho (1987) Fu and Hu (1997)
+pathwise method Hong (2009) Hong and Liu (2009)
+
+LR/SF method in Reiman Weiss (1989) Glynn (1990)
+represent $Y(x) = h(Z)$, $Z$ is vector of random variables generated in sim and $h(Z)$ is performance measure intereseted in .  $f_z(z,x)$ denote probability density of $Z$.  Note $x$ is only in density function of $Z$ and not $h(\dot)$.
+then under some regularity conditoins
+\begin{align}
+\grad g(x) &= \grad \Expect [ h(Z) ] = \grad \int h(z) f_z(z,x) dz = \int h(z) \grad_x f_z(z,x) dz \\
+	&= \Expect [ h(Z) \grad_x \log [ f_z(Z,x) ] ]
+\end{align}
+if $f_z(z,x)$ is known, then LR SF estimate $\grad g(x)$ by $h(Z) \grad_x \log [ f_z(Z,x) ]$. requires only single simulation run to comput, is unbiased estimaor, and does not require $Y(x)$ to be stochastic lipschitz continuous, applicabiliity often wider than PA, however variance of estimator is often high

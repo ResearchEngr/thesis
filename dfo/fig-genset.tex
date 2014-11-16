@@ -1,0 +1,68 @@
+\begin{tabular}{m{.625\textwidth} m{.3\textwidth}}
+\begin{tikzpicture}[ 
+   scale=7,
+    axis/.style={very thick, ->, >=stealth'},
+    locset/.style={very thick},
+    important line/.style={thick, color=red, ->},
+    dashed line/.style={dashed, thin},
+    pile/.style={thick, ->, >=stealth', shorten <=2pt, shorten
+    >=2pt},
+    every node/.style={color=black}
+    ]
+    % axis
+%  \draw[locset] (.45,0)  -- (.75,.3) -- (.75,.8) -- (.7,.9) --  (0,.9);
+\filldraw[fill=green!20,draw=green!50!black] (0,0) -- (.45,0) -- (.75,.3) -- (.75,.7) -- (.55,.9) --  (0,.9) -- cycle; 
+
+    \draw[axis] (-0.1,0)  -- (1.1,0) node(xline)[right]
+        {$x_1$};
+    \draw[axis] (0,-0.1) -- (0,1.1) node(yline)[above] {$x_2$};
+
+
+    \fill[red]  (.65,.4) coordinate (x) circle (.4pt) ;
+
+    \node[above left] at (x) {$x$};
+     \node[circle,draw=blue,minimum size=75pt] at (x) (circ) {};
+
+%    \draw[important line] (x) -- (1,.725)
+%        coordinate (gf) node[right, text width=5em] {$-\grad f(x)$};  %% gradient
+%     \draw[thick,<->,color=blue] (x) -- node[above]{$\btu$} +(5.5pt,0);  %% radius of circle
+     
+     \draw[very thick,color=blue!50!black] (.75,.3) -- (.75,.7);
+     \draw[very thick,color=blue!50!black] (.45,0) -- (.75,.3);
+
+    \draw[pile]  (x) -- +(0,.25)
+        coordinate (d1) node[right, text width=5em] {$d_1$};
+
+    \draw[pile]  (x) -- +(-.15,-.175)
+        coordinate (d1) node[right, text width=5em] {$d_2$};
+
+
+    \draw[pile,color=blue]  (.75,.575) -- +(.17,0)
+        coordinate (n1) node[right, text width=5em] {};
+    \draw[pile,color=blue]  (.6,.15) -- +(.12,-.12)
+        coordinate (n2) node[right, text width=5em] {};
+
+    \draw[thin,dashed,color=blue] (.6,.15) -- +(.04,-.04) -- +(.08,0) -- +(.04,.04);
+    \draw[thin,dashed,color=blue] (.75,.575) -- +(.06,0) -- +(.06,.06) -- +(0,.06);
+
+\end{tikzpicture}
+&
+\begin{tikzpicture}[
+    scale=2,
+    axis/.style={very thick, <->, >=stealth'}]
+
+    \draw[thin] (-1.1,-1.1) -- (-1.1,1.1) -- (1.1,1.1) -- (1.1,-1.1) -- cycle;
+    \filldraw[fill=blue!15!white,draw=blue!50!black] (0,0) -- (1.1,0) -- (1.1,-1.1) --  (.94,-1.1) -- cycle; 
+    \filldraw[fill=green!20,draw=green!50!black] (0,0) -- (0,1.1) -- (-1.1,1.1) --  (-1.1,-1.05) -- cycle; 
+    \draw[axis] (-1.1,0)  -- (1.1,0) node(xline)[right] {$x_1$};
+    \draw[axis] (0,-1.1) -- (0,1.1) node(yline)[above] {$x_2$};
+    
+    \node at (-.5,.5) {$\cK^o$};
+    \node at (.625,-.395) {$\cK$};
+
+
+
+\end{tikzpicture}
+\\
+\centering Note & \centering Note 
+\end{tabular}

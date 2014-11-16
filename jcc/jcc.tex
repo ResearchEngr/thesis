@@ -7,7 +7,7 @@ The current line threshold model for transmission elements places the economics 
 The power grid operation and reliability requirements are done with fixed line limits.  However, line failure rates are dependent on power flow, environmental conditions, and other factors.  In order to incorporate this into operation and reliability models, we look to probabilistic risk measures and chance constraints. 
 
 
-\section{Literature Review}
+\section{Congestion Based Risk}
 The connection between power flow and line failure rates can be looked at from many different directions.  The nominal capacity of transmission elements are based on thermal characteristics of the line as well as a set of environmental characteristics which represent the worst case scenario for different operating times.  Typically, there may be a summer rating and a winter rating for each transmission element, where the winter rating has colder ambient temperature, thus less heating and less sagging.  Dynamic line limits are being explored to account for current environmental conditions \cite{bucher_2013},\cite{yip_2009}, \cite{wang_2011},\cite{zhang_2002}.
 
 A research area which connects power flow with line failure risk is cascading power failures.  As transmission elements become loaded, the chance of failure increases. The line failure risk is typically a monotonically increasing function dependent on power flow.  This can be seen in paper on cascading power failures such as \cite{carreras_2002}, \cite{chen_2005}, \cite{dobson_2007}, \cite{newman_2011}, \cite{hines_2011}.
@@ -388,7 +388,7 @@ The CC model is always more conservative then the OPF model as it will tighten t
 Another interesting feature is that the slack would like to be distributed as much as possible to reduce cost.  This can be seen from the objective \ref{jcc_obj} due to the squared beta term and the OPF results show it spreading when there is no concerns of line or system risk.  The CC model slightly changes it's generator position as well as removing 3 generators from the slack distribution.  It is removing generators which have an effect on the probabilistically constrained transmission lines in order to ensure that the constraints are met $95\%$ of the time.  The JCC model has moved in almost exactly the opposite direction and has kept a distributed slack.
 
 
-\subsubsection*{Cost-Risk Frontier}
+\subsection{Cost-Risk Frontier}
   \begin{figure} 
 \centering
 \input{\mypathjcc/fig-costriskfront}

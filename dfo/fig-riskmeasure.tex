@@ -1,0 +1,16 @@
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{ Risk Measures },legend pos=outer north east, scale=1.6374568, xlabel=Capacity (MW), ylabel=Load Shed (MW)]			\addplot+[black,opacity=.5, mark size=.5,only marks] table[x=name, y=ex] {./data/done.dat};
+\addlegendentry{Expect}
+	\addplot+[blue,opacity=.5, mark size=.5,solid,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {./data/done.dat};
+\addlegendentry{St. Error}
+	\addplot+[red,opacity=.15, mark size=.5,solid,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=st] {./data/done.dat};
+\addlegendentry{St. Dev}
+	\addplot+[purple,opacity=.715, mark size=.5,solid] table[x=name, y=var] {./data/done.dat};
+\addlegendentry{5\% V@R}
+	\addplot+[purple,opacity=.815, mark size=.5,solid] table[x=name, y=cvar] {./data/done.dat};
+\addlegendentry{5\% CV@R}
+	\addplot+[purple,opacity=.8515, mark size=.5,solid] table[x=name, y=max] {./data/done.dat};
+\addlegendentry{Maximum}
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}

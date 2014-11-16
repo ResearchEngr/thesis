@@ -1,0 +1,9 @@
+\foreach \i in {0, 1, 5,10,15,20}{
+	\begin{tikzpicture}
+	\begin{axis}[ scale=.6575, xlabel=Load Served (MW) Stage \i , ylabel=Load Served (MW) Final ]	
+			\addplot+[opacity=.46775, mark size=.915, only marks] table[x=ls\i, y=ls30] {./data/long.corr};
+%		\addlegendentryexpanded{$\i$ - Ex)
+	\end{axis}	
+	\end{tikzpicture}
+ %\label{fig:lmp}
+}
