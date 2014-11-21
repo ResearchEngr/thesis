@@ -9,6 +9,8 @@ all:
 	$(BUILDTEX)
 	$(BUILDTEX)
 
+once:
+	$(BUILDTEX)
 one: 
 	$(TEX) -jobname=one "\includeonly{msip/msip}\input{$(PROJECT)}"
 two: 

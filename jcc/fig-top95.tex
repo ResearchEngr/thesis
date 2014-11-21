@@ -3,7 +3,7 @@
 \usepackage{pgfplots}
 \begin{document}
 \begin{tikzpicture}[scale=.8]%1.3,1
-\begin{axis}[title=Normalized Line Flow , xlabel=Line, ylabel=Line Flow (MW),xmin=0,xmax=9, grid=major,legend style={at={(.98,.875)},anchor=north east}]
+\begin{axis}[title=Normalized Line Flow , xlabel=Line, ylabel=Line Flow (MW),xmin=0,xmax=9, grid=major]
 
                         \addplot+[opacity=.9,only marks, mark size=1, mark=triangle,
                         /pgfplots/error bars/.cd,
@@ -27,9 +27,9 @@
                         \addlegendentry{SJC}
 
 \end{axis}
-\begin{axis}[hide x axis, axis y line=right,ymin=-50,ymax=950,xmin=0,xmax=9,ylabel=Shadow Price (\$)]
-   \addplot+[only marks,mark size=4,mark=star] table[x=count,y=dual] {\mypathjccdata/duals.dat};
-   \addlegendentry{Shadow Price (OPF)}
-\end{axis}
+%\begin{axis}[hide x axis, axis y line=right,ymin=-50,ymax=950,xmin=0,xmax=9,ylabel=Shadow Price (\$)]
+%   \addplot+[only marks,mark size=4,mark=star] table[x=count,y=dual] {\mypathjccdata/duals.dat};
+%   \addlegendentry{Shadow Price (OPF)}
+%\end{axis}
 \end{tikzpicture}
 \end{document}

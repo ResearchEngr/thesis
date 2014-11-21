@@ -207,7 +207,8 @@ The OPF model uses the DC simplifications from the full AC model to ensure the m
                         && \textstyle \sum_j c^g_{ij} x_j - \sum_j c^b_{ie} y_e          &=d_i       && \forall i \label{opf_cons}\\ 
                  && y_e - b_e \textstyle \sum_i c^b_{ie} \theta_i          &=0         && \forall e \label{opf_kcl}\\
                  && y_e &\in \left[ -U_e, U_e \right] && \forall e \label{opf_limit}\\
-                 && x_j &\in \left[ G^{min}_j, G^{max}_j \right] && \forall j  \label{opf_gen}  
+                 && x_j &\in \left[ G^{min}_j, G^{max}_j \right] && \forall j  \label{opf_gen}  \\
+                 && \textstyle \sum_j \beta_j &=1 && \label{opf_slack}
 \end{alignat}
 \end{subequations}
 
@@ -356,6 +357,7 @@ $r$ & 0.0171 & 0.0179 & 0.0080\\
 
 \begin{table}
 \centering
+\scriptsize
 \begin{tabular}{| c| c |c c c c c c |}
 \hline
  & Mod & g1 & g2 & g3 & g4 & g5 & g6 \\
@@ -434,12 +436,14 @@ Avg Time (100 trials)& 0.34  & 2.2 & 2.3 \\
 \subsubsection*{Line Threshold Comparison}
 Here we will explore what the JCC model is doing to lower its cost or risk compared to the traditional models.  For this experiment, the parameters are as follows, $M=1.03, \epsilon=0.015, \eta_L=0.05, L=0.95, p=0.005$, and $B=1$.  Solving this program, we see that the majority of the lines are less than 50\% utilized.  There is a small number of lines that are at or near their nominal capacity.
 
-
+\begin{figure}
 \begin{tabular}{c c}
 \input{\mypathjcc/fig-top95}
 &
 \input{\mypathjcc/fig-tophisto}
 \end{tabular}
+\caption{Top lines resulting in congestion based risk}
+\end{figure}
 
 
 Now, we will look at the trade off that the JCC model is able to make due to it increasing the nominal line limit by 10\% to match the given system risk level.  In figure \ref{solve_shadow}, 8 lines are shown, which are lines above 95\% of their nominal capacity in the OPF model.  The mean line flows are plotted as well as the standard deviation based on the slack distribution for the solution.  
@@ -478,8 +482,52 @@ Cost & 567.1 & 574.0 & 572.2\\
 \end{figure}
 
 
+\begin{verbatim}
+pow  case            m0  m1 mg eps epsN eta etaG L p  B   T
+pow case/30.db  .77 1.1 1 .00021 .4 .01 .5 .98 .005 .4 10000
+pow case/30.db  .77 1.1 1 .0028 .4 .01 .5 .9 .005 .4 10000
+pow case/30.db  .77 1.1 1 .0046 .4 .01 .5 .8 .005 .4 10000
+pow case/30.db  .77 1.1 1 .0046 .4 .05 .5 .8 .005 .4 10000
+\end{verbatim}
+%solvesensitivty
+
+\begin{table}
+\centering
+ \begin{tabular}{ |c| c c c c c c|}
+\hline
+& OPF & CC .01 & CC .05 & JCC .98 & JCC .9 & JCC .8 \\
+\hline
+\hline
+Cost & 565.215 & 590.172 & 572.833& 589.594 & 581.92 &579.135\\
+%$r$ & 0.00504327 & 0.0015044 & 0.0169355 & 0.000309812 &.0028877 &0.00466\\  -- shown in picture
+\hline
+\end{tabular}
+\caption{Sensitivity Analysis Results}
+\end{table}
 
 
+\begin{table}
+\centering
+\begin{tabular}{| r  c |}
+\hline
+Risk :& Ex[$y_e > U_e$] \\
+\hline
+\hline
+OPF:& 0.3875\\
+CC .01:& 0.0225\\
+CC .05:& 0.1971 \\
+JCC .8:& 0.31 \\
+JCC .9:& 0.09 \\
+JCC .98:& 0.0125 \\
+\hline
+\end{tabular}
+\caption{Expected number of lines over their threshold}
+\end{table}
+
+\begin{figure}
+\input{\mypathjcc/fig-sensitivity}
+\caption{Sensitivity analysis for other polynomial risk functions}
+\end{figure}
 
 
 %%%%%%%% Section 6

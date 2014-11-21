@@ -1,5 +1,6 @@
 	\begin{tikzpicture}
-	\begin{axis}[ title=\mbox{ Risk Measures },legend pos=outer north east, scale=1.6374568, xlabel=Capacity (MW), ylabel=Load Shed (MW)]			\addplot+[black,opacity=.5, mark size=.5,only marks] table[x=name, y=ex] {./data/done.dat};
+	\begin{axis}[ title=\mbox{ Risk Measures },legend pos=outer north east, scale=1, xlabel=Capacity (MW), ylabel=Load Shed (MW)]			
+\addplot+[black,opacity=.5, mark size=.5,only marks] table[x=name, y=ex] {./data/done.dat};
 \addlegendentry{Expect}
 	\addplot+[blue,opacity=.5, mark size=.5,solid,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {./data/done.dat};
 \addlegendentry{St. Error}

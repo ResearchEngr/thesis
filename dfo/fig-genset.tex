@@ -18,14 +18,14 @@
     \draw[axis] (0,-0.1) -- (0,1.1) node(yline)[above] {$x_2$};
 
 
-    \fill[red]  (.65,.4) coordinate (x) circle (.4pt) ;
+    \fill[red]  (.65,.35) coordinate (x) circle (.4pt) ;
 
     \node[above left] at (x) {$x$};
      \node[circle,draw=blue,minimum size=75pt] at (x) (circ) {};
 
 %    \draw[important line] (x) -- (1,.725)
 %        coordinate (gf) node[right, text width=5em] {$-\grad f(x)$};  %% gradient
-%     \draw[thick,<->,color=blue] (x) -- node[above]{$\btu$} +(5.5pt,0);  %% radius of circle
+     \draw[thin,<->,color=blue] (x) -- node[above right]{$\epsilon$} +(5.38pt,0);  %% radius of circle
      
      \draw[very thick,color=blue!50!black] (.75,.3) -- (.75,.7);
      \draw[very thick,color=blue!50!black] (.45,0) -- (.75,.3);
@@ -39,10 +39,10 @@
 
     \draw[pile,color=blue]  (.75,.575) -- +(.17,0)
         coordinate (n1) node[right, text width=5em] {};
-    \draw[pile,color=blue]  (.6,.15) -- +(.12,-.12)
+    \draw[pile,color=blue]  (.55,.1) -- +(.12,-.12)
         coordinate (n2) node[right, text width=5em] {};
 
-    \draw[thin,dashed,color=blue] (.6,.15) -- +(.04,-.04) -- +(.08,0) -- +(.04,.04);
+    \draw[thin,dashed,color=blue] (.55,.1) -- +(.04,-.04) -- +(.08,0) -- +(.04,.04);
     \draw[thin,dashed,color=blue] (.75,.575) -- +(.06,0) -- +(.06,.06) -- +(0,.06);
 
 \end{tikzpicture}
@@ -52,17 +52,17 @@
     axis/.style={very thick, <->, >=stealth'}]
 
     \draw[thin] (-1.1,-1.1) -- (-1.1,1.1) -- (1.1,1.1) -- (1.1,-1.1) -- cycle;
-    \filldraw[fill=blue!15!white,draw=blue!50!black] (0,0) -- (1.1,0) -- (1.1,-1.1) --  (.94,-1.1) -- cycle; 
-    \filldraw[fill=green!20,draw=green!50!black] (0,0) -- (0,1.1) -- (-1.1,1.1) --  (-1.1,-1.05) -- cycle; 
+    \filldraw[fill=blue!15!white,draw=blue!50!black] (0,0) -- (1.1,0) --  (1.1,-1.1) --   cycle; 
+    \filldraw[fill=green!20,draw=green!50!black] (0,0) -- (0,1.1) -- (-1.1,1.1) --  (-1.1,-1.1) -- cycle; 
     \draw[axis] (-1.1,0)  -- (1.1,0) node(xline)[right] {$x_1$};
     \draw[axis] (0,-1.1) -- (0,1.1) node(yline)[above] {$x_2$};
     
-    \node at (-.5,.5) {$\cK^o$};
-    \node at (.625,-.395) {$\cK$};
+    \node at (-.5,.5) {$\cK^o(x,\epsilon)$};
+    \node at (.7,-.325) {$\cK(x,\epsilon)$};
 
 
 
 \end{tikzpicture}
 \\
-\centering Note & \centering Note 
+\centering Note & \centering Note 2
 \end{tabular}

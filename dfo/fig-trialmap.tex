@@ -1,0 +1,16 @@
+\begin{tikzpicture}
+\begin{axis}[
+    colormap/jet,colorbar,
+    mesh/cols=22,
+    view={0}{90},xmin=45,xmax=55,ymin=-10,ymax=10]
+    \addplot3[surf,shader=flat,opacity=.25] table{\mypathdfodata/heatmap_trial.dat};
+\end{axis}
+\begin{axis}[title=Trial Points,legend pos=north east, xmin=45,xmax=55,ymin=-10,ymax=10]
+\addplot+[only marks, circle, mark size=1.5, opacity=.6] table[x=x1, y=x2]{\mypathdfodata/trial.dat};
+\addlegendentry{Trial}
+\addplot+[only marks, red, mark size=1] table[x=x1, y=x2]{\mypathdfodata/select.dat};
+\addlegendentry{Selection}
+\addplot+[only marks, black,opacity=.5, mark size=2] table[x=x1, y=x2]{\mypathdfodata/reduce.dat};
+\addlegendentry{Reduce}
+\end{axis}
+\end{tikzpicture}

@@ -1,0 +1,23 @@
+\newcommand{\numb}{negEX}
+\newcommand{\cols}{16}
+\begin{tabular}{c c}
+\begin{tikzpicture}[scale=.8]
+\begin{axis}[
+    colormap/jet,
+    colorbar,mesh/cols=\cols,
+    view={25}{40}]
+    \addplot3[surf,shader=flat] table{\mypathdfodata/heatmapnegEX.dat};
+\end{axis}
+\end{tikzpicture}
+&
+\begin{tikzpicture}[scale=.8]
+\begin{axis}[
+    colormap/jet,
+    colorbar,mesh/cols=\cols,
+    view={25}{90}]
+    \addplot3[surf,shader=flat] table{\mypathdfodata/heatmapnegEX.dat};
+\end{axis}
+\end{tikzpicture}
+\\
+Surface plot of Ex for 2D search & Heatmap of Ex for 2D search \\
+\end{tabular}

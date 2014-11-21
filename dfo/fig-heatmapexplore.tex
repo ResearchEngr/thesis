@@ -1,0 +1,42 @@
+\newcommand{\numb}{negEX}
+\newcommand{\cols}{16}
+\foreach \e in {25,40,65}{
+\foreach \r in {25,40,65}{
+\begin{tikzpicture}[scale=.4]
+\begin{axis}[
+    colormap/jet,
+    colorbar,mesh/cols=\cols,
+    view={\e}{\r}]
+    \addplot3[surf,shader=flat] table{\mypathdfodata/heatmap\numb.dat};
+\end{axis}
+\end{tikzpicture}
+}
+}
+
+\begin{tikzpicture}[scale=.8]
+\begin{axis}[
+    colormap/jet,
+    colorbar,mesh/cols=\cols,
+    view={25}{40}]
+    \addplot3[surf,shader=flat] table{\mypathdfodata/heatmap\numb.dat};
+\end{axis}
+\end{tikzpicture}
+\begin{tabular}{c c}
+\begin{tikzpicture}[scale=.8]
+\begin{axis}[
+    colormap/jet,
+    colorbar,mesh/cols=\cols,
+    view={25}{90}]
+    \addplot3[surf,shader=flat] table{\mypathdfodata/heatmap\numb.dat};
+\end{axis}
+\end{tikzpicture}
+&
+\begin{tikzpicture}[scale=.8]
+\begin{axis}[
+    colormap/jet,
+    colorbar,mesh/cols=\cols,
+    view={25}{90}]
+    \addplot3[surf,shader=flat] table{\mypathdfodata/heatmap\numb.dat};
+\end{axis}
+\end{tikzpicture}
+\end{tabular}

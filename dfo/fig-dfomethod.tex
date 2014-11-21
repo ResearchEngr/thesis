@@ -5,12 +5,12 @@
 
 
 % root of the the initial tree, level 1
-\node[root] {\large \textbf{ Derivative Free Optimization}}
+\node[root] (root) {\large \textbf{ Derivative Free Optimization}}
 % The first level, as children of the initial tree
   child {node[level 2] (c1) {Direct Search}}
-  child {node[level 2] (c2) {Model Search}}
+  child {node[level 2] (c2) {Model Based}}
   child {node[level 2] (c3) {Heuristics}}
-  child {node[level 2] (c4) {Global Search}};
+  child {node[level 2] (c4) {Global}};
 
 \node[oracle] (fo) at (5.1,2.1){Function Oracle};
 \node[level 2 oracle,below of = fo,xshift=5pt] (o1) {Dimension Reduction};
@@ -20,12 +20,14 @@
   \draw[->] (fo.190) |- (o2.west);
   \draw[->] (fo.190) |- (o3.west);
 
+\draw[<->,very thick,dashed] (root) -- (fo.west);
 
 % The second level, relatively positioned nodes
 \begin{scope}[every node/.style={level 3}]
-\node [below of = c1, xshift=15pt,yshift=-5pt] (c11) {Generalized Pattern Search};
-\node [below of = c11,yshift=-5pt] (c12) {Generating Set Search}; %with bound constraints
-\node [below of = c12,yshift=0pt] (c13) {Mesh Adaptive};
+%\node [below of = c1, xshift=15pt,yshift=-5pt] (c11) {Generalized Pattern Search};
+\node [below of = c1,xshift=15pt,yshift=-5pt] (c11) {Generating Set Search}; %with bound constraints
+\node [below of = c11,yshift=0pt] (c12) {Mesh Adaptive};
+\node [below of = c12] (c13) {Geometric, Simplex};
 
 \node [below of = c2, xshift=15pt,yshift=2pt] (c21) {Trust Regions};
 \node [below of = c21] (c22) {Implicit \newline Filtering};

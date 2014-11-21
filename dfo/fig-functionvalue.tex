@@ -1,0 +1,31 @@
+\begin{tabular}{c c}
+\begin{tikzpicture}[scale=.8]
+\begin{axis}[title=Trial Points]
+\addplot+[only marks, circle, mark size=1, opacity=.95] table[x=num, y=ex]{\mypathdfodata/minobj.dat};
+\addlegendentry{Compass Search 1}%$x_0 = (0,0), \Delta_0=25$
+\addplot+[only marks, circle, mark size=1, opacity=.95] table[x=num, y=ex]{\mypathdfodata/objmin25.dat};
+\addlegendentry{Compass Search 25}%$x_0 = (0,0), \Delta_0=50$
+\addplot+[only marks, circle, mark size=1, opacity=.95] table[x=num, y=ex]{\mypathdfodata/minobj2.dat};
+\addlegendentry{Compass Search 50}%$x_0 = (0,0), \Delta_0=50$
+\addplot+[only marks, circle, mark size=1, opacity=.95] table[x=num, y=ex]{\mypathdfodata/objmin75.dat};
+\addlegendentry{Compass Search 75}%$x_0 = (0,0), \Delta_0=50$
+\end{axis}
+\end{tikzpicture}
+&
+\begin{tikzpicture}[scale=.8]
+\begin{axis}[
+    colormap/jet,colorbar,
+    mesh/cols=16,
+    view={0}{90},xmin=-5,xmax=80,ymin=-5,ymax=80]
+    \addplot3[surf,shader=flat,opacity=.25] table{\mypathdfodata/heatmap_opt.dat};
+\end{axis}
+\begin{axis}[title=Trial Points,legend pos=north east, xmin=-5,xmax=80,ymin=-5,ymax=80]
+\addplot+[mark size=4] coordinates { (.969,1.63) };
+\addplot+[mark size=4] coordinates { (26.56,37.5) };
+\addplot+[mark size=4] coordinates {  (53.32, -1.56) };
+\addplot+[mark size=4] coordinates { (74.56,75) };
+\end{axis}
+\end{tikzpicture}
+\\
+Note 1 & Note 2
+\end{tabular}
