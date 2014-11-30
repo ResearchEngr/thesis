@@ -16,7 +16,7 @@ While there is a hard limit on transmission lines that will cause them to trip w
 
 However, demand is known to fluctuate.  Currently, ancillary services such as reserves and regulation support are acquired to deal with this uncertainty.  This uncertainty is beginning to be handled for the traditional line threshold model of OPF using chance constraints (CC).  Several groups have developed CC models to ensure that the power flow on any transmission element is less than its capacity for a large percentage of scenarios.  Several extensions are made which involve arbitrary slack distribution \cite{bienstock_2012}, application to large penetration of wind farms \cite{vrakopoulou_2013b}, with HVDC lines \cite{vrakopoulou_2013}, and others \cite{roald_2013}, \cite{vrakopoulou_2013c}.
 
-The combination of a system risk measure and demand uncertainty lead to the joint chance constraint (JCC) model.  The system risk measure (a joint chance constraint) is a function of all the line risks.  In the static setting, this  system can be solved exactly using nonlinear programming and the linear approximation of reduces to gives Wang's (\cite{wang_2013}) model.  Under demand uncertainty, the line risk's failure becomes dependent on both mean and standard deviation of line flow. In order to solve this, a linearization of the system risk measure needs to be made.  Once this approximation is made, the problem becomes solvable for large test instances even when exogenous contingencies are considered.  In order to solve the problem, a cutting plane algorithm will be used to model the line risk function (convex, not analytic) as well as the branch flow standard deviations (second order cone).
+The combination of a system risk measure and demand uncertainty lead to the joint chance constraint (JCC) model.  The system risk measure (a joint chance constraint) is a function of all the line risks.  In the static setting, this  system can be solved exactly using nonlinear programming and its linear approximation reduces to Wang's (\cite{wang_2013}) model.  Under demand uncertainty, the line risk's failure becomes dependent on both mean and standard deviation of line flow. In order to solve this, a linearization of the system risk measure needs to be made.  Once this approximation is made, the problem becomes solvable for large test instances even when exogenous contingencies are considered.  In order to solve the problem, a cutting plane algorithm will be used to model the line risk function (convex, not analytic) as well as the branch flow standard deviations (second order cone).
 
 Once the model has been developed, computational experiments will be shown that give intuition on the trade-offs made between OPF, CC and JCC.  The cost-risk frontier will be shown for the new system risk measure.  The OPF and CC models give dispatch points on the interior of this frontier, which are inefficient according to this system risk measure.  The CC and JCC models take around the same amount of time to solve and are an order of magnitude slower than OPF.  The JCC model is robust to deviations in line risk parameters as well as out of family line risk functions.  Finally, conclusions will be made and future research directions will be discussed.
 
@@ -28,10 +28,10 @@ This paper will investigate the risk characteristics of an operating point for t
 \subsection{Linear Power Flow}
 The DC power flow model is a simplification of the AC power flow model, which represents the true physics of the electrical system.  The DC model makes the assumptions that the power lines are lossless, voltages are equal to nominal, and the phase angle differences are small.  While losing some accuracy and important information about the voltages, the problem becomes more tractable.  Methods can be used to find approximate voltages, which can be important indicators for system stability.  Additional complexities will be ignored for clarity such as shunt elements which consume power.
 
-The topology of the grid can be represented using an admitance matrix, $C \in \R{N_l \times N_b}$, where $c_{ei}=1$ if line $e$ begins at node $i$ and $-1$ if line $e$ ends at node $i$.  For DC power flow, the line susceptance determines how the power flows, so let $B'=diag\left(b_1,b_2,...b_{N_l}\right)$ be the diagonal susceptance matrix.  
+The topology of the grid can be represented using an admittance matrix, $C \in \R{N_l \times N_b}$, where $c_{ei}=1$ if line $e$ begins at node $i$ and $-1$ if line $e$ ends at node $i$.  For DC power flow, the line susceptance determines how the power flows, so let $B'=diag\left(b_1,b_2,...b_{N_l}\right)$ be the diagonal susceptance matrix.  
 
 
-The branch flows $y \in \R{N_l}$ for given a set of phase angles $\theta \in \R{N_b}$ at each bus are determined by Kirchoff's Current Law and can be written as
+The branch flows $y \in \R{N_l}$ for, given a set of phase angles $\theta \in \R{N_b}$ at each bus, are determined by Kirchoff's Current Law and can be written as
 \begin{equation}\label{kcl}
 y=B' C \theta
 \end{equation}
@@ -43,7 +43,7 @@ Applying $C^T$ to the branch flows $y$ in \ref{kcl} will give the net injects fo
 x = C^T y = B \theta
 \end{equation}
 
-This linear system can be solved uniquely with $\tx = \tB \ttheta$, where $\tx \in \R{N_b-1}$ has the slack node removed and $\tilde{B}$ is a $(N_b-1) \times (N_b-1)$ matrix with the row for the slack bus inject and the column for the slack bus angle has been removed.  This will remove the extra degree of freedom in phase angles and give an unique solution.
+This linear system can be solved uniquely with $\tx = \tB \ttheta$, where $\tx \in \R{N_b-1}$ has the slack node removed and $\tilde{B}$ is a $(N_b-1) \times (N_b-1)$ matrix with the row for the slack bus inject and the column for the slack bus angle has been removed.  This will remove the extra degree of freedom in phase angles and give a unique solution.
 
 \subsubsection*{Injection Shift Factors}
 Now, we want to understand small perturbabtions to the system.  Taking the derivative of \ref{dcpow}, we get $d \tx = \tilde{B} d \ttheta $.  The changes to the phase angles given a vector of changes to net injects is $ d \ttheta = \tilde{B}^{-1} d \tx $.  This can be carried through to find the sensitivity of branch flows to net injects 
@@ -68,10 +68,7 @@ The random injects cause loading on the transmission lines to fluctuate and the 
 \begin{equation}\label{rand_flow}
  \ry = y_0+ A C_G \beta \rD  - A C_M \rdm 
 \end{equation}
-with $\rf = A C_G \beta \rD - AC_M \ri$ being the random component of branch flows.
-
-\subsubsection*{Forecasted System}
-Without loss of generality, we can assume that the volatile injects have zero mean.  If we know them to have a nonzero mean, we can shift the forecasted system to account for it. 
+with $\rf = A C_G \beta \rD - AC_M \ri$ being the random component of branch flows. Without loss of generality, we can assume that the volatile injects have zero mean.  If we know them to have a nonzero mean, we can shift the forecasted system to account for it. 
 The forecasted system  $\left(x_0, y_0, \theta_0\right)$ is the expectation of \ref{rand_inj} and \ref{rand_flow}
 \begin{align*}
 C_G x_0 - d &= C^T y_0 \\
@@ -80,10 +77,7 @@ y_0 &= B^T C \theta_0
 with zero mean deviation $\Erdm=\left[0 \cdots 0\right]^T$ and $\ErD=0$. 
 %$\Erdm=\left[ \begin{array}{c} 0 \\ \vdots \\ 0\end{array} \right]$ and $\ErD=0$. 
 
-
-\subsubsection*{Branch Covariance Matrix}
-
-From \ref{isf}, we have that the random component of the flow is made part from the volatile injects and part the generators response.   The random branch flows $\rf$ are a linear function of the random injects $\ri$, thus $\ry$ has a multivariate gaussian distribution as well.  The branch covariance matrix can be calculated
+From (eq \ref{isf}), we have that the random component of the flow is made part from the volatile injects and part the generator's response.   The random branch flows $\rf$ are a linear function of the random injects $\ri$, thus $\ry$ has a multivariate gaussian distribution as well.  The branch covariance matrix can be calculated
 \begin{equation*}
 \E{\Omega}{ \left( \ry - \mu^y \right) \left( \ry - \mu^y \right)^T } = \E{\Omega}{\left( A(C_G\beta 1^T - C_M) \ri \right) \left( A(C_G\beta 1^T - C_M )\rdm \right)^T } 
 \end{equation*}
@@ -117,7 +111,7 @@ The risk function $g : \R{} \rightarrow \R{}$ takes the normalized flow $\hy_e$ 
 \begin{equation}
  g(\hy_e) = \bP{\Xi}{\text{Line }e\text{ fails} | \hy_e} 
 \end{equation}
-A piecewise linear function captures some of the important features of the endogenous risk of the transmission element.  Up to a certain point, $L$, the power flow does not add any risk above that of its normal outage rate.  Above that point, the additional risk is proportional to the additonal flow on the line.  One a critical capacity $U^c$ is reached, a protective element will trip and the line will fail with certainty (ignoring hidden failures).  
+A piecewise linear function captures some of the important features of the endogenous risk of the transmission element.  Up to a certain point, $L$, the power flow does not add any risk above that of its normal outage rate.  Above that point, the additional risk is proportional to the additonal flow on the line.  Once a critical capacity $U^c$ is reached, a protective element will trip and the line will fail with certainty (ignoring hidden failures).  
 \begin{equation}\label{pwl_risk}
 g(\hy_e) = \left\{ \begin{array}{l l}
   0 & \hy_e \leq L \\
@@ -188,13 +182,13 @@ which is a convex function with respect to $\mu^y_e$ and $\sigma^y_e$.
 
 %%%%%%%% Section 3
 \section{Dispatch Models for Bulk Power Systems}
-Bulk power systems rely on dispatch models to clear the markets for power in a timely manner.  These models are critical to ensure that market is cleared minimizing cost while maintaining a set of reliability constraints.  In its most common for, the DC power flow model is used to clear economic markets for both real-time and day-ahead operation, where the day-ahead operation has the additional complexity of committing slow ramping resources.  The set of reliability constraints traditionally refer to line thresholds that the system must maintain continuously as well as the systems resiliency to N-1 contingencies.  First, a brief overview of the three models will be given and then the full mathematical programming models for each will be given.  A mention of their extension to exogenous contingencies will be given and then the solution methodology will follow.
+Bulk power systems rely on dispatch models to clear the markets for power in a timely manner.  These models are critical to ensure that market is cleared minimizing cost while maintaining a set of reliability constraints.  In its most common form, the DC power flow model is used to clear economic markets for both real-time and day-ahead operation, where the day-ahead operation has the additional complexity of committing slow ramping resources.  The set of reliability constraints traditionally refer to line thresholds that the system must maintain continuously as well as the system's resiliency to N-1 contingencies.  First, a brief overview of the three models will be given and then the full mathematical programming models for each will be given.  A mention of their extension to exogenous contingencies will be given and then the solution methodology will follow.
 
-\subsection{Overview of Models}
+\subsubsection{Overview of Models}
 A primary difference between the Optimal Power Flow model and the Joint Chance Constraint model is that the OPF model constrains line risk and the JCC model constrains system risk.  The OPF model is typically done in a static sense where as the JCC model involves uncertainty. The CC model is the extension of OPF under uncertainty.
 \begin{description}
 \item[Optimal Power Flow (OPF)] This model is used to clear real-time markets for bulk power systems.  It has fixed thresholds for line capacities.  All power flows are assumed to be static.  The regular DC power flow assumptions are used.  The objective is to minimize cost for feasible injects that do not violate line capacity thresholds.
-\item[Chance Constraint (CC)] This model assumes a covariance matrix for volatile injects and places probabilistic constraints on line capacity thresholds.  For an arbitrary slack distribution, the standard deviation for line flows can be represent as a second order cone with respect to the slack distribution variables.
+\item[Chance Constraint (CC)] This model assumes a covariance matrix for volatile injects and places probabilistic constraints on line capacity thresholds.  For an arbitrary slack distribution, the standard deviation for line flows can be represented as a second order cone with respect to the slack distribution variables.
 \item[Joint Chance Constraint (JCC)] This model replaces line capacity thresholds with line risk measures.  The system risk is the sum of individual line risks.  The objective is to minimize cost for feasible injects that do not violate a system risk threshold.
 \end{description}
 
@@ -243,13 +237,13 @@ The JCC model departs from traditional power flow models in that it allows for a
 \end{alignat}
 \end{subequations}
 
-The objective \ref{jcc_obj} for the JCC model is the typical quadratic objective for the OPF model plus a contribution from the slack distribution due to the uncertainty in the volatile injects.  This objective is the expected cost of meeting the realized demand.  The uncertainty in demand also causes the generator constraint \ref{jcc_gen} to be probabilistic with $\eta_g = \Phi^{-1}(1-\epsilon_g)$ being its tolerance.  The upper and lower bounds $[G^{min},G^{max}]$ will be dependent on many things, most importantly the time frame used.  This will be affected by the status of the generator (on,off,starting up,shutting down) and its ramping rate as well as any physical limits it may have.  
+The objective \ref{jcc_obj} for the JCC model is the typical quadratic objective for the OPF model plus a contribution from the slack distribution due to the uncertainty in the volatile injects.  This objective is the expected cost of meeting the realized demand.  The uncertainty in demand also causes the generator constraint \ref{jcc_gen} to be probabilistic with $\eta_g = \Phi^{-1}(1-\epsilon_g)$ being its tolerance.  The upper and lower bounds $[G^{min},G^{max}]$ will be dependent on many things, most importantly the time frame used.  This will be affected by the status of the generator (on, off, starting up, shutting down) and its ramping rate as well as any physical limits it may have.  
 
-The first equations \cref{jcc_obj,jcc_cons,jcc_kcl,jcc_slack,jcc_limit,jcc_gen} are your typical DC power flow and the last set \cref{jcc_pi,jcc_var,jcc_lr,jcc_risk} describe system risk.  The branch variance equations \ref{jcc_var} are a second order cone and the line risk equations \ref{jcc_lr} involve the CDF of a normal distribution.  These equations will be solved via a cutting plane approach so that the individual subproblems will be linear programs.
+The first equation's \cref{jcc_obj,jcc_cons,jcc_kcl,jcc_slack,jcc_limit,jcc_gen} is the typical DC power flow and the last set \cref{jcc_pi,jcc_var,jcc_lr,jcc_risk} describe system risk.  The branch variance equations \ref{jcc_var} are a second order cone and the line risk equations \ref{jcc_lr} involve the CDF of a normal distribution.  These equations will be solved via a cutting plane approach so that the individual subproblems will be linear programs.
 
 
 \subsubsection*{Branch Response Parameters}
-The volatile injects have mean 0 and a covariance matrix $\Sigma^m$.  This covariance matrix is used to describe parameters for relating the injection covariance matrix to the branch covariance matrix needed for line risk.  The variance in lines is due to a combination of the volatile injects and the slack distributions response.  The following parameters are used in JCC \ref{jcc_program} and the cutting planes \ref{branch_var_cuts}.
+The volatile injects have mean 0 and a covariance matrix $\Sigma^m$.  This covariance matrix is used to describe parameters for relating the injection covariance matrix to the branch covariance matrix needed for line risk.  The variance in lines is due to a combination of the volatile injects and the slack distribution's response.  The following parameters are used in JCC \ref{jcc_program} and the cutting planes \ref{branch_var_cuts}.
 \begin{subequations}
 \begin{align}
  \sD &= \sko \skt \sigot  \\
@@ -259,14 +253,14 @@ The volatile injects have mean 0 and a covariance matrix $\Sigma^m$.  This covar
 \end{subequations}
 
 
-\subsection{Exogenous Contingencies}
+\subsubsection{Exogenous Contingencies}
 The JCC model also has a straightforward extension to exogenous contingencies.  In the computational experiments, each model will have a respective N-1 version which ensures the system is stable after any single line goes out.  In order to explore this model, line outage factors are used, which are linear shift factors for branch flows.  Using these, constraints will be formed on the second stage branch flow variables.  The mean branch flow as well as standard deviation of flow can be calculated.  In the OPF version, hard line constraints are used.  In the CC version, probabilistic constraints are formed for line flow.  Finally, the JCC version enforces a system risk constraint on each N-1 subsystem.  In all versions, the respective constraints are loosened in the second stage.
 
 The implementation as well as solution method, which closely parallel the base case, are given in the notes.
 \endnote{\input{\mypathjcc/end-exogen}}
 
 \subsection{Solution Method}
-Due to the inclusion of non-analytic functions (the line risk function), an out of the box solver would not work.  However, the risk function is convex, so cutting planes were chosen for the solution methodology.  In addition, there were many second order cone constraints (number of lines).  Instead of using these constraints explicitly, they were added indirectly through cutting planes as well.  This kept the program to a manageable size and allowed for fast solve times.  When exogenous contingencies are added, cutting planes are extremely efficient since no constraints will be added for lines without risk.
+Due to the inclusion of non-analytic functions (the line risk function), an out-of-the-box solver would not work.  However, the risk function is convex, so cutting planes were chosen for the solution methodology.  In addition, there were many second order cone constraints (number of lines).  Instead of using these constraints explicitly, they were added indirectly through cutting planes as well.  This kept the program to a manageable size and allowed for fast solve times.  When exogenous contingencies are added, cutting planes are extremely efficient since no constraints will be added for lines without risk.
 
 
 \subsubsection*{Risk Function for Transmission Lines}
@@ -284,7 +278,7 @@ g(y_e,s_e) &= (a + b y_e)\left[ 1 - \Phi(\alpha_L) \right]  + b s_e \phi(\alpha_
 
 
 \subsubsection*{Branch Variance Constraints}
-The standard deviation of branch flow can be formulated as a second order cone with respect to the slack distribution variables.  While this could be solved with an out of the box solver, we proceed with a cutting plane approach to speed up solve times.  As the solution approach is already iteratively improving system risk, it adds only a small amount of work to add these cuts as well.
+The standard deviation of branch flow can be formulated as a second order cone with respect to the slack distribution variables.  While this could be solved with an out-of-the-box solver, we proceed with a cutting plane approach to speed up solve times.  As the solution approach is already iteratively improving system risk, it adds only a small amount of work to add these cuts as well.
 \begin{subequations}
 \label{branch_var_cuts}
 \begin{align}
@@ -335,7 +329,7 @@ Now, we can describe the cutting plane algorithm for JCC at a high level and giv
 This section will explain the computation setup, the test cases, the experiments performed, and the intuition to gain from the comparison of OPF, CC, and JCC models.
 \subsection{Implementation of the JCC Model}
 All of the experiments are run on a laptop with an Intel i7-3537U processor with 2 cores,4 threads at 2.00GHz.  The laptop has 8GiB of memory, but even with the large case files (2383 nodes), memory is not an issue.  The laptop is running Linux Mint Petra 16.  The OPF, CC, and JCC models are all solved within a C++ program.  The program uses Armadillo\cite{armadillo} for linear algebra and Concert and CPLEX to solve the linear programs.  CPLEX is run with default settings and the dual simplex algorithm is used to solve the linear programs (quadratic objective for the small case).  All time comparisons are using the same system environment with a fixed clocked speed and few programs in background.  The primary DC OPF solver in the C++ program has been developed to output nearly identical results to Matpower.\cite{matpower} 
-\subsection{Single Instance}
+\subsubsection{Single Instance}
 The test cases are all pulled from Matpower test cases.  The two test cases used will be the 30 bus test case as well as the 2383wp test case.  The small test case will be used to show some properties of the different dispatch points and the cost-risk frontier.  The large test case will be used for time trials as well as a cost-risk scatter plot.  
 
 \subsubsection*{30 Bus Case}
@@ -379,15 +373,15 @@ $\beta_g$ &JCC& 0.2456  &  0.2795  &  0.0846  &  0.0646  &  0.0597  &  0.2659   
 \caption{Generator results using OPF, CC, and JCC models on the small test case.}\label{solve_one}
 \end{table}
 
-The first example will have risk parameters $L=0.9$, that is a line will begin taking on risk after it is at 90\% of its rated capacity.  The factor $p=0.005$ means that at nominal capacity, the line will have a $0.5\%$ chance of failing.  The line capacities will be scaled by $M=0.745$. The system risk constraint will be $\epsilon=0.008$, that is a $0.8\%$ chance of one or more lines failing.  The chance constraint version of OPF will be defined by $\eta_L=0.05$, that is the line capacities can not be violated more than $5\%$ of the time.  Finally, the covariance matrix will be scaled by $B=0.025$ so that the stanadard deviation of aggregate demand is $0.6$, a small fraction of total demand $189.2$.  The results for $(x,\beta)$ are tabulated in \cref{solve_results,solve_one}.
+The first example will have risk parameters $L=0.9$, that is a line will begin taking on risk after it is at 90\% of its rated capacity.  The factor $p=0.005$ means that at nominal capacity, the line will have a $0.5\%$ chance of failing.  The line capacities will be scaled by $M=0.745$. The system risk constraint will be $\epsilon=0.008$, that is a $0.8\%$ chance of one or more lines failing.  The chance constraint version of OPF will be defined by $\eta_L=0.05$, that is the line capacities cannot be violated more than $5\%$ of the time.  Finally, the covariance matrix will be scaled by $B=0.025$ so that the stanadard deviation of aggregate demand is $0.6$, a small fraction of total demand $189.2$.  The results for $(x,\beta)$ are tabulated in \cref{solve_results,solve_one}.
 
 
 
-The CC model is always more conservative then the OPF model as it will tighten the line constraints.  This means that the CC version will always be at least as expensive as the OPF model.  In this case, the total cost rose by \$7 to ensure the line constraints were met probabilistically (95\% of the time).  The JCC model was able to lower the cost because it removed the branch capacity constraints (or increased them by 6\% to match the system risk level).  In addition, JCC knows and constrains the system risk measure so that it is able to find a cheaper point with a system risk level half that of the OPF and CC models.
+The CC model is always more conservative than the OPF model as it will tighten the line constraints.  This means that the CC version will always be at least as expensive as the OPF model.  In this case, the total cost rose by \$7 to ensure the line constraints were met probabilistically (95\% of the time).  The JCC model was able to lower the cost because it removed the branch capacity constraints (or increased them by 6\% to match the system risk level).  In addition, JCC knows and constrains the system risk measure so that it is able to find a cheaper point with a system risk level half that of the OPF and CC models.
 
 
 
-Another interesting feature is that the slack would like to be distributed as much as possible to reduce cost.  This can be seen from the objective \ref{jcc_obj} due to the squared beta term and the OPF results show it spreading when there is no concerns of line or system risk.  The CC model slightly changes it's generator position as well as removing 3 generators from the slack distribution.  It is removing generators which have an effect on the probabilistically constrained transmission lines in order to ensure that the constraints are met $95\%$ of the time.  The JCC model has moved in almost exactly the opposite direction and has kept a distributed slack.
+Another interesting feature is that the slack would like to be distributed as much as possible to reduce cost.  This can be seen from the objective \ref{jcc_obj} due to the squared beta term and the OPF results show it spreading when there is no concern of line or system risk.  The CC model slightly changes its generator position as well as removing 3 generators from the slack distribution.  It is removing generators which has an effect on the probabilistically constrained transmission lines in order to ensure that the constraints are met $95\%$ of the time.  The JCC model has moved in almost exactly the opposite direction and has kept a distributed slack.
 
 
 \subsection{Cost-Risk Frontier}
@@ -400,7 +394,7 @@ Another interesting feature is that the slack would like to be distributed as mu
 Now we will use this same example case to draw a cost-risk frontier.  An efficient operating point would be at that boundary of the feasible points, that is, neither cost nor risk can be improved without a loss to the other.  Since neither the OPF or CC model uses or constrains our risk measure, it would be unlikely for them to be on the boundary.  In figure \ref{costriskfront} we see that this is the case.  The OPF model is in the interior and is equivalent to the CC model when $\eta_l=.5$.  Since the branch flows are gaussian, if the mean flow is at its threshold, it has a 50\% chance of being over its threshold.  As $\eta_l$ is reduced, the CC line is drawn.  The JCC line is started by finding the point when the system risk level is not constrained, for this case $r=.01$.  As $r$ is decreased, the system risk becomes constrained and the cost begins to rise as the risk level is reduced.
 
 
-It is important to note that the cost-risk frontier is entirely dependent on how system risk is measured.  In our case, we use a piecewise linear failure density function with parameters $L$ and $p$.  As $L$ and $p$ are varied, the shape of these frontiers will change.  Holding $p$ fixed and increases $L$ towards 1, the CC model, while still on the interior of the frontier, does a better job of reducing system risk.  With $L$ around .98 (this will depend on the variance of aggregated injects), the CC and the JCC behave similar.  Both programs will try to reduce the flow of lines that are at their capacity, with the exception that JCC will allow a small number, typically one, of these lines to increase.  More discussion on this behavior will be given in the sensitivity analysis section \ref{senseanal}
+It is important to note that the cost-risk frontier is entirely dependent on how system risk is measured.  In our case, we use a piecewise linear failure density function with parameters $L$ and $p$.  As $L$ and $p$ are varied, the shape of these frontiers will change.  Holding $p$ fixed and increasing $L$ towards 1, the CC model, while still on the interior of the frontier, does a better job of reducing system risk.  With $L$ around .98 (this will depend on the variance of aggregated injects), the CC and the JCC behave similarly.  Both programs will try to reduce the flow of lines that are at their capacity, with the exception that JCC will allow a small number, typically one, of these lines to increase.  More discussion on this behavior will be given in the sensitivity analysis section \ref{senseanal}
 
 
 \subsubsection*{2383wp Bus Case}
@@ -442,7 +436,7 @@ Here we will explore what the JCC model is doing to lower its cost or risk compa
 &
 \input{\mypathjcc/fig-tophisto}
 \end{tabular}
-\caption{Top lines resulting in congestion based risk}
+\caption{Top lines resulting in congestion based risk}\label{solve_shadow}
 \end{figure}
 
 
@@ -453,7 +447,7 @@ In addition, the shadow prices for the original OPF model are shown for lines th
 
 In the CC model, these constraints are tightened further to ensure that these thresholds are met at least 95\% of the time.  The JCC model on the other hand relaxes these constraints and imposes a system risk constraint instead.  The final solution for the JCC model will have line 23 exceed its threshold with certainty but is rewarded with the high shadow price.  On the other hand, other lines with positive line risk may be restricted to ensure the system risk levels are met.
 
-To give another perspective, the line flows were sampled and binned to create a histogram of line flows to show the trade-off between models.  For the JCC model, the line risk parameter $L$ was chosen to be 0.9.  The results can bee seen in figure \ref{histogram} where the bin size is $0.025$, for example the point $1$ is in reference to bin $1$ to $1.025$.  We can see that the normalized line flows pile up in bin 0.975 for the CC model and there are a number of lines in OPF that are in bin $1-1.025$, thus exceeding their capacity a significant amount of the time.  The JCC also has a line that exceeds its capacity, almost with certainty.  However, the JCC has far fewer lines that are at or near their capacity.
+To give another perspective, the line flows were sampled and binned to create a histogram of line flows to show the trade-off between models.  For the JCC model, the line risk parameter $L$ was chosen to be 0.9.  The results can be seen in figure \ref{histogram} where the bin size is $0.025$, for example the point $1$ is in reference to bin $1$ to $1.025$.  We can see that the normalized line flows pile up in bin 0.975 for the CC model and there are a number of lines in OPF that are in bin $1-1.025$, thus exceeding their capacity a significant amount of the time.  The JCC also has a line that exceeds its capacity, almost with certainty.  However, the JCC has far fewer lines that are at or near their capacity.
 
 
 
@@ -481,14 +475,13 @@ Cost & 567.1 & 574.0 & 572.2\\
 \caption{A comparison of the three dispatch points for varying risk function parameters}\label{figsense}
 \end{figure}
 
-
-\begin{verbatim}
-pow  case            m0  m1 mg eps epsN eta etaG L p  B   T
-pow case/30.db  .77 1.1 1 .00021 .4 .01 .5 .98 .005 .4 10000
-pow case/30.db  .77 1.1 1 .0028 .4 .01 .5 .9 .005 .4 10000
-pow case/30.db  .77 1.1 1 .0046 .4 .01 .5 .8 .005 .4 10000
-pow case/30.db  .77 1.1 1 .0046 .4 .05 .5 .8 .005 .4 10000
-\end{verbatim}
+%\begin{verbatim}
+%pow  case            m0  m1 mg eps epsN eta etaG L p  B   T
+%pow case/30.db  .77 1.1 1 .00021 .4 .01 .5 .98 .005 .4 10000
+%pow case/30.db  .77 1.1 1 .0028 .4 .01 .5 .9 .005 .4 10000
+%pow case/30.db  .77 1.1 1 .0046 .4 .01 .5 .8 .005 .4 10000
+%pow case/30.db  .77 1.1 1 .0046 .4 .05 .5 .8 .005 .4 10000
+%\end{verbatim}
 %solvesensitivty
 
 \begin{table}
@@ -538,12 +531,12 @@ The primary strength of this model is the addition of a system risk constraint a
 
 The JCC model is computationally efficient in its full form.  It allows for creation of a cost-risk frontier that finds dispatch points that are better in both terms of risk and cost.  Under uncertainty, this model should be compared against the CC model, which is a probabilistic interpretation of line thresholds.  Probabilistic line thresholds exacerbate the economic problems of hard constraints by further tightening the constraints.  In both of these models, the variable slack distribution plays a small direct role in cost through the objective, however is crucial in ensuring the line and system risk constraints are met.  
   
-Combining the system risk measure and random power injects for the joint chance constrained model accounts for many things the traditional OPF model misses.  This model will give prices for system response to aggregated volatile injects, which is regulation and reserve support for different time periods.  Instead of having an ancillary service model which separates this, the JCC model directly accounts for it.  This will allow for valuing volatile injects, which will be important going forward as the grid integrates more uncertain generation (wind turbines) and demand (electric vehicles).
+Combining the system risk measure and random power injects for the joint chance constrained model accounts for many attributes the traditional OPF model misses.  This model will give prices for system response to aggregated volatile injects, which is regulation and reserve support for different time periods.  Instead of having an ancillary service model which separates this, the JCC model directly accounts for it.  This will allow for valuing volatile injects, which will be important going forward as the grid integrates more uncertain generation (wind turbines) and demand (electric vehicles).
 
-\subsection{Possible Extensions}
-There are many avenues to improve and extend this model.  One first question would be, what does the failure density function look like.  We used a piecewise linear model, but perhaps other models better represent the true physics of the situations, such as a polynomial, ie $x^2$.  In addition, often the effective capacities are correlated.  Effective capacities are related to environmental conditions, such as high wind, which are geographically correlated.  During high wind periods, there is increased wind generation as well as increased effective capacities, which means that when the turbines are producing more energy, the nearby transmission lines are also capability of carrying more energy.  Finally, the volatile injects need to be priced and accounted for.  Volatile injects add stress to the grid which needs to be secured through additional resources.  These injects should bear the cost of the stress they add to the system.
+\subsubsection{Possible Extensions}
+There are many avenues to improve and extend this model.  One first question would be, what does the failure density function look like.  We used a piecewise linear model, but perhaps other models better represent the true physics of the situations, such as a polynomial, ie $x^2$.  In addition, often the effective capacities are correlated.  Effective capacities are related to environmental conditions, such as high wind, which are geographically correlated.  During high wind periods, there is increased wind generation as well as increased effective capacities, which means that when the turbines are producing more energy, the nearby transmission lines are also capable of carrying more energy.  Finally, the volatile injects need to be priced and accounted for.  Volatile injects add stress to the grid which needs to be secured through additional resources.  These injects should bear the cost of the stress they add to the system.
 
 
-\theendnotes
+%\theendnotes
 
-\setcounter{endnote}{0}
+%\setcounter{endnote}{0}

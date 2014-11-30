@@ -1,0 +1,11 @@
+\textbf{Generator Redispatch}
+
+This model tries to find an operating configuration that is within a given distance from the current operating regime and minimizes the worst case scenario outage.  The input for this model is the current operating configuration $(p_0, d_0)$ as well as a distance vector $\delta$ that represents how far each generator can move from its current output levels.  In this case, the root node of the stochastic tree will have variables that represent initial generator output levels and the child trees will be constrained from how far they can move from this.  Also, a continuous variable will be added that represents the amount of load shed in the worst case scenario.  The objective will be to minimize this worst case scenario.  
+\begin{equation}
+p - p_0 \le \delta
+\end{equation}
+\begin{equation}
+l \ge \sum_i \hat{d}_i - d_{is}
+\end{equation}
+aim to min 
+This program could be used when the system is becoming close to unstable and cost concerns become less of a priority than system stability.

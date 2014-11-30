@@ -1,0 +1,17 @@
+\textbf{Model Calibration}
+
+In order to get reliable output from the optimization routine, this model needs to be calibrated against the OPA simulation.  The primary calibration parameters are $L$ and $p$ in the line failure distribution as well as the costs for load shed, $W$, which depend upon the stage in the cascade.  The OPA simulation is a greedy algorithm, attempting to maximize demand served in the current stage without regard to the line failure consequences.  In order to capture this effect, more weight was placed on demand served in earlier stages of the cascade. \\
+
+ The root problem used is comprised of 4 intitial outages and each outage has a scenario tree that is 4 stages long with 2 outcomes at each node.  The power system modeled is the IEEE 118 bus grid with a nominal demand of 3668 MW and around 29,600 MW in branch capacities.  The parameters chosen for the MSIP model were $p=.5$, $L =.575$.  The weight for the stages of the cascade were $[500, 10, .05, .0001]$, which seemed to capture the greedy behavior of the OPA simulation.  The OPA simulation used the step function failure model with $\alpha=.99$ and $p=.5$.  The output of the simulation and MSIP formulation are shown in Table (\ref{compare}) along with the load shed distribution for $\xi = [12,14,34,111]$ in Figure (\ref{dist}). 
+
+
+% Calibrate ---------------------------------------------------------
+
+\input{\mypathmsip/load_shed_distribution}
+
+
+\input{\mypathmsip/comp_sim_msip}
+
+%\input{line_outage}
+
+

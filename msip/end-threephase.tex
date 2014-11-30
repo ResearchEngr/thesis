@@ -1,0 +1,21 @@
+\textbf{Balanced Three Phase Power Flow}
+
+In a balanced three phase system, at every vertex $i$, we have
+\begin{equation}
+S_i = P_i + j Q_i = V_i I_i^*
+\end{equation}
+In addition, with $KCL$, we have $I_i = \sum_{k=1}^n Y_{ik} V_k$, where $Y$ is the admittance bus matrix.  The admittance is the inverse of imdedence, that is
+\begin{equation}
+Y = G + j B = 1/Z = 1/(R + jX) 
+\end{equation}
+where $B$, the imaginary part of admittance, is susceptance and $X$, the imaginary part of impedence, is reactance.  Now we have that the complex power at every vertex $i$ is
+\begin{equation}
+S_i^* = P_i - j Q_i = V_i^* \sum_{k=1}^n Y_{ik} V_k
+\end{equation}
+By converting these into rectangular coordinates, we get two equations for each bus
+\begin{align} \label{ac-pf}
+P_i = \sum_{k=1}^n |V_i| |V_k| \left[ G_{ik} \cos (\delta_i - \delta_k) + B_{ik} \sin (\delta_i - \delta_k) \right]  \\
+Q_i = \sum_{k=1}^n |V_i| |V_k| \left[ G_{ik} \sin (\delta_i - \delta_k) - B_{ik} \cos (\delta_i - \delta_k) \right]  
+\end{align}
+
+For each bus, in addition to $P_i$ and $Q_i$,  we have its voltage $|V_i|$ and its phase angle $\delta_i$.  So, we have $4 n_v$ variables and $2 n_v$ equations.  By supplying the value to $2 n_v$ variables and defining a slack bus, we can find unique values for the remaining $2n_v - 1 $ variables.  Depending on the type of bus, different variables are supplied.  If it is a generator, both $P$  and $V$ are supplied.  A load is defined by a $P$ and $Q$.  The slack bus is a generator in which the phase angle is set to 0.  The phase angle $\delta$ and reactive power production $Q$ are found for each generator and the phase angle $\delta$ and the voltage $|V|$ are found for the loads.

@@ -1,0 +1,26 @@
+\textbf{Pseudo-Topological Measures}
+
+Cotilla et. al. \cite{cotilla_2012} use the fact that voltage phase angles between areas as measure of stress in power networks (47).  Using the power flow Jacobian matricies,
+\begin{equation}
+ \Delta P = \frac{ \partial P }{ \partial \theta} \Delta \theta + \frac{ \partial P }{ \partial | V | } \Delta | V |
+\end{equation}
+and assuming voltages are held constant, then $\frac{ \partial P }{ \partial \theta} $ is a Laplacian matrix.
+Set the conductance matrix $G = \frac{ \partial P }{ \partial \theta}$, then with
+\begin{equation}
+e_{ij} = g_{ii}^{-1} + g_{jj}^{-1} - g_{ij}^{-1} - g_{ji}^{-1}
+\end{equation}
+$E$ satisfies properties of distance matrix under dc power flow assumption, and empiraclly held otherwise.  $E$ is weighted and fully connected with $n_v(n_v-1)$ links.
+
+We then have a quantity that is analogous to node degree, $k_i$, called electrical distance
+\begin{equation}
+e_i = \sum_{j=1}^n \frac{e_{ij}}{n-1}
+\end{equation}
+with the inverse representing centrality
+\begin{equation}
+c_i = e_i^{-1}
+\end{equation}
+
+An unweighted graph can represent these distances.  Let $R$ be an adjencency matrix and by defining $r_{ij} = 1 $ if $e_{ij} < t$ and adjusting $t$ so that there are  $n_e$ links.  $R$ has lots of nodes with no connection, with the interpretation that few nodes have disproportionate influence on a large portion of the nework.
+
+Comparing the topological and electrical measures, Cotilla et. al. \cite{cotilla_2012} have that the topological distances have exponential tail and the electrical distances have power-law tails.  Also, there is weak correlation between the two types of distances.  Electrical centrality seems to point out very well the importance of each node to grid stability.  This may be used to find areas to improve the network.
+

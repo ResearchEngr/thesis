@@ -1,0 +1,14 @@
+\textbf{Chance Constraint on N-k Criteria}
+
+In this model, constraints are used to express the probability that less than a given number of lines are outaged is close to 1.  A typical case in power systems would be that the system should not go beyond 1 contingency in a large percentage of scenarios.
+\begin{equation}
+P\left\{\text{Line Outage} \le k \right\} \ge 1 - \epsilon
+\end{equation}
+This can be done by adding another binary variable for each scenario that represents whether or not that scenario has less than $k$ outages.  Then these new binary variables will be summed and constrained by the given probability.
+\begin{subequations}
+\begin{align}
+\sum_i z_{is} &\le	M_s \hat{z_s} + | \xi_s | + k \\
+\sum_s \hat{z_s} &\le \epsilon | \cS |
+\end{align}
+\end{subequations}
+where $M_s = | \cE | - | \xi_s | - k$.  The objective of this program would be to minimize load shed as in (\ref{leastcost}) such that the power system does not lose more than $k$ branches.

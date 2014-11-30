@@ -23,7 +23,8 @@ four:
 	$(TEX) -jobname=four "\includeonly{slk/slk}\input{$(PROJECT)}"
 intro: 
 	$(TEX) -jobname=intro "\includeonly{intro/intro}\input{$(PROJECT)}"
-
+title: 
+	$(TEX) -jobname=title "\includeonly{front}\input{$(PROJECT)}"
 
 clean:
 	rm -f *.aux *.log *.out	*.idx *.lot *.lof *.gz *.toc *~ *.blg *.auxlock *.bbl *.ent

@@ -4,22 +4,22 @@
 \newcommand{\btu}{\bigtriangleup}
 \chapter{Solving Design Problems}
 
-The cascading model built in chapter \ref{msip-model} is too hard to optimize at the scale we need to model the uncertainty in the cascading process.  In order to work around this difficulty, we will decompose the multi-stage structure of this problem and simulate the entire cascading process.  The primary benefit is removing the temporal linked binary variables for line outages from the master problem allowing sequential evaluation of the decision dependent uncertainty.  This lets us to parallelize the OPA evaluations to increase the computational effort.
+The cascading model built in chapter \ref{msip-model} is too hard to optimize at the scale we need to model the uncertainty in the cascading process.  In order to work around this difficulty, we will decompose the multi-stage structure of this problem and simulate the entire cascading process.  The primary benefit is removing the temporal linked binary variables for line outages from the master problem allowing sequential evaluation of the decision dependent uncertainty.  This lets us parallelize the OPA evaluations to increase the computational effort.
 
-In order to optimize design problems using the OPA simulation for risk metrics, we need to first understand the characterestics of the cascading process and the effects that generation, reserves, and line limits have on the resulting load shed distributions.  Then, we can modify existing derivative free frameworks to optimize this simulation and utilize explotatory steps to improve local performance and global strategies to find near optimal decisions.
+In order to optimize design problems using the OPA simulation for risk metrics, we need to first understand the characteristics of the cascading process and the effects that generation, reserves, and line limits have on the resulting load shed distributions.  Then, we can modify existing derivative free frameworks to optimize this simulation and utilize exploratory steps to improve local performance and global strategies to find near optimal decisions.
 
-The OPA simulation provides fundamental difficulties to the optimization process.  The function evaluations can shown to be no convex nor continuously differentiable every.  It is inherently noisy and the load shed distribution is wide, often charactereized by it's power law distribution.  Some of these effects can be smoothed away by employing a wide range of potential initiating events, however it may be important to optimize against a small subset of events that have a higher likihood of occurance and are known to be risky.  In this case, the non convexity and discontinuoity are most apparent.
+The OPA simulation provides fundamental difficulties to the optimization process.  The function evaluations are non convex nor continuously differentiable.  It is inherently noisy and the load shed distribution is wide, often characterized by its power law distribution.  Some of these effects can be smoothed away by employing a wide range of potential initiating events, however it may be important to optimize against a small subset of events that have a higher likihood of occurence and are known to be risky.  In this case, the non convexity and discontinuity are most apparent.
 
-To begin, an overview of derivative free optimization will be giving.  Three classes will be looked at for their convergence properties and practicle applications.  Then, initial experimentation on the OPA model will be given as well as the implementation and variance reduction strategies.  Then a modified algorithm will be developed and finally compared against vanilla algorithms of DFO.  A primary undercurrent is the use of accessory information in the modified DFO algorithm.
+To begin, an overview of derivative free optimization will be given.  A general class of direct search algorithms will be explored for its convergence properties as well as flexibility.  Model based methods, as well as accessory information, can be used to speed up the standard direct search methods.  Then, initial experimentation on the OPA model will be given as well as the implementation and variance reduction strategies.  A modified algorithm will be developed and compared against vanilla algorithms of DFO to show the benefit of accessory information. 
 
 \section{Literature Review}
-This section will give an overview to the history and current state of derivative free optimization.  The foundation for direct search and model based search of DFO techniques will be explored to be used in solution methods for the OPA optimization procedure.  The DFO field has been around for some time now and has seen a resurgence over the last decade and a half with the only textbook at less than 5 years old (Conn, Scheinberg, Vicente) \cite{conn_2009}.
+This section will give an overview to the history and current state of derivative free optimization.  The foundation for direct search and model based search of DFO techniques will be explored to be used in solution methods for the OPA optimization procedure.  The DFO field has been around for some time now and has seen a resurgence over the last decade and a half with the only textbook at less than 5 years old (Conn, Scheinberg, Vicente) \cite{conn_2009}.  Kolda et. al. provide an extensive work on direct search methods and its extensions in \cite{kolda_2003}. 
 \subsection{Derivative Free Optimization}
-This class of optimization strategies cover a wide-range of problems and techniques.  In general, the problem has a function $f: \R{n} \rightarrow \R{}$ that takes a decision variable $x \in \R{n}$ and returns a scalar. 
+This class of optimization strategies covers a wide-range of problems and techniques.  In general, the problem has a function $f: \R{n} \rightarrow \R{}$ that takes a decision variable $x \in \R{n}$ and returns a scalar. 
 \begin{equation}
 \min_{x \in \R{n}} f(x)
 \end{equation}
-The primary problem attribute that makes DFO a good choice for solution method is that standard gradient or Newton based method will not work.  This can be due to a variety of reasons, a common one being simulation-based optimization.  Here, the derivative is unavailable symbolically and, perhaps due to stochastic or numerical noise, is unable to be calculated with finite difference methods.  Even if the underlying function is smooth, a costly function evaluation may make the finite difference approach undesirable due to the considerable time to calculate full gradients.
+The primary problem attribute that makes DFO a good choice for solution method is that standard gradient or Newton based method will not work.  This can be due to a variety of reasons, a common one being simulation-based optimization.  Here, the derivative is unavailable symbolically (through hard work or automatic differentiation schemes) and, perhaps due to stochastic or numerical noise, is unable to be calculated with finite difference methods.  Even if the underlying function is smooth, a costly function evaluation may make the finite difference approach undesirable due to the considerable time to calculate full gradients.
 
 While still useful for smooth functions with a Lipschitz continuous derivatives, these methods can shine in nonsmooth and even non-convex application.  Direct search methods work by searching in many directions in order to guarantee a descent direction is chosen.  This has the ability to provide robustness against noise that may mislead gradient based methods using a single search direction.  In addition, by using relatively large step size the trial points provide a smoothing affect to the function which allow it to ignore high-frequency noise until it is close to a lower-frequency, higher amplitude minimum.  Contrary to problem application, we will assume a smooth function with a Lipschitz continuous derivative in order to find convergence results for different algorithms.  No guarantees can be made for the nonsmooth problems, however in practice these techniques are relatively successful for this class of problems
 
@@ -29,21 +29,21 @@ While still useful for smooth functions with a Lipschitz continuous derivatives,
 \input{\mypathdfo/fig-dfomethod}
 \caption{DFO methods for continuous variable optimization}
 \end{figure}
-Derivative-free techniques for optimizing problems have literature dating back to the 60's when Hookes and Jeeves \cite{hooke_1961} proposed a simple search method to find a maximum or minimum when classical methods were unfeasible.  Since then, direct search methods have seen many improvements both to their performance in practice and results in theory.  Modern direct search methods are able to conform to local topology as well as guarantee convergence to stationary points.  New methods are beginning to use probabalistic search procedures to improve in performance as well as increase the classes of problems they are able to solve.
+Derivative-free techniques for optimizing problems have literature dating back to the 60's when Hookes and Jeeves \cite{hooke_1961} proposed a simple search method to find a maximum or minimum when classical methods were unfeasible.  Since then, direct search methods have seen many improvements both to their performance in practice and results in theory.  Modern direct search methods are able to conform to local topology as well as guarantee convergence to stationary points.  New methods are beginning to use probabilistic search procedures to improve in performance as well as increase the classes of problems they are able to solve.
 
 Geometry based methods also started in the 60's with Nelder and Mead \cite{nelder_1965} using the geometric simplex and operations such as reflection, expansion, and contraction.  These methods can be useful as they naturally conform to local topology, however the geometry can often degenerate and converge to a non-optimal point.  Modern methods can use safeguarding techniques to prevent this or restart a simplex when it has deteriorated.  
 
 Heuristic search procedures showed up in the 70's and have continued to be used throughout with many papers in practical application.  Common procedures such as genetic algorithms (1975) \cite{holland_1975}, simulated annealing (1983) \cite{kirkpatrick_1983}, and particle swarm (1995) \cite{eberhart_1995} \cite{kennedy_1995} are used throughout engineering and physic disciplines, partly due to their ease in application and decent practical performance.  While good for practical applications, they lack the more rigorous theory for convergence that is behind direct search and model based methods.
 
-Model-based methods are very good at using function evaluations and spend considerably more effort to choose new points.  These interpolation based strategies where around at least by 1973 \cite{winfield_1973} and assume the model is accurate within its trust-region.  The method proceeds by minimizing its model and using that as a new trial point.  Modern implementations can use linear models \cite{powell_1994}, quadratic models \cite{powell_2002}, or perhaps a good compromising being underdetermined quadratic models.
+Model-based methods are very good at using function evaluations and spend considerably more effort to choose new points.  These interpolation based strategies were around at least by 1973 \cite{winfield_1973} and assume the model is accurate within its trust-region.  The method procedes by minimizing its model and using that as a new trial point.  Modern implementations can use linear models \cite{powell_1994}, quadratic models \cite{powell_2002}, or perhaps a good compromise being underdetermined quadratic models.
 
-Finally, global based strategies are used in conjunction with many of the previous models in order to work towards global optima. One primary avenue is partitioning models.  These partions have trial points at the extreme points of the partion (1972)\cite{shubert_1972}, the center point (1993) \cite{jones_1993}, or arbitrary points within (1999) \cite{huyer_1999} and typically work by building underestimators of the function using the Lipschitz constant or an estimate.  Another strategy employed are surrogate functions to opitmize instead of the original function.  Common versions are response surfaces, kriging, and radial basis functions.  
+Finally, global based strategies are used in conjunction with many of the previous models in order to work toward global optima. One primary avenue is partitioning models.  These partions have trial points at the extreme points of the partion (1972)\cite{shubert_1972}, the center point (1993) \cite{jones_1993}, or arbitrary points within (1999) \cite{huyer_1999} and typically work by building underestimators of the function using the Lipschitz constant or an estimate.  Another strategy employed is surrogate functions to opitimize instead of the original function.  Common versions are response surfaces, kriging, and radial basis functions.  
 
-A more complete history and overview of current derivative free methods as well as numerical tests for a large, diverse set of solvers can be found in \cite{rios_2013}.  Now we turn to direct search and model based methods to understand their implementation, performance, and convergence properties .
+A more complete history and overview of current derivative free methods as well as numerical tests for a large, diverse set of solvers can be found in \cite{rios_2013}.  Now we turn to direct search and model based methods to understand their implementation, performance, and convergence properties.
 
 
 \subsubsection*{Gradient Line Search}
-To start, a quick overview of line search methods and properties to guarentee convergence will be given.  These properties will be used as a comparison for comparable properties used in DFO methods.  Line search methods move in a descent direction and have constraints on step length in order to ensure convergence.  Assuming our function is continuously differentiable and letting $\alpha$ be a step size and $d$ a direction, we have
+To start, a quick overview of line search methods and properties to guarantee convergence will be given.  These properties will be used as a comparison for comparable properties used in DFO methods.  Line search methods move in a descent direction and have constraints on step length in order to ensure convergence.  Assuming our function is continuously differentiable and letting $\alpha$ be a step size and $d$ a direction, we have
 \begin{equation}
 f(x + \alpha d ) = f(x) + \alpha \grad f(x) d  + o (\alpha)
 \end{equation}
@@ -57,16 +57,19 @@ Additionally, a near orthogonal direction to the gradient will lead to poor prog
 \end{equation}
 and is automatically satisfied for $d_k = -\grad f(x_k)$.
 
-A simple decrease condition $f(x_{k+1}) < f(x_{k})$ is not enough to guarantee convergence, due to the existence of sequences of points moving in a decent direction with a limit point other than the minimum.  This is related to the step size and both too short and too long of step sizes can cause problems.  The Armijo-Goldstein-Wolfe conditions prevent these problems by constraining the step length 
+A simple decrease condition $f(x_{k+1}) < f(x_{k})$ is not enough to guarantee convergence, due to the existence of sequences of points moving in a descent direction with a limit point other than the minimum.  This is related to the step size and both too short and too long of step sizes can cause problems.  The Armijo-Goldstein-Wolfe conditions prevent these problems by constraining the step length 
 \begin{align}
 f(x_k + \alpha_k d_k) \le f(x_k) + c_1 \alpha_k \grad f(x_k)^T d_k  \label{step_length_1}\\
 \grad f (x_k + \alpha_k d_k)^T d_k \ge c_2 \grad f(x_k)^T d_k \label{step_length_2}
 \end{align}
-with $0 < c_1 < c_2 < 1$.  Typically, one needs to only enforce too long of steps\ref{step_length_2} since there are no too short of steps\ref{step_length_1} due to backtracking schemes.
+with $0 < c_1 < c_2 < 1$.  Typically, one needs to only enforce too long of steps (eq. \ref{step_length_2}) since there are no too short of steps (eq. \ref{step_length_1}) due to backtracking schemes.
 
 
 \subsection{Direct Search}
-An overview of the convergence results for a standard direct search method will be given. Positive spanning sets as well as the cosine measure are used to bound the angle between the polling directions and the negative gradient.  Then, using the subsequence of unsuccessful iterates, the trial steps become arbitrarily small and $x$ will approach a limit point.  If $x_k$ enters a neighborhood of a stationarity point with $\grad^2 f(x) > 0$, it will converge to this point.
+An overview of the convergence results for a standard direct search method will be given. Positive spanning sets as well as the cosine measure are used to bound the angle between the polling directions and the negative gradient.  Then, using the subsequence of unsuccessful iterates, the trial steps become arbitrarily small and $x$ will approach a limit point.  We will need the assumption that the gradient is Lipschitz continuous with constant $M$
+\begin{equation}
+\norm{\grad f(y) - \grad f(x)}  \leq M \norm{ y - x }
+\end{equation}
 
 \begin{figure}
 \centering
@@ -78,13 +81,13 @@ A positively spanning set $\cG$ of $\R{n}$ can write any vector $v \in \R{n}$ as
 \begin{equation}
 v = \sum_i \beta_i d_i
 \end{equation}
-Kolda, Lewis, and Torczon \cite{kolda_2003} call this a generating set of $\R{n}$ which makes the foundation for their class of generating set search methods.  This is a large class of problems which generalize lattice methods of Berman \cite{berman_1966} \cite{berman_1969} as well as their own older methods \cite{torczon_1999} \cite{lewis_2000} and include the original Hookes and Jeeves method\cite{hooke_1961}.  Generating sets can be adapted for explicit linear constraints to conform to local topology.\endnote{\input{\mypathdfo/end-linearconstraint}}
+Kolda, Lewis, and Torczon \cite{kolda_2003} call this a generating set of $\R{n}$ which makes the foundation for their class of generating set search methods.  This is a large class of problems which generalize lattice methods of Berman \cite{berman_1966} \cite{berman_1969} as well as their own older methods \cite{torczon_1997} \cite{lewis_2000} and include the original Hookes and Jeeves method\cite{hooke_1961}.  Generating sets can be adapted for explicit linear constraints to conform to local topology.\endnote{\input{\mypathdfo/end-linearconstraint}}
 
-By searching in all directions of a generating set of $\R{n}$, we a guaranteed to have a direction which is somewhat aligned with the decent direction $f$, if it is smooth and has a lipschitz continous derivative.  To make this matter concrete, the cosine measure of a set is the worst case scenario for the descent direction aligning with any direction of the generating set $\cG$.
-\begin{equation}
-\kappa
+By searching in all directions of a generating set of $\R{n}$, we are guaranteed to have a direction which is somewhat aligned with the descent direction $f$, if it is smooth and has a Lipschitz continous derivative.  To make this matter concrete, the cosine measure of a set is the worst case scenario for the descent direction aligning with any direction of the generating set $\cG$.
+\begin{equation}\label{kappa}
+\kappa ( \cG) \equiv \min_{v \in \R{n}} \max_{d \in \cG} \frac{v^t d}{\norm{v} \norm{d}}
 \end{equation}
-
+This can be calculated for various generating sets, for example the compass search generating set gives $\kappa(\scd) = \frac{1}{\sqrt{n}}$ where $n$ is the dimension of the problem.  This begins to show why this method will struggle as the dimension of the problem increases.  The cosine measure of the search directions must be bounded below to ensure the search directions do not deteriorate.
 
 \begin{algorithm}
 \caption{Compass search, a generating set search}\label{dfo_genset}
@@ -108,35 +111,57 @@ By searching in all directions of a generating set of $\R{n}$, we a guaranteed t
 \end{algorithmic}
 \end{algorithm}
 
+The key to convergence comes during the unsucessful steps.  The typical analysis will show that the gradient can be bounded at unsucessful steps by the step size and that the step size will go to zero in the limit.  At an unsucessful step we are guaranteed a descent direction, however none of our trial steps satisfy simply decrease, so that $0\geq f(x_k + \delta_k d) - f(x_k)$ for descent direction $d$.  
+\begin{comment}
+Using the continous derivative assumption, the mean value theorem says there is a point in the middle $(\alpha \in [0,1])$ with 
+\begin{equation*}
+0\geq f(x_k + \delta_k d) - f(x_k) = \grad f(x_k + \alpha_k \Delta_k d)^T \Delta_k d
+\end{equation*}
+and subtracting $\grad f(x_k) \Delta_k d$ from both sides will give us a change in gradients.
+\begin{equation*}
+ - \Delta_k \grad f(x)^T d \leq \left[ \grad f(x_k + \alpha_k \Delta_k d)  - \grad f(x_k ) \right]^T \Delta_k d
+\end{equation*}
+Finally, using the defination of the Lipschitz continous derivative, we have
+\begin{equation}
+-\Delta_k \grad f(x)^T d \leq M \Delta_k d
+\end{equation}
+ compass search specifically , and plugging in $v = -\grad f(x)$, we have bound
+\end{comment}
+From our cosine measure definition \ref{kappa} and plugging in $v = -\grad f(x)$ we have
+\begin{equation}
+\kappa (\cG) \norm{\grad f(x)} \norm{d} \leq \grad f(x) d
+\end{equation}
+Using the lipschitz continous derivative, the fact that the trial step was unsucessful, and the cosine measure for the coordinate directions $\kappa (\scd)=\frac{1}{\sqrt{n}}$, the gradiant can be bounded 
+\begin{equation}
+\norm{\grad f(x)} \leq \sqrt{n} M \Delta_k
+\end{equation}
 
-rational lattice - only a finite number of trial points can be considered before the step size must contract
-%\subsubsection*{Mesh Adaptive}
-Conn pg 140
-can be transformed linearly, rotated etc.
+As long as our step size goes to zero $\Delta_k \rightarrow 0$ as our work effort increases $k\rightarrow \infty$, we will converge to a stationary point.  There are two primary ways to ensure this happens.  The first is to use a forcing function that constrains the trial step to have more than simple decrease.  Another way is to ensure all the trial points lie on a rational lattice.  If all the trial points are then integer combinations, all future trials will lie on this lattice.  As it is rational, only a finite number of points will be evaluated before there is an unsuccessful iteration.  As there are only a finite number of evaluations in between unsucessful steps and at each unsucessful step the step size is reduced, that step size will converge to 0.  Figure \label{fig:explore} shows an example of a polling step with exploratory trial points on a rational lattice. For a more detailed convergence proof for standard compass search and the more general generating set search, Kolda et. al. \cite{kolda_2003}.
+
 
 
 \begin{figure}
 \centering
 \input{\mypathdfo/fig-pollexplore}
-\caption{Polling step with exploratory trial points}
+\caption{Polling step with exploratory trial points on a rational lattice}\label{fig:explore}
 \end{figure}
 
 
 
 
+\subsubsection{Flexibility}
+This class of direct search methods was choosen because of the flexibility in its framework.   As long as the trial points lie on a rational lattice, the method will converge to a local stationary point.  This means that the lattice can be rotated to conform to local topology, it will admit exploratory points, and can even use model based methods to improve its search direction and exploratory steps.  This includes aligning search directions with approximate gradients that can be calculated using simplex directions or previous trial points. This framework will allow us to test using accessory information to speed up the optimization procedure and compare its effects to model based methods.
+%\textbf{Model Based Methods}
+%trust regions
+%Stochastic Trust Region \endnote{\input{\mypathdfo/end-stochtrust}}
 
-\subsection{Model Based Search}
-trust regions
-Stochastic Trust Region \endnote{\input{\mypathdfo/end-stochtrust}}
+%\textbf{Approximate Gradient Methods}
+%Implicit filtering
+%Simplex gradients
+%Stochastic Approximation
 
-\subsubsection*{Approximate Gradient Methods}
-Implicit filtering
-Simplex gradients
-Stochastic Approximation
-
-Stochastic Gradient \endnote{\input{\mypathdfo/end-stochgrad}}
-
-Stochastic Approximation \endnote{\input{\mypathdfo/end-stochapprox}}
+%Stochastic Gradient \endnote{\input{\mypathdfo/end-stochgrad}}
+%Stochastic Approximation \endnote{\input{\mypathdfo/end-stochapprox}}
 
 
 
@@ -152,33 +177,46 @@ Finally, we will determine the performance of direct search and model based meth
 
 \subsection*{OPA Simulation}
 
-The fast time scale OPA model (given in chapter one \ref{fast_opa} has been shown to have the same power-law distribution seen in real-world blackout data.  This simulation can be seen as a surrogate model for the response of the power system to rare-event stress.  As such, it is useful to explore the effects different parameters can have and even optimize over them to find any characterestics or trends their may be.
+The fast time scale OPA model (given in chapter one \ref{fast_opa} has been shown to have the same power-law distribution seen in real-world blackout data.  This simulation can be seen as a surrogate model for the response of the power system to rare-event stress.  As such, it is useful to explore the effects different parameters can have and even optimize over them to find any characteristics or trends there may be.
 
-The linear program \ref{dcopf_program} is a load shedding versions of the standard DC OPF economic dispatch model.  
+The linear program \ref{dcopf_program} is a load shedding version of the standard DC OPF economic dispatch model.  
 \begin{subequations}
 \label{dcopf_program}
 \begin{alignat}{3}
-\min_{\left(x,\beta,l;\theta,y\right)} && \multispan{2}{$\displaystyle\sum_j \left[  c_2 x_j^2  + c_1 x_j + c_0 \right] + W \sum_i l_i$}   \label{jcc_obj}\\
-                        && \textstyle \sum_j c^g_{ij} x_j - \sum_j c^b_{ie} y_e   +l_i       &=D_i       && \forall i \label{opf_cons}\\ 
+\min_{\left(g,\beta,l;\theta,y\right)} && \multispan{2}{$\displaystyle\sum_j \left[  c_2 g_j^2  + c_1 g_j + c_0 \right] + W \sum_i l_i$}   \label{jcc_obj}\\
+                        && \textstyle \sum_j c^g_{ij} g_j - \sum_j c^b_{ie} y_e   +l_i       &=D_i       && \forall i \label{opf_cons}\\ 
                  && y_e - b_e \textstyle \sum_i c^b_{ie} \theta_i          &=0         && \forall e \label{opf_kcl}\\
                  && l_i &\in \left[ 0, D_i \right] && \forall e \label{opf_loadshed}\\
                  && y_e &\in \left[ -U_e, U_e \right] && \forall e \label{opf_limit}\\
-                 && x_j &\in \left[ G^{min}_j, G^{max}_j \right] && \forall j  \label{opf_gen}  
+                 && g_j &\in \left[ G^{min}_j, G^{max}_j \right] && \forall j  \label{opf_gen}  
 \end{alignat}
 \end{subequations}
 
 
-It will be necessary to calculate the total load shed that results for different stages of the cascade, which is given by
+Let $z$ be the total load shed for a particular dispatch point $(g,\beta,l)$.
 \begin{equation}
-D_{tot} = \sum_i \left[ D_i - l_i \right]
+z = \sum_i l_i
 \end{equation}
 
+Now we need to understand the effect of adding capacity $x$ to a system for the OPA cascading procedure.  The DC OPF (eqs. \ref{dcopf_program}) will now allow the branch flow to attain its new capacity level, that is
+\begin{equation}
+ y_e  \in \left[ - U_e - x_e, U_e + x_e \right]
+\end{equation}
+In addition, the failure density function will also move to account for its additional capacity.  This means that not only does the capacity level change, the point $L$, in which the line becomes risky also moves, so that our risk function is now
+\begin{equation}
+h(y) = \left\{ \begin{array}{ll}
+(y_e-x_e)U_e^{-1}p - Lp & y_e > L U_e + x_e \\
+0 & \mbox{o/w}
+\end{array}
+\right. 
+\end{equation}
 
+The algorithm requires sequential solves of the DCOPF where there are changes to the topology. We can take advantage of this and typically will require only a small handful of pivots to find the new solution.
 \begin{algorithm}
 \caption{OPA Cascading Algorithm}\label{opa_alg}
 \begin{algorithmic}
-\Procedure{LS}{$x, D, \xi, \omega$}
-\State Solve ( \ref{dcopf_program} ) to find base case $D_{tot,0}$
+\Procedure{OPA}{$x, D, \xi, \omega$}
+\State Solve ( \ref{dcopf_program} ) to find base case load shed $z_0$
 \State $\xi$ occurs and corresponding changes to the grid are made
 \State Stage $s \gets 1$
 \While{ Not DONE }
@@ -188,31 +226,38 @@ D_{tot} = \sum_i \left[ D_i - l_i \right]
 \State $\mathbb{O}_s = 
 \left\{ 
 \begin{array}{lr}
-  \mathbb{O}_s + \left\{ e \right\} & \mbox{if } \left( y_e = U_e \mbox{ or } -y_e = U_e \right)  \mbox{ w/ prob. } p \\
+  \mathbb{O}_s + \left\{ e \right\} & \mbox{w/ prob. } h(y_e), \mbox{ draw } \omega_{es} \\
   \mathbb{O}_s & \mbox{o/w }
 \end{array}
 \right. $ 
 \If{ $\mathbb{O}_s \neq \emptyset$ }
-\State Modify Grid with $\mathbb{O}_s, s\gets s+1$
+\State Modify Grid with $\mathbb{O}_s$
+\State $s\gets s+1$
 \Else
-\State $s^* \gets s,$ calculate $D_{tot,s^*}$, DONE
+\State $s^* \gets s,$ calculate $z_{s^*}$, DONE
 \EndIf
 \EndFor
 \EndWhile
-\State \label{done}Load Shed $  LS = D_{tot,0} - D_{tot,s^*} $
+\State \label{done}Load Shed $  \lambda\left(x,D,\xi,\omega\right)  = z_{s^*} - z_0$
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
 
+
+Finally, we consider the load shed over a subset of initial contingencies $\Xi$ given an uncertainty distribution for the cascade evolution $\Omega$.  The load shed $f (x) $  for decision $x$ and fixed demand $D$ is calculated as 
+\begin{equation}
+f(x) = \Exx{  \lambda\left(x,D,\xi,\omega\right)  }_{\Xi,\Omega}
+\end{equation}
+
 \subsection*{Implementation}
-The simulation is implemented in C++ using CPLEX to solve the linear programs.  At each stage of the cascade, the solution may only require a small amount of pivots so that the individual LP solves are very fast and load shed evaluation's can be found in bulk.  The number of trial, $N_k$, will be selected so that the standard error of the function value is small relative to it's value.  The number of trials per function evaluation can be changed dependent on iteration count for improvements in speed or resolution.
+The simulation is implemented in C++ using CPLEX to solve the linear programs.  At each stage of the cascade, the solution may only require a small amount of pivots so that the individual LP solves are very fast and load shed evaluations can be found in bulk.  The number of trial, $N_k$, will be selected so that the standard error of the function value is small relative to its value.  The number of trials per function evaluation can be changed dependent on iteration count for improvements in speed or resolution.
 
-The Center for High Throughput Computing provides computation resources for UW and afiliated researchers.  Jobs can be submitted through Condor \cite{beowulfbook-condor} which manages the collective pool of around 1 million cpu hours per day.  User's submit jobs to the cluster, which assigns resources that process the job.  Requirements can be given to ensure that the resource is capable of performaning the job.  In order to get access to a larger portion of the cluster, low memory and disk requirements help.  Overhead associated with the process, such as being assigned a resources and data transfers can be minimized but not removed. As such, the workflow was designed for job times of around 5-30 minutes and perform all analysis locally with the raw data to reduce network data exchanges.
+The Center for High Throughput Computing provides computation resources for UW and affiliated researchers.  Jobs can be submitted through Condor \cite{beowulfbook-condor} which manages the collective pool of around 1 million cpu hours per day.  Users submit jobs to the cluster, which assigns resources that process the job.  Requirements can be given to ensure that the resource is capable of performing the job.  In order to get access to a larger portion of the cluster, low memory and disk requirements help.  Overhead associated with the process, such as being assigned resources and data transfers can be minimized but not removed. As such, the workflow was designed for job times of around 5-30 minutes and perform all analysis locally with the raw data to reduce network data exchanges.
 
-In order to take advantage of a larger cluster \cite{condor_flock}, the main C++ program was compiled for two primary linux kernals that make up the majority of the cluster using the interactive shell job for Condor.  The memory requirements were set at 500MBs and storage at 3GBs, with plenty of buffer room for program operation.  The large data output from the OPA simulation includes stage by stage details of net power injects, branch flows, and load shed.  This data is then analyzed on the remote resource using python to find the risk metrics of the load shed as well as any accessory information computation.  The output of the analysis is less than 8K for load shed and outage data that is needed for most of the optimization routines.  Additional overhead is used to smooth the job requests and restart hanged jobs. 
+In order to take advantage of a larger cluster \cite{condor_flock}, the main C++ program was compiled for two primary linux kernals that make up the majority of the cluster using the interactive shell job for Condor.  The memory requirements were set at 500MBs and storage at 3GBs, with plenty of buffer room for program operation.  The large data output from the OPA simulation includes stage by stage details of net power injects, branch flows, and load shed.  This data is then analyzed on the remote resource using python to find the risk metrics of the load shed as well as any accessory information computation.  The output of the analysis is less than 8K for load shed and outage data that is needed for most of the optimization routines.  Additional overhead is used to smooth the job requests and restart hung jobs. 
 
 \subsubsection*{Common Random Numbers}
-The stochastic uncertainty of the OPA process leads to large standard errors for the risk measures.  Variance reduction techniques are important to reduce the computational burden and a common random number scheme was employed.  Common random numbers essentialy gives each test system the same set of experimental conditions.  By doing so, the variance in the difference between two systems is reduced and less computational resources will be needed. \cite{law_2007}
+The stochastic uncertainty of the OPA process leads to large standard errors for the risk measures.  Variance reduction techniques are important to reduce the computational burden and a common random number scheme was employed.  Common random numbers essentially gives each test system the same set of experimental conditions.  By doing so, the variance in the difference between two systems is reduced and less computational resources will be needed. \cite{law_2007}
 
 The OPA simulation uses effective capacities to determine whether a line fails for a particular stage and loading.  In order for the alternative configurations to be under similar experimental conditions, a random number seeding strategy was used to ensure alternative configurations would recieve the same luck.  Formally, we can see why this works in some cases.  Suppose we have two systems with expected load shed $L_{ij}$ for systems $i=1,2$ and trials $j=1,2,...N$.  Now lets study the metric $Z_j = L_{1j} - L_{2j}$ and let the true comparison be $\Exx{Z}=\mu_Z$.  In order to make decisions about this, we need to be fairly confident in our estimation $\hat{Z}(n)=\sum_j \frac{Z_j}{n}$ of $\mu_z$.  The standard error of our sample mean $\hat{Z}(n)$ is
 \begin{equation}
@@ -224,7 +269,6 @@ In order for this to reduce the variance, we need $\CoVar{X_1}{X_2}>0$.  This ma
 
 \subsection{Model Behavior}
 To investigate the behavior of the model, we will begin by looking at the results from simple changes to the decision variables.  The risk measures, table \ref{tab:risk}, are calculated for the load shed distribution and the expectation and the conditional value at risk are used for optimization.  The load shed from this cascading power simulation follows a power law distribution which cause tail events to have a relatively large effect.  The expected value and conditional value at risk could be surrogate models of each other as they tend to track in a similar manner. The maximum can display much more erratic behavior and optimizing against this would be costly and restrictive.
-
 
 \newcommand{\tabheight}{11pt}
 \begin{table}
@@ -249,53 +293,37 @@ Conditional Value at Risk & $ CVaR(\eta)$& $\Exx{Z | Z \geq VaR(\eta)}$ \\[\tabh
 \caption{Value at Risk, Conditional Value at Risk, and Maximum risk measures for load shed distribution}
 \end{figure}
 
-
-
 \subsubsection{Capacity Addition}
-
-%\endnote{\input{\mypathdfo/end-capadd}}
-
+The decision variable $x$ represents branch capacity additions.   Using the expected value of load sheds as the risk measure, the function response to different decision variables is very noisy.  The small changes in line flows in the first stage can propogate and cause large disturbances in the system.  A surface plot of this is shown in figure \ref{fig:heatmap} and displays the bumpy surface.  While the surface is definately bumpy, there are larger amplitude trends that make filtering out higher frequency noise important.  
 
 
 \begin{figure}
 \centering
 \input{\mypathdfo/fig-heatmap}
-\caption{2d heat map}
+\caption{2d heat map of expected load shed for adding capacity to two different lines, 67 and 79}\label{fig:heatmap}
 \end{figure}
 
-
-Clustering \endnote{\input{\mypathdfo/end-clustering}}
+ 
+To understand whether it is easy to improve the system or not, we tried to double the capacity of all the lines.  Less than 40\% of the lines led to an improvement in the system.
+\endnote{\input{\mypathdfo/end-capadd}}
+This lead us to focus on clusters of lines in response to different effects \endnote{\input{\mypathdfo/end-clustering}}.  It can be seen that adding capacity to one line may make the system worse whereas adding capacity to a cluster would improve it.  
 
 
 \subsubsection{Direct Search Application}
 
-To get an idea of the strengths and weaknesses of direct search on the OPA simulation, the standard compass search algorithm was implemented on a reduced 2 dimensional subspace for your viewing pleasure.  These figures show the rough search space and the need for filtering higher frequency effects.
+To get an idea of the strengths and weaknesses of direct search on the OPA simulation, the standard compass search algorithm was implemented on a reduced 2 dimensional subspace for your viewing pleasure.  These figures show the rough search space and the need for filtering higher frequency effects.  Similar properties are seen for conditional value at risk \endnote{\input{\mypathdfo/end-heatmapcvar}}, however the maximum risk measure has more noise.
 
-%Conditional Value at Risk \endnote{\input{\mypathdfo/end-heatmapcvar}}
-
-
-
-Here we can see the compass search get trapped in a local minima.  If a small step size is used, the search will get trapped in nearby minima when more progress can be made else where.  This highlights the need for a strategy to find local minima that are nearer to the global minimum.
+Here we can see the compass search gets trapped in a local minima.  If a small step size is used, the search will get trapped in nearby minima when more progress can be made elsewhere.   We ran 4 different compass searches with initial trial steps of 1,25,50, and 75.  Large step sizes tend to improve final solution results and it is important to note that they all found very different solutions. This highlights the need for a strategy to find local minima that are nearer to the global minimum. \endnote{\input{\mypathdfo/end-compass}}
 \begin{figure}
 \centering
 \input{\mypathdfo/fig-trialmap}
 \caption{Trial exploration using standard compass search}
 \end{figure}
 
-%\endnote{\input{\mypathdfo/end-compass}}
 
 
-
-
-
-
-
-\subsubsection*{1st Stage Approximators}
+\subsection{1st Stage Approximators}
 Is there any good way to approximate the total effect of the cascading process?  One common technique in DFO methods is to find a surrogate function which has similar properties to your real function but is faster to compute.  We looked at two different statistics to see if it was possible to infer how bad a cascade would be in the early stages.  Unfortunately, the initial stages of the cascade were poorly correlated with the total load shed for any given sample path.
-
-Figure \ref{fig:first} shows a scatter plot of load shed in the 1st stage with load shed in the final stage.
-%\endnote{\input{\mypathdfo/end-firststage}}
-Visual inspection of this for various initial contingencies showed that any calculation using this would be a poor estimator.  This is not surprising since we the rare event cases have a disproportionitly high influence due to the power law distribution.  More stages need to progress to find the highly disruptive cases.  Figure \ref{fig:loadserve} shows the same scatter plot for stages 0, 1, 5, 10, 15, and 20 to show the progression.  Even in later stages, the undetermined cases still vary.
 
 \begin{figure}
 \centering
@@ -304,71 +332,81 @@ Visual inspection of this for various initial contingencies showed that any calc
 \label{fig:first}
 \end{figure}
 
+Figure \ref{fig:first} shows a scatter plot of load shed in the 1st stage with load shed in the final stage.
+\endnote{\input{\mypathdfo/end-firststage}}
+Visual inspection of this for various initial contingencies showed that any calculation using this would be a poor estimator.  This is not surprising since the rare event cases have a disproportionitly high influence due to the power law distribution.  More stages need to progress to find the highly disruptive cases.  Figure \ref{fig:loadserve} shows the same scatter plot for stages 0, 1, 5, 10, 15, and 20 to show the progression.  Even in later stages, the undetermined cases still vary.
+
 We can actually find more information in the actual line flow statistics for different stages in the cascade.  Changes with respect to 1st stage line flows can identify changes in final stage load shed, although not whether it will improve or degrade the performance.
-Can estimate relative effects of cascade on different systems
 \begin{figure}
 \centering
-%\input{\mypathdfo/fig-lineflowscene}
+\input{\mypathdfo/fig-lineflowscene}
 %\input{\mypathdfo/fig-failprobscene}
- \caption{Line flows and failure probabilities for each scenario and  their averages}
+ \caption{Line flows for each scenario and  their averages}
 \label{fig:flows}
 \end{figure}
-%\endnote{\input{\mypathdfo/end-failure.tex}}
+\endnote{\input{\mypathdfo/end-failure.tex}}
 
 
 
 \section{Algorithm Design}
-\subsection{Search Direction and Break Points}
-most outaged lines
-refine with 	-topology information
-		-electrical properties
-clustering
-		-line correlations
-\subsection*{Line Search}
-breakpoint analsis
+We need an algorithm that can handle the noisy output of the OPA model and uses the accessory information in the simulation.  This information includes most outaged lines, clustering, topology information, electrical properties, and correlations between lines and load shed. Using direct search as the foundation, we will modify the exploratory steps to take advantage of this information.  This will provide local convergence guarantees while giving more robustness to the solution methodology.
 
 
+\subsection{Search Direction}
+For search directions, we are primarily interested in the lines that fail through the simulation.  Additionally, the first stage failure probability for line flow tends to correlate with changes in load shed.
+\begin{equation}
+p_{e}(x) = \Expect_\Xi \left[ \Expect_\Omega \left[ h \left( \ry_{e1}(x) \right) \right] \right]
+\end{equation}
+The covariance between the probability of failure for a given line and the load shed can be used to group lines together.
+\begin{equation}
+\sigma_{ef } = \CoVar{ p_e(x)}{ f (x) }
+\end{equation}
+If lines tend to covary with load shed together, they may be part of a cluster.
+\begin{equation}
+\cH_e\left(\epsilon\right) = \lb i | \sigma_{if } \in \left[ \alpha_0 \sigma_{ef } , \alpha_1 \sigma_{ef} \right], 0<\alpha_0< \alpha_1 \rb
+\end{equation}
+We can refine this information by taking the connected components in $\cH_e$ for additonal search directions.
 
-
+\subsection{Line Search Breakpoints}
+We also want to make our search process more global.  In order to do that, we want to take exploratory trial points along specific directions.  We would like to maximize how much we learn with each trial point, in order to do that we look at how different two systems may be.  In order to compare the systems we use first stage line failure probabilities.
+\begin{equation}
+\tau (x_i, x_j) = \norm{ p_e(x_i) - p_e(x_j) }^2
+\end{equation}
 This information can be used to tell if two operating points have different cascading properties.  By looking at the distance between two operating points, breakpoints can be found where the distance between operating points risk characteristics are extremely different from another, close, operating point.
+
+Additionally, we can find the point in which adding additional capacity won't have any effect.  
+\begin{equation}
+\nu_e = \max_{\begin{array}{c}\Xi,\Omega\\s=0,1,....,s^*\end{array}} \left\{ \ry_{es} \right\}
+\end{equation}
+Here $\nu_e (x)$ is the maximum flow on a particular line.  By choosing $x$ such that the line has no chance to fail, any additional capacity will not change the outcome.
+
 %Break Points \endnote{\input{\mypathdfo/end-breakpoints}} choosing N
-
 %\subsection{Local Convergence}
-derivative free techniques
-find neighborhood with continuity
-drive towards local optimal
-search basis
-exploratory steps
-
-\subsection{Modified Coordinate Search}
-All together now
-
+%\subsection{Modified Coordinate Search}
+%All together now
 %\section{Computational Results}
 
+\section{Conclusion}
+We have developed several indicators that can be used to improve both search directions as well as exploratory trial points.  This will be combined with a direct search method in order to see the effects of these ideas as well as compare them to model based methods and their effects.
 
+
+%\theendnotes
+%\setcounter{endnote}{0}
 
 
 
 %\subsection{MCS Implementation}
 %Negative - No local convergence properties
 
-\endnote{\textbf{Brute Force Serach}
+%\endnote{\textbf{Brute Force Serach}
 
-Old problem parameters, which is why the scales are so different
+%Old problem parameters, which is why the scales are so different
 
-\begin{figure}
-\begin{center}
-\input{\mypathdfo/fig-optroute}
- \caption{Brute force search procedure along coordinate directions in the null space}
- \label{fig:opt1}
-\end{center}
-\end{figure}
-}
-
-
-\section{Conclusion}
-
-
-\theendnotes
-\setcounter{endnote}{0}
-
+%\begin{figure}
+%\begin{center}
+%\input{\mypathdfo/fig-optroute}
+% \caption{Brute force search procedure along coordinate directions in the null space}
+% \label{fig:opt1}
+%\end{center}
+%\end{figure}
+%}
