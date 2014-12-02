@@ -447,7 +447,7 @@ In addition, the shadow prices for the original OPF model are shown for lines th
 
 In the CC model, these constraints are tightened further to ensure that these thresholds are met at least 95\% of the time.  The JCC model on the other hand relaxes these constraints and imposes a system risk constraint instead.  The final solution for the JCC model will have line 23 exceed its threshold with certainty but is rewarded with the high shadow price.  On the other hand, other lines with positive line risk may be restricted to ensure the system risk levels are met.
 
-To give another perspective, the line flows were sampled and binned to create a histogram of line flows to show the trade-off between models.  For the JCC model, the line risk parameter $L$ was chosen to be 0.9.  The results can be seen in figure \ref{histogram} where the bin size is $0.025$, for example the point $1$ is in reference to bin $1$ to $1.025$.  We can see that the normalized line flows pile up in bin 0.975 for the CC model and there are a number of lines in OPF that are in bin $1-1.025$, thus exceeding their capacity a significant amount of the time.  The JCC also has a line that exceeds its capacity, almost with certainty.  However, the JCC has far fewer lines that are at or near their capacity.
+To give another perspective, the line flows were sampled and binned to create a histogram of line flows to show the trade-off between models.  For the JCC model, the line risk parameter $L$ was chosen to be 0.9.  The results can be seen in figure \ref{solve_shadow} where the bin size is $0.025$, for example the point $1$ is in reference to bin $1$ to $1.025$.  We can see that the normalized line flows pile up in bin 0.975 for the CC model and there are a number of lines in OPF that are in bin $1-1.025$, thus exceeding their capacity a significant amount of the time.  The JCC also has a line that exceeds its capacity, almost with certainty.  However, the JCC has far fewer lines that are at or near their capacity.
 
 
 
@@ -469,11 +469,11 @@ Cost & 567.1 & 574.0 & 572.2\\
 \end{table}
 
 
-\begin{figure}
-\centering
-\input{\mypathjcc/fig-senseanal}
-\caption{A comparison of the three dispatch points for varying risk function parameters}\label{figsense}
-\end{figure}
+%\begin{figure}
+%\centering
+%\input{\mypathjcc/fig-senseanal}
+%\caption{A comparison of the three dispatch points for varying risk function parameters}\label{figsense}
+%\end{figure}
 
 %\begin{verbatim}
 %pow  case            m0  m1 mg eps epsN eta etaG L p  B   T
@@ -519,7 +519,7 @@ JCC .98:& 0.0125 \\
 
 \begin{figure}
 \input{\mypathjcc/fig-sensitivity}
-\caption{Sensitivity analysis for other polynomial risk functions}
+\caption{Sensitivity analysis for other polynomial risk functions}\label{figsense}
 \end{figure}
 
 

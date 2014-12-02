@@ -387,7 +387,10 @@ Here $\nu_e (x)$ is the maximum flow on a particular line.  By choosing $x$ such
 %\section{Computational Results}
 
 \section{Conclusion}
-We have developed several indicators that can be used to improve both search directions as well as exploratory trial points.  This will be combined with a direct search method in order to see the effects of these ideas as well as compare them to model based methods and their effects.
+This chapter gives a brief overview of DFO techniques.  Direct search was chosen due to its ability to filter high frequency noise and its flexibility in implementation while still guaranteeing local convergence under mild assumption.  This flexibility allows us to use accessory information in the exploratory steps to speed up solve times as well as find better global solutions.
+Several indicators were found that can be used to improve both search directions as well as exploratory trial points.  This will be combined with a direct search method in order to see the effects of these ideas as well as compare them to model based methods and their effects.  Additionally, the OPA simulation was implemented with a common random number scheme to reduce variance and low system requirements to parallelize the computational effort.  This allowed for large test cases to be evaluated and optimized using the OPA simulation as a subproblem.
+
+
 
 
 %\theendnotes

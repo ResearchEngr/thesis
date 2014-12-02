@@ -1,10 +1,18 @@
 
 \chapter{Conclusion}
 \section{Contributions}
-contribute 
+The first chapter's primary contribution was to model the existing cascading power failure simulation as a multi-stage stochastic program using mixed integer variables.  The primary difficulty was overcoming the decision dependent uncertainty, which was done by using the concept of effective capacity distribution and a priori sampling.  While the computational difficulty made practical use of this impossible, if highly probable sequences of failures were known in advance, this model could be used to protect against them.
+
+The second chapter's primary contribution was to optimize over the OPA simulation efficiently, which previously was only used in simple sensitivity analysis.  To this end, an efficient implementation was made with a common random number scheme to reduce variance and low system requirements to allow for massively parallel solution methodology.  In addition, DFO techniques were used to filter the high frequency noise and exploratory steps using accessory information from the OPA simulation enhanced the solution time to allow for large test case optimization.
+
+The third chapter's primary contribution was to develop a dispatch model that included a system risk constraint to control endogenous risk from line loading.  This system risk measure was modeled as a joint chance constraint and can be calculated analytic even under net injection uncertainty.  The cost-risk frontier was explored and the new model was compared to the standard chance constraint model used in recent literature.  The chance constraint model can be closely replicated with the JCC model, however it is inefficient according to our system risk metric and the JCC model is far more flexibile.
 
 \section{Future Work}
-Two areas of interest going forward are to price the covariance matrix in the JCC model and use the JCC model in the OPA framework to compare what effects it might have on cascading.  
+The primary research going forward will be:
+\begin{itemize}
+\item Make use of the extension of JCC to exogenous contingencies by measuring the relability of the system using the OPA cascading model
+\item Price the covariance matrix for net injection uncertainty using the shadow prices from the system risk constraints in the JCC model.
+\end{itemize}
 
 \section*{Thanks}
 Thanks for reading, I look forward to the help and feedback.

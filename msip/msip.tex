@@ -85,7 +85,7 @@ The final measure used was degree assortativity, which is the correlation of the
 Hines et. al. \cite{hines_2010} conclude that while these topological measures are useful for understanding the structure and perhaps indicating general vulnerabilities, they can lead to erroneous conclusions.  For example, Kinney et. al. \cite{kinney_2005} and Albert et. al. \cite{albert_2004} draw different conclusions about such things as the effects of single outages using similar data.  Power flow based models are more realistic and thus more useful for vulnerability analysis.  However, analogous measures with electrical topological information can be very useful. \endnote{\input{\mypathmsip/end-pseudtop}}
 
 
-\subsection{OPA Model}
+\subsection{OPA Model}\label{opa_section}
 
 The next level of complexity to add is to use electrical information about the grid as well as loading patterns to determine the power flows.  The loadings on particular elements have a large effect on the failure probability of the given element.  This type of model was done by three groups, Oak Ridge National Laboratory, Power System Engineering Research Center of Wisconsin University, and Alaska University.  This class of models will be called OPA models.  They look at the power transmission system and consider engineering and physical aspects, as well as economic, regulatory, and political responses to blackouts and increases in load.
 
@@ -467,7 +467,7 @@ The objective is to allocate a budget for capacity additions in order to reduce 
 
 
 
-\subsection{Computational Results}
+\subsection{Computational Implementation}
 The model outlined in (\ref{TX}) is solved using Gurobi 4.5.  The stopping criteria was either a 40\% optimality gap or 10,000s.  The program was run for several different expansion budgets, with both the total budget and the maximum number of lines being changed.  The output of this model is a vector $x$ which represents the amount of capacity to add to each power line on the grid.  This is used to modify the initial grid and run the OPA simulation to find the effects it has on the system.  In order to find out whether these solutions are reasonable or not, a heuristic was developed to compare against.
 
 The heuristic used is based on a large number of OPA simulation runs in which the power lines were ranked in descending order based on the percentage of runs in which that given power line was outaged.  Then, for a given total budget $B_x$ and maximum number of changed lines $B_y$, the heuristic picks the top $B_y$ lines in the list and then distributes the budget $B_x$ evenly over the lines.  The OPA simulation is used to compare the results of the two models.  Since the MSIP was calibrated based on the 4 contingencies, a second set of 4 random initial contingencies to start the OPA process to evaluate the effects.
@@ -505,7 +505,9 @@ The heuristic used is based on a large number of OPA simulation runs in which th
 
 % Calibrate ---------------------------------------------------------
 
-\section{Conclusion}
+\section{Results and Conclusion}
+After several trials, we found this solution methodology to be inadequate.  Due to the computational difficulty, the stochastic tree could only have around 4 stages with 3 outcomes per node in ideal settings by trial and error.  When using 4 initial contingencies, only sometimes were solutions found within a 40\% optimality gap.  This course representation of the underlying uncertainty made it a poor representation of the effects of the decision variables on the OPA simulation.  However, this approach may be successful if more analysis could determine highly probable failure sequences which need to be protected against.
+
 Using the OPA simulation as a reference for how the grid may respond to cascading power failures, a mixed integer model was developed which represents the cascading effects over a fixed number of outcomes and stages.  While this model can be difficult computationally due to the decision dependent uncertainty, it is extremely flexible.  The model can be used to include cascading effects in a wide range of power system problems with optimality criteria ranging from least cost to minimize worst case problems.  A computation example was done on transmission expansion, which showed the model was able to better than a reasonable heuristic, even though it was only solved to a 40\% optimality gap.  Future work can be done in order to improve the solve time for these types of models based on techniques developed in stochastic and mixed integer optimization.
 
 %\theendnotes

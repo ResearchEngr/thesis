@@ -7,10 +7,53 @@ In order to get reliable output from the optimization routine, this model needs 
 
 % Calibrate ---------------------------------------------------------
 
-\input{\mypathmsip/load_shed_distribution}
+
+\begin{figure}
+ \centering
+	\begin{tikzpicture}
+		\begin{axis}[xlabel=$LS$ (MW), ylabel=$P($Load Shed $> LS )$
+				,legend pos=north east
+				,grid=major,
+				,xmin=-25,xmax=400
+				,title=\mbox{Load Shed Distribution} ]
 
 
-\input{\mypathmsip/comp_sim_msip}
+ 	\addplot[black,line width=3pt] table[x=mv, y=mp] {./data/calibrate.txt};
+	\addlegendentry{MSIP}
+	
+	\addplot[red,line width=2pt] table[x=sv, y=sp,mark=square] {./data/calibrate.txt};
+	\addlegendentry{SIM}
+
+
+
+
+
+		\end{axis}	
+	\end{tikzpicture}
+  \caption{Load Shed Distribution for the OPA simulation and MSIP formulation}
+ \label{dist}
+\end{figure}
+
+
+\begin{table}
+\centering
+\begin{tabular}{| c | c c | c c |}
+\hline
+	&	\multicolumn{2}{ | c | }{ SIM } & \multicolumn{2}{|c|}{MSIP} \\
+$\xi$ 	&	$\Expect [ LS ]$ & St.Dv.$ [LS]$ &	$\Expect [LS]$ & St.Dv.$ [LS]$  \\
+\hline
+\hline
+2,12,21 &	196 & 128.1 & 184 & 112.7 \\
+5,25,34, 82 &	254 & 187.1 & 160 & 69.3 \\
+12,14,34,111 & 	131 &	 85.12 &	 151 &	 59.0 \\
+13,24 	&	145 & 123.4 	&	123	&	84.4 \\
+
+\hline
+\end{tabular}
+\caption{Comparison of Simulation and MSIP outputs}
+\label{compare}
+\end{table}
+
 
 %\input{line_outage}
 
