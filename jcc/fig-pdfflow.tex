@@ -1,6 +1,9 @@
 \documentclass{standalone}
+\usepackage{amsmath,amssymb,amsfonts} % Typical maths resource packages
 \usepackage{tikz}
 \usepackage{pgfplots}
+\newcommand{\ry}{\pmb{y}}
+\newcommand{\bP}[2]{\mathbb{P}_{#1} \left[ #2 \right]}
 \begin{document}
     \begin{tikzpicture}[scale=.7]
       \begin{axis}[ title=PDF of Power Flow ,xlabel=$y'$,ylabel=$\bP{\Omega}{\ry=y'}$, xmin=-.05, xmax=1.55, 

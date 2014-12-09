@@ -1,4 +1,5 @@
 PROJECT=main
+PRESENT=present
 TEX=lualatex
 BIBTEX=bibtex
 BUILDTEX=$(TEX) $(PROJECT).tex
@@ -25,9 +26,11 @@ intro:
 	$(TEX) -jobname=intro "\includeonly{intro/intro}\input{$(PROJECT)}"
 title: 
 	$(TEX) -jobname=title "\includeonly{front}\input{$(PROJECT)}"
+present:
+	$(TEX) $(PRESENT).tex
 
 clean:
 	rm -f *.aux *.log *.out	*.idx *.lot *.lof *.gz *.toc *~ *.blg *.auxlock *.bbl *.ent
 	rm -f */*.aux */*.log */*.out	*/*.idx */*.lot */*.lof */*.gz */*.toc */*~ */*.blg */*.auxlock */*.bbl */*.ent
 
-.PHONY: intro
+.PHONY: intro present

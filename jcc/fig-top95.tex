@@ -1,6 +1,8 @@
 \documentclass{standalone}
 \usepackage{tikz}
 \usepackage{pgfplots}
+\newcommand{\mypathjcc}{../jcc}
+\newcommand{\mypathjccdata}{../jcc/data}
 \begin{document}
 \begin{tikzpicture}[scale=.8]%1.3,1
 \begin{axis}[title=Normalized Line Flow , xlabel=Line, ylabel=Line Flow (MW),xmin=0,xmax=9, grid=major]
@@ -24,7 +26,7 @@
                         x dir=none,
                         y dir=both,
                         y explicit] table[x=count,y=sjc, y error=esjc] {\mypathjccdata/highflow.dat};
-                        \addlegendentry{SJC}
+                        \addlegendentry{JCC}
 
 \end{axis}
 %\begin{axis}[hide x axis, axis y line=right,ymin=-50,ymax=950,xmin=0,xmax=9,ylabel=Shadow Price (\$)]

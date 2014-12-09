@@ -197,7 +197,7 @@ The OPF model uses the DC simplifications from the full AC model to ensure the m
 \begin{subequations}
 \label{opf_program}
 \begin{alignat}{3}
-\min_{\left(x,\beta,;\theta,y\right)} && \multispan{2}{$\displaystyle\sum_j \left[  c_2 \left(x_j^2 + \beta_j^2 \sD \right) + c_1 x_j + c_0 \right]$}  & \label{jcc_obj}\\
+\min_{\left(x,\beta,;\theta,y\right)} && \displaystyle\sum_j \left[  c_2 \left(x_j^2 + \beta_j^2 \sD \right) \right. &\left.+ c_1 x_j + c_0 \right] &   \label{jcc_obj}\\
                         && \textstyle \sum_j c^g_{ij} x_j - \sum_j c^b_{ie} y_e          &=d_i       && \forall i \label{opf_cons}\\ 
                  && y_e - b_e \textstyle \sum_i c^b_{ie} \theta_i          &=0         && \forall e \label{opf_kcl}\\
                  && y_e &\in \left[ -U_e, U_e \right] && \forall e \label{opf_limit}\\
@@ -224,7 +224,7 @@ The JCC model departs from traditional power flow models in that it allows for a
 \begin{subequations}
 \label{jcc_program}
 \begin{alignat}{3}
-\min_{\left(x,\beta;\theta,y,\pi,s,z\right)} && \multispan{2}{$\displaystyle\sum_j \left[  c_2 \left(x_j^2 + \beta_j^2 \sD \right) + c_1 x_j + c_0 \right]$} &&\label{jcc_obj}\\
+\min_{\left(x,\beta;\theta,y,\pi,s,z\right)} && \displaystyle\sum_j \left[  c_2 \left(x_j^2 + \beta_j^2 \sD \right)\right. & \left. + c_1 x_j + c_0 \right] &\label{jcc_obj}\\
                         && \textstyle \sum_j c^g_{ij} x_j - \sum_j c^b_{ie} y_e          &=d_i       && \forall i \label{jcc_cons}\\ 
                  && y_e - b_e \textstyle \sum_i c^b_{ie} \theta_i          &=0         && \forall e \label{jcc_kcl}\\
                  && y_e &\in \left[ -U_e^\epsilon, U^\epsilon_e \right] && \forall e \label{jcc_limit}\\

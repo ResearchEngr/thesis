@@ -1,0 +1,227 @@
+\documentclass[12pt]{beamer}
+
+% For fast compiling
+%\includeonlylecture{intro}
+
+% -- PACKAGES -- 
+\usepackage{pgf}
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usetikzlibrary{patterns}
+\usepackage{amsmath,amssymb,amsopn}
+\usepackage[latin1]{inputenc}
+\usepackage[english]{babel}
+\usepackage{booktabs,colortbl}
+\usepackage{subfigure}
+\usepackage{import}
+%\usepackage{algorithm}
+\usepackage{algorithm}
+%\usepackage{algorithmic}
+\usepackage[noend]{algpseudocode}
+
+\usepackage{graphicx}
+\usepackage{cleveref}
+\graphicspath{{./img/}}
+%\newtheorem{lemma}[theorem]{Lemma}
+
+
+
+
+\usepackage{biblatex}
+\addbibresource{ref.bib}
+\addbibresource{jcc-bib.bib}
+\addbibresource{msip-bib.bib}
+\addbibresource{dfo-bib.bib}
+
+
+
+%-- Beamer setup --%
+
+% Colors
+%\definecolor{wisconsin-gold}{rgb}{0.8,0.6,0}
+\definecolor{lehigh-gold}{rgb}{1,0.9,0.1}
+\definecolor{wisconsin-red}{rgb}{0.6,0,0}
+
+\definecolor{french-blue}{rgb}{0,0.1254,0.62}
+\definecolor{french-red}{rgb}{0.96,0.16,0.25}
+
+\usecolortheme[named=wisconsin-red]{structure}
+\usetheme{Copenhagen}
+\setbeamercolor{alerted text}{fg=wisconsin-red}
+
+\usefonttheme[onlymath]{serif}
+\useoutertheme{infolines}
+
+\definecolor{illini-blue}{rgb}{0,0.247,0.58}
+\definecolor{illini-orange}{rgb}{0.89,0.41,0.14}
+
+
+\tikzset{
+        hatch distance/.store in=\hatchdistance,
+        hatch distance=10pt,
+        hatch thickness/.store in=\hatchthickness,
+        hatch thickness=2pt
+    }
+
+\makeatletter
+    \pgfdeclarepatternformonly[\hatchdistance,\hatchthickness]{flexible hatch}
+    {\pgfqpoint{0pt}{0pt}}
+    {\pgfqpoint{\hatchdistance}{\hatchdistance}}
+    {\pgfpoint{\hatchdistance-1pt}{\hatchdistance-1pt}}%
+    {
+        \pgfsetcolor{\tikz@pattern@color}
+        \pgfsetlinewidth{\hatchthickness}
+        \pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+        \pgfpathlineto{\pgfqpoint{\hatchdistance}{\hatchdistance}}
+        \pgfusepath{stroke}
+    }
+
+
+\makeatletter
+    \pgfdeclarepatternformonly[\hatchdistance,\hatchthickness]{flexible hatch2}
+    {\pgfqpoint{0pt}{0pt}}
+    {\pgfqpoint{\hatchdistance}{\hatchdistance}}
+    {\pgfpoint{\hatchdistance-1pt}{\hatchdistance-1pt}}%
+    {
+        \pgfsetcolor{orange}
+        \pgfsetlinewidth{\hatchthickness}
+        \pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+        \pgfpathlineto{\pgfqpoint{\hatchdistance}{\hatchdistance}}
+        \pgfusepath{stroke}
+    }
+
+
+\useframetitletemplate{%
+\vskip0.25em%
+\alert{\Large \insertframetitle}
+\par
+}
+
+% -- Images you want to use more than once --
+
+%\pgfdeclareimage[width=1cm]{wisconsin-logo}{images/wcrest} 
+%\logo{\pgfuseimage{wisconsin-logo}}
+
+
+%\pgfdeclareimage[width=0.1\textwidth]{flag-small}{images/Flag_of_France}
+
+
+% -- Jeff's MACROS -- %
+
+\newcommand{\picframetitle}[2]{
+    \vskip0.25em%
+    \begin{centering}
+      \begin{minipage}[c]{0.7\linewidth}
+	\Large \alert{#1}
+      \end{minipage} \hfill
+      \begin{minipage}[c]{0.22\linewidth}
+	\pgfimage[height=0.5in]{#2}
+      \end{minipage}
+      \par
+    \end{centering}
+}
+
+\newcommand{\medpicframetitle}[2]{
+    \vskip0.25em%
+    \begin{centering}
+      \begin{minipage}[c]{0.7\linewidth}
+	\Large \alert{#1}
+      \end{minipage} \hfill
+      \begin{minipage}[c]{0.22\linewidth}
+	\pgfimage[height=0.75in]{#2}
+      \end{minipage}
+      \par
+    \end{centering}
+}
+
+\newcommand{\bigpicframetitle}[2]{
+    \vskip0.25em%
+    \begin{centering}
+      \begin{minipage}[c]{0.7\linewidth}
+	\Large \alert{#1}
+      \end{minipage} \hfill
+      \begin{minipage}[c]{0.22\linewidth}
+	\pgfimage[height=1in]{#2}
+      \end{minipage}
+      \par
+    \end{centering}
+}
+
+\newcommand{\bigpicframetitletwo}[2]{
+    \vskip0.25em%
+      \begin{minipage}[c]{0.6\linewidth}
+	\Large \alert{#1}
+      \end{minipage} \hfill
+      \begin{minipage}[c]{0.32\linewidth}
+	\hfill \pgfimage[height=0.8in]{#2}
+      \end{minipage}
+      \par
+}
+
+\newcommand{\bigpicframetitlethree}[2]{
+    \vskip0.25em%
+      \begin{minipage}[c]{0.6\linewidth}
+	\Large \alert{#1}
+      \end{minipage} \hfill
+      \begin{minipage}[c]{0.32\linewidth}
+	\hfill \pgfimage[height=0.8in]{#2}
+      \end{minipage}
+      \par
+}
+
+\newcommand{\bi}{\begin{itemize}}
+\newcommand{\ei}{\end{itemize}}
+\newcommand{\BI}{\begin{itemize}}
+\newcommand{\EI}{\end{itemize}}
+\newcommand{\BEN}{\begin{enumerate}}
+\newcommand{\EEN}{\end{enumerate}}
+
+\newcommand{\BBR}[1]{\begin{beamerboxesrounded}[shadow=true,width=0.96\textwidth]{\color{lehigh-gold}#1}}
+\newcommand{\EBR}{\end{beamerboxesrounded}}
+
+\newcommand{\BCS}{\begin{columns}}
+\newcommand{\BC}[1]{\begin{column}{#1\linewidth}}
+\newcommand{\EC}{\end{column}}
+\newcommand{\ECS}{\end{columns}}
+
+\newcommand{\MSS}{\medskip\alert{\hrule}\medskip}
+\newcommand{\BSS}{\bigskip\alert{\hrule}\bigskip}
+\newcommand{\st}{\; | \;}
+
+\newcommand{\noprint}[1]{}
+\newcommand{\exclude}[1]{}
+\newcommand{\cB}{{\cal B}}
+\newcommand{\cC}{{\cal C}}
+\newcommand{\cD}{{\cal D}}
+\newcommand{\cE}{{\cal E}}
+\newcommand{\cF}{{\cal F}}
+\newcommand{\cG}{{\cal G}}
+\newcommand{\cI}{{\cal I}}
+\newcommand{\cK}{{\cal K}}
+\newcommand{\cL}{{\cal L}}
+\newcommand{\cN}{{\cal N}}
+\newcommand{\cO}{{\cal O}}
+\newcommand{\cP}{{\cal P}}
+\newcommand{\cQ}{{\cal Q}}
+\newcommand{\cR}{{\cal R}}
+\newcommand{\cS}{{\cal S}}
+\newcommand{\cT}{{\cal T}}
+\newcommand{\cU}{{\cal U}}
+\newcommand{\cX}{{\cal X}}
+\newcommand{\cV}{{\cal V}}
+\newcommand{\cZ}{{\cal Z}}
+
+\newcommand{\magE}{\left| \mathcal{E} \right|}
+
+\newcommand{\defeq}{\stackrel{\rm def}{=}}
+\newcommand{\Expect}{\mathbb{E}}
+
+\newcommand{\orb}{\operatorname{orb}}
+
+
+\newcommand{\ry}{\pmb{y}}
+\newcommand{\rye}{\pmb{y_e}}
+
+\makeatletter
+\def\BState{\State\hskip-\ALG@thistlm}
+\makeatother

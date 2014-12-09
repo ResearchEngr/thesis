@@ -183,7 +183,7 @@ The linear program \ref{dcopf_program} is a load shedding version of the standar
 \begin{subequations}
 \label{dcopf_program}
 \begin{alignat}{3}
-\min_{\left(g,\beta,l;\theta,y\right)} && \multispan{2}{$\displaystyle\sum_j \left[  c_2 g_j^2  + c_1 g_j + c_0 \right] + W \sum_i l_i$}   \label{jcc_obj}\\
+\min_{\left(g,\beta,l;\theta,y\right)} && \displaystyle\sum_j \left[  c_2 g_j^2  + c_1 g_j + c_0 \right] &+ W \sum_i l_i &  \label{jcc_obj}\\
                         && \textstyle \sum_j c^g_{ij} g_j - \sum_j c^b_{ie} y_e   +l_i       &=D_i       && \forall i \label{opf_cons}\\ 
                  && y_e - b_e \textstyle \sum_i c^b_{ie} \theta_i          &=0         && \forall e \label{opf_kcl}\\
                  && l_i &\in \left[ 0, D_i \right] && \forall e \label{opf_loadshed}\\

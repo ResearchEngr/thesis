@@ -20,8 +20,15 @@
 \usepackage{cleveref}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{afterpage}
 \usepackage{comment}    
 \graphicspath{{./img/}}
+
+\newcommand\blankpage{%
+    \null
+    \thispagestyle{empty}%
+    \addtocounter{page}{-1}%
+    \newpage}
 
 %\usetikzlibrary{external} 
 %\tikzexternalize[prefix=tikz/]
