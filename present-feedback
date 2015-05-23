@@ -1,0 +1,16 @@
+Tom - Get to kernal of idea, small transparent example, drive wedge between two models.  Huge externality, reference this, tie back to this.  Show example of our OPA method in Northeast blackout, but i dont have data, data is in the text.  Discussion of dynamic stability, other approach that is important for explicit characterization of cascade sequence.  How our model captures important part of cascading process.  Link with blackout distribution.  Actuall sequence within some sample path.  For stochastic program, explicit in recourse action, our model stil better with all recourse considered.  End of chapter 2, cant just say this doesn't work.  All in all, connect to intro, hook to real problems, how do these techniques address these issues and small transparent examples to highlight them.  Spelling errors!!!!
+
+Tom - Need to make better references to real world problem and make a stronger connection to northeast blackout.  is it possible to make an example that replicates first few stages or potential statistics about load shed and its probability.
+
+Bernie - Good, do N-1 and price covariance matrix.  Chris might have good connection with failure sequence.  Bernie and student working on pricing sensitivity to variation in load.
+
+Steve - Implicit filtering http://www4.ncsu.edu/~ctk/iffco.html
+
+Jim - For DFO, is ther LP with objective that is correlated with OPA load shed.  Is there any statistic about LP solve that is correlated with OPA load shed.  How well does the system risk measure correlate with load shed.  This is a bi-level program.
+
+Going forward
+-Work DFO section
+-Finish up JCC
+-Fine tune statistics
+-More hooks to introduction information and connecting all the chapters
+-Move DFO to last chapter

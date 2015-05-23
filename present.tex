@@ -1184,6 +1184,40 @@ g_n(y) = \left\{ \begin{array}{l c }
 
 \end{frame}
 
+\begin{frame}{Dispatch Point Data}
+Case
+\bi
+\item Buses: 2383
+\item Branches: 2896
+\item Gens: 327
+\ei
+
+Cost of the different dispatch points
+\begin{center}
+ \begin{tabular}{ |c| c c c |}
+\hline
+& OPF & CC .01 & JCC .98 \\
+\hline
+\hline
+Cost & 565.2 & 590.2 & 589.6 \\
+$r$ & 0.00504 & 0.00150 & 0.00031 \\
+\hline
+\end{tabular}
+\end{center}
+%Expected number of lines over their threshold
+%\begin{center}
+%\begin{tabular}{| r  c |}
+%\hline
+%Risk :& Ex[$y_e > U_e$] \\
+%\hline
+%\hline
+%OPF:& 0.3875\\
+%CC .01:& 0.0225\\
+%JCC .98:& 0.0125 \\
+%\hline
+%\end{tabular}
+%\end{center}
+\end{frame}
 
 \begin{frame}{Piecewise Square}
 \begin{center}
@@ -1296,6 +1330,7 @@ $r$ & 0.00504 & 0.00150 & 0.00031 \\
 \hline
 \end{tabular}
 \end{center}
+\pause
 Expected number of lines over their threshold
 \begin{center}
 \begin{tabular}{| r  c |}

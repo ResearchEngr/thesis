@@ -1,0 +1,485 @@
+\begin{frame}{Outline}
+\hfill Percent Complete
+\bi
+\item Modeling cascading power failures, Ch. 2 \hfill (92\%)
+\bi
+\item Decision dependent uncertainty 
+\item Effective capacity and a priori sampling
+\item Multi-stage integer program (MSIP)
+\ei
+\item Risk model for real-time dispatch, Ch. 4 \hfill (78\%)
+\bi
+\item Endogenous risk due to line loading
+\item Line failure risk function and net injection uncertainty
+\item Joint chance constraint (JCC)
+\ei
+\item Solving design problems, Ch. 3 \hfill (42\%)
+\bi
+\item Efficient OPA simulation with variance reduction
+\item Enhanced solves via accessory information
+\item Derivative free optimization (DFO)
+\ei
+\ei
+
+\end{frame}
+
+
+\begin{frame}{OPA Simulation Algorithm}
+%\begin{algorithm}
+%\caption{OPA Cascading Algorithm}\label{opa_alg}
+\tiny
+\begin{algorithmic}
+\Procedure{OPA}{$x, D, \xi, \omega$}
+\State Solve (DC OPF) to find base case load shed $z_0$
+\State $\xi$ occurs and corresponding changes to the grid are made
+\State Stage $s \gets 1$
+\While{ Not DONE }
+\State Solve (DC OPF) to find power injects and branch flows for adjusted grid
+\State $\mathbb{O}_s \gets \emptyset$
+\For{$\forall e \in \cE $}
+\State $\mathbb{O}_s = 
+\left\{ 
+\begin{array}{lr}
+  \mathbb{O}_s + \left\{ e \right\} & \mbox{w/ prob. } h(y_e), \mbox{ draw } \omega_{es} \\
+  \mathbb{O}_s & \mbox{o/w }
+\end{array}
+\right. $ 
+\If{ $\mathbb{O}_s \neq \emptyset$ }
+\State Modify Grid with $\mathbb{O}_s$
+\State $s\gets s+1$
+\Else
+\State $s^* \gets s,$ calculate $z_{s^*}$, DONE
+\EndIf
+\EndFor
+\EndWhile
+\State \label{done}Load Shed $  \lambda\left(x,D,\xi,\omega\right)  = z_{s^*} - z_0$
+\EndProcedure
+\end{algorithmic}
+%\end{algorithm}
+\end{frame}
+
+\begin{frame}{Dispatch Point Data}
+Cost of the different dispatch points
+\begin{center}
+ \begin{tabular}{ |c| c c c c c c|}
+\hline
+& OPF & CC .01 & CC .05 & JCC .98 & JCC .9 & JCC .8 \\
+\hline
+\hline
+Cost & 565.215 & 590.172 & 572.833& 589.594 & 581.92 &579.135\\
+%$r$ & 0.00504327 & 0.0015044 & 0.0169355 & 0.000309812 &.0028877 &0.00466\\  -- shown in picture
+\hline
+\end{tabular}
+\end{center}
+Expected number of lines over their threshold
+\begin{center}
+\begin{tabular}{| r  c |}
+\hline
+Risk :& Ex[$y_e > U_e$] \\
+\hline
+\hline
+OPF:& 0.3875\\
+CC .01:& 0.0225\\
+CC .05:& 0.1971 \\
+JCC .8:& 0.31 \\
+JCC .9:& 0.09 \\
+JCC .98:& 0.0125 \\
+\hline
+\end{tabular}
+\end{center}
+\end{frame}
+\begin{frame}{Piece-wise Square}
+\begin{center}
+\includegraphics[scale=.96]{jcc/fig-sensesquare}
+\end{center}
+\end{frame}
+
+\begin{frame}{Algorithm}
+\tiny
+\begin{algorithmic}
+\Procedure{JCC}{d,$\Sigma^m$,$\epsilon$,$\epsilon_g$,L,p}
+\State $L \gets \emptyset$  (Set of Lines with potential risk)
+\State $S \gets \emptyset$  (Set of Cuts)
+\State $r \gets 0$ (Risk)
+\BState \emph{solve}:
+\State $(\hat{x},\hat{\beta},\hat{y}) \gets $Solve DC Power Flow, \cref{jcc_obj,jcc_cons,jcc_kcl,jcc_slack,jcc_limit,jcc_gen}, with cuts $S$, risk $r\leq\epsilon$
+\If {Infeasible} \Return Problem Infeasible 
+\EndIf
+\State Calculate $\hat{s},\hat{z},\hat{r}$ using $(\hat{x},\hat{\beta},\hat{y})$ and \cref{branch_cov,line_risk}
+\If {$\hat{r} \leq \epsilon + tol$} \Return Optimal $(\hat{x},\hat{\beta},\hat{y},\hat{s},\hat{z},\hat{r})$
+\EndIf
+\For{$\forall e$}
+\If {$\hat{z_e} \geq tol$}
+    \If {$e \notin L$}
+            \State $L \gets \left\{L,e\right\}$
+            \State Initialize $s_e,z_e$
+            \State $r \gets r + z_e$
+    \EndIf            
+    \State $S \gets$ line risk cuts \ref{line_risk_cuts} for $z_e,y_e,s_e$ dependent on $\hat{z}_e,\hat{y}_e,\hat{s}_e$
+    \State $S \gets$ branch variance cuts \ref{branch_var_cuts} for $s_e,\beta_e$ dependent on $\hat{s}_e,\hat{\beta}_e$
+\EndIf
+\EndFor
+\State \textbf{goto} \emph{solve}
+\EndProcedure
+\end{algorithmic}
+\end{frame}
+
+\begin{frame}{Risk Function}
+Risk function is convex, but not analytic
+\bi
+\item Cutting Planes
+\ei
+\begin{subequations}
+\label{line_risk_cuts}
+\begin{align}
+z_e \geq g(\hye,\hse) &+ \frac{\partial g}{\partial y_e}(\hye,\hse) \left(y_e - \hye \right) 
++ \frac{\partial g}{\partial s_e}(\hye,\hse) \left(s_e - \hse \right) \\
+g(y_e,s_e) &= (a + b y_e)\left[ 1 - \Phi(\alpha_L) \right]  + b s_e \phi(\alpha_L)  \\
+ \frac{\partial}{\partial y_e}g(y_e,s_e) &= b\left[ 1 - \Phi(\alpha_L) \right]\\
+\frac{\partial}{\partial s_e}g(y_e,s_e) &= b \phi(\alpha_L) 
+\end{align}
+\end{subequations}
+
+\end{frame}
+
+\begin{frame}{Standard Deviation of Branch Flow}
+St. Dv. is second order cone, but only need for small number of lines
+\bi
+\item Cutting Planes
+\ei
+\begin{subequations}
+\label{branch_var_cuts}
+\begin{align}
+s_e \geq \fehb &+ \sum_j \pfehb \left( \beta_j - \hat{\beta_j} \right)\\
+  \feb &= \sqrt{\pe^2 \sD - 2 \pe \se  + \see }\\
+  \pfeb &= \frac{A_{ej} \left( \pe \sD - \se \right)}{\sqrt{\pe^2 \sD - 2 \pe \se  + \see }}
+\end{align}
+\end{subequations}
+\end{frame}
+
+Line risk from second term
+\begin{equation}\label{line_risk}
+z_e(\mu^y_e,\sigma^y_e) = (a + b \mu^y_e)\left[ 1 - \Phi(\alpha_L) \right]  + b \sigma^y_e \phi(\alpha_L) 
+\end{equation}
+\begin{tabular}{c l}
+$\mu^y_e$ & Mean branch flow \\
+$\sigma^y_e$ & Standard deviation of branch flow \\
+$\Phi(\cdot)$ & CDF of standard normal distrubtion \\
+$\phi(\cdot)$ & PDF of standard normal distrubtion \\
+$\alpha_L$ & $\frac{L - \mu^y_e}{\sigma^y_e}$
+\end{tabular}
+
+
+
+\subsection{Example}
+\begin{frame}{Northeast America Blackout 2003}
+This grid had load of 28,700 MW before event started \\
+At worst, load 5,716 MW, $< 20 \% $ of original \\
+Took around 4 to 5 hours\\
+Initial events 1 hour apart, near end, within seconds \newline
+\\
+Effects 
+\begin{itemize}
+\item 45 million people affected in 8 states, 10 million in Ontario
+\item Estimated economic impact of around \$6 billion for US, \$2 billion for Canada
+\item Power slowly brought back 1-3 days
+\item Some areas lost water pressure 
+\item Trains in and out of New York shut down
+\item Some industry not back to full production until 7 to 8 days later
+\item Loss of Life
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Northeast America Blackout 2003}
+\begin{itemize}
+\item System load was less than historic peak
+\item Large amount of imported power to Cleveland-Akron Area
+\item David-Besse Nuclear Plant in long-term forced outage
+\item Capacitor banks in planned maintanence
+\item Hot and humid, multiple tree contacts
+\item Server outages and communication problems
+
+-Inability for operators to react
+\pause
+\end{itemize}
+\BBR{Fast acting trips take out Northeast Power Grid}
+\begin{itemize}
+\item Thousands of events happened within last minutes 
+\item Dynamic power swings responsible, voltage instability companion  
+\end{itemize}
+\EBR
+\end{frame}
+
+\begin{frame}{Line Capacities}
+\begin{itemize}
+\item Understand the effects line capacities have on overall cascading process
+\item Use this information to aid in Derivative Free Optimization
+\end{itemize}
+\pause
+But How?
+\pause
+\begin{center}
+\textbf{Pictures}, of course!
+
+\includegraphics[scale=.5]{pictures}
+\end{center}
+\end{frame}
+
+
+\begin{frame}{Expected Load Shed}
+\centering
+\begin{itemize}
+\item Moving along coordinate axis
+\item Adding up to 3x capacity to line
+\item Standard error about $\pm 1$
+\end{itemize}
+\includegraphics[scale=.35]{exls1}
+\end{frame}
+
+
+\begin{frame}{Expected Load Shed}
+\centering
+\includegraphics[scale=.35]{exls2}
+\end{frame}
+
+
+\begin{frame}{Expected Load Shed}
+\centering
+\includegraphics[scale=.35]{exls3}
+\end{frame}
+
+\begin{frame}{Expected Load Shed}
+\centering
+\includegraphics[scale=.35]{exls4}
+\end{frame}
+
+\begin{frame}{and Other Risk Measures}
+\centering
+\includegraphics[scale=.35]{riskmeasures}
+\end{frame}
+
+
+
+\begin{frame}{Derivative Free Optimization}
+Bad behavior and secondary information \newline
+Clusters of lines which help explain expectation of load shed
+\begin{center}
+\includegraphics[scale=.3]{clusters}
+\end{center}
+
+\end{frame}
+
+
+\section{Discussion}
+\subsection{Collaboration}
+\begin{frame}{Graph Connections and Optimization}
+\alert{Graph Theory Connections}
+Find connections with clusters of lines from this and those from graph properties
+\begin{itemize}
+\item Possible connection with partition and max flow cuts - Halappanavar
+\end{itemize}
+
+\alert{Optimization with Simulation}
+Use simulation in framework proposed by Ferris 
+\begin{itemize}
+\item Economic dispatch such that cascade risk measures stays bounded
+\end{itemize}
+\begin{subequations}
+\begin{align}
+\min \hspace{10px} & f(x,y)	\\
+\mbox{s.t.} \hspace{10px}& g(y) \le 0	\\
+	& y = S(x) \in \cB 
+\end{align}
+\end{subequations}
+
+\end{frame}
+
+\begin{frame}{N-k Criteria and Chance Constraints}
+\alert{Economic Dispatch such that no more than $k$ branches lost }
+
+Ex. Avoid $k > 1$ for large percentage of scenarios
+\begin{equation}
+P\left\{\text{Line Outage} \le k \right\} \ge 1 - \epsilon
+\end{equation}
+Binary variable for each scenario on whether it has held
+\begin{subequations}
+\begin{align}
+\sum_i z_{is} &\le	M_s \hat{z_s} + | \xi_s | + k \\
+\sum_s \hat{z_s} &\le \epsilon | \cS |
+\end{align}
+\end{subequations}
+%where $M_s = | \cE | - | \xi_s | - k$.  
+
+
+
+\alert{Redispatch and Stability Regions}
+Chance constraint on system staying in stability region after contingencies. - DeMarco simulation
+
+\begin{itemize}
+\item Possible to understand stability regions through simulation?
+\item What type of constraints can describe the regions?
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Derivative Free Optimization and Redispatch}
+\alert{Derivative free optimization} used on continuous and smooth functions
+\begin{itemize}
+\item Cascade process doesn't fit this
+\item Want to use for local convergence
+\item Still need global method to find promising regions
+\end{itemize}
+\alert{Stochastic Redispatch} seems to be naturally suited to chance constraints
+\begin{itemize}
+\item Ensure reserves are capable of covering a percentage of contingencies
+\item Unit commitment model which ensures robust reserve allocation
+\end{itemize}
+\end{frame}
+
+
+\section{Dynamic Equillibrium}
+\subsection{Forces}
+\begin{frame}{Forces on System}
+Full OPA model tries to capture these forces and find an equillibrium that is seen in the real world \newline \\
+Short Term Forces:
+\begin{itemize}
+\item Random demand fluctuations
+\item Blackouts, Cascading Process
+\item Dispatch Model
+\end{itemize}
+Long Term Forces:
+\begin{itemize}
+\item Economic and political processes
+\item System repair
+\item Load growth
+\item Design and upgrade of system
+\end{itemize}
+\end{frame}
+
+
+\subsection{Equillibrium}
+\begin{frame}{Equillibrium}
+Self-organized into dynamic equillibrium where blackouts of all sizes occur\newline
+\\ 
+Average frequency of blackouts steady for 30 years
+
+Power tail distribution, exponent around $-1.3\pm.2$
+\newline \\
+With given forces, OPA model gives consistent results with data
+
+\end{frame}
+
+
+\subsection{Dispatch Models}
+\begin{frame}{Critical points}
+\alert{Stay away from critical points!}
+\begin{itemize}
+\item A critical point is when the system is at a maximum throughput operating point, that is, it is constrained by line limits or generator limits. 
+\item Power systems tend towards these spots due to economic pressures. 
+\item  Critical points are the cheapest way to provide power if there were no concern of outages or uncertainty.
+\end{itemize}
+Two types of critical points
+\begin{itemize}
+\item Inadequate generation capacity - leads to a lot of smaller blackouts
+\item Inadequate transmission system capacity - leads to few large blackouts.
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Dispatch Model}
+
+First solve economic dispatch model subject to power flow constraints to find
+\begin{itemize}
+\item Least cost dispatch at cost $B^*$.
+\end{itemize}
+ Find ``reliability frontier" for an increased budget.
+\begin{subequations} \label{rel}
+\begin{align} 
+\max	& \hspace{10px} \lambda r_g(g) + (1-\lambda) r_f(f) \\
+\mbox{s.t.}	& \hspace{10px}c(g) \le B^* + \delta	\\
+  &	\hspace{10px}\mbox{ power flow constraints} 
+\end{align}
+\end{subequations}
+\begin{itemize}
+\item $\lambda$ will be used to express the trade off between lots of small outages or few large outages.
+\item   $\delta$ represents the increased budget to find a new operating point.  
+\item $c(g)$ is the cost function for the generator dispatch $g$.  
+\item As $\delta \rightarrow 0$, (\ref{rel}) will approach the economic dispatch point. 
+\item $f$ is power flows on the transmission lines.  
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}{Reliability Function}
+
+An example of possible reliability functions may be to maximize a weighted excess capacity for generators and transmission lines.
+\begin{align}
+r_g(g) &= \sum_i \left[ \alpha_i (g_i^+ - g_i ) + \beta_i (g_i - g_i^-) \right]\\
+r_f(f) &= \sum_{ij} \gamma_{ij} \left( \frac{U_{ij} - f_{ij}}{U_{ij}} \right)
+\end{align}
+\begin{itemize}
+\item $\alpha$ and $\beta$ will represent the relative need for up-ramping and down-ramping capabilitie
+\begin{itemize}
+\item desired geographical location of ramping rates through the relative size of $\alpha_i$ at any node $i$.  
+\end{itemize}
+\item $\gamma_{ij}$ can be developed using electrical information of the transmission line to ensure that the core network is more stable. 
+\begin{itemize}
+\item More weight can be point on critical lines to the power grid.
+\end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}{END}
+\end{frame}
+
+\section{Break points}
+\begin{frame}{Changing Branch Capacities}
+What happens when you change branch capacities? \newline\\
+Anything! \newline \\
+To start to get a handle on problem, fix random variables \newline \\
+Estimate Load Shed Distribution \newline \\
+Initial Outages  $\hat{\xi} =\left\{ 400, 146, 9, 299, 119, 321, 389, 393 \right\}$ \newline \\
+Demand Scenario $\hat{\theta}$ is from test instance data \newline \\
+Step along one branch element's capacity, $x_{284}$
+\end{frame}
+
+\subsection{More Capacity Less Load Shed}
+\begin{frame}{Effects of Capacity Change on Load Shed}
+\includegraphics[scale=.4]{examplegood.pdf}
+\end{frame}
+\begin{frame}{Why Did This Happen}
+As capacity was added to line 284, the Mean Load Shed, V@R and CV@R improved \newline \\
+This was not monotonic
+\begin{itemize}
+\item Capacity has large effect on neighboring lines 
+\item as $x_{284}$ increases from low values, neighbor lines start to overload,
+	leads to larger load shed
+\item as $x_{284} \rightarrow 1.1x_{284,ref}$, no important lines overloaded 
+\item as $x_{284}$ increases further, no changes to cascade 
+\end{itemize}
+
+\end{frame}
+\subsection{More Capacity More Load Shed}
+\begin{frame}{More Capacity is not Always Good}
+\includegraphics[scale=.4]{examplebad.pdf}
+\end{frame}
+\begin{frame}{Why Did this Happen}
+Why does the load shed go up when the system is adding capacity?
+\begin{itemize}
+\item discontinuous jump in load shed at $x'_{301} \in [1.04, 1.17]$
+\item For $x_{301} < 1.04 $ \newline
+	Cascade can outage lines 288, 299, 301 \newline
+	As $x_{301}$ approaches 1.04, lines 288, 299 no longer overloaded \newline
+	Outage of line 301 has minimal system impacts 
+\item For $x_{301} > 1.17 $ \newline
+	Line 301 no longer overloaded, area of congestion shifted \newline
+	But lines 127, 226 now overloaded and can be outaged \newline
+	This weakens system considerably, leading to large scale cascades
+\end{itemize}
+\end{frame}
+
+\section{Risk Model for Real-Time Dispatch}
+
+
+\end{document}
