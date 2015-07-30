@@ -2,7 +2,8 @@
 \newcommand{\mypathdfodata}{../thesis/dfo/data}
 \newcommand{\scd}{\cD_\oplus}
 \newcommand{\btu}{\bigtriangleup}
-\chapter{Solving Design Problems}
+\chapter{OPA Simulation and Solving~Design~Problems}
+%\section{Solving Design Problems}
 
 The cascading model built in chapter \ref{msip-model} is too hard to optimize at the scale we need to model the uncertainty in the cascading process.  In order to work around this difficulty, we will decompose the multi-stage structure of this problem and simulate the entire cascading process.  The primary benefit is removing the temporal linked binary variables for line outages from the master problem allowing sequential evaluation of the decision dependent uncertainty.  This lets us parallelize the OPA evaluations to increase the computational effort.
 

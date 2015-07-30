@@ -22,6 +22,8 @@
 \usepackage{subcaption}
 \usepackage{afterpage}
 \usepackage{comment}    
+\usepackage{setspace}
+\usepackage[margin=1in]{geometry}
 \graphicspath{{./img/}}
 
 \newcommand\blankpage{%
@@ -29,6 +31,21 @@
     \thispagestyle{empty}%
     \addtocounter{page}{-1}%
     \newpage}
+
+\newcommand{\bc}[1]{}
+
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+
+\newenvironment{proof}[1][Proof]{\begin{trivlist}
+\item[\hskip \labelsep {\bfseries #1}]}{\end{trivlist}}
+
+\newcommand{\qed}{\nobreak \ifvmode \relax \else
+      \ifdim\lastskip<1.5em \hskip-\lastskip
+      \hskip1.5em plus0em minus0.5em \fi \nobreak
+      \vrule height0.75em width0.5em depth0.25em\fi}
 
 %\usetikzlibrary{external} 
 %\tikzexternalize[prefix=tikz/]
@@ -38,13 +55,14 @@
 
 
 %\setlength{\textwidth}{15cm}
+\linespread{2}
 \parindent 1cm
 \parskip 0.2cm
-\topmargin .3cm %1cm  %.3cm
-\oddsidemargin .7cm %1.5cm  %.7cm
-\evensidemargin .7cm %1.5cm  %.7cm
-\textwidth 15cm %13.5cm %15cm
-\textheight 21cm %20cm %21cm
+%\topmargin 1in %1cm  %.3cm
+%\oddsidemargin 1in %1.5cm  %.7cm
+%\evensidemargin 1in %1.5cm  %.7cm
+%\textwidth 6.5in %13.5cm %15cm
+%\textheight 9in %20cm %21cm
 
 
 \newcommand{\bi}{\begin{itemize}}
@@ -92,8 +110,15 @@
 
 
 \newcommand{\ry}{\pmb{y}}
+\newcommand{\rxi}{\pmb{\xi}}
+\newcommand{\rdelm}{\pmb{\delta^m}}
 \newcommand{\rye}{\pmb{y_e}}
-
+\newcommand{\rdfe}{\pmb{\delta^y_e}}
+\newcommand{\rdfee}{\pmb{\delta^y_{e_1}}}
+\newcommand{\rdfeee}{\pmb{\delta^y_{e_2}}}
+\newcommand{\rik}{\pmb{\delta^m_k}}
+\newcommand{\rikk}{\pmb{\delta^m_{k_1}}}
+\newcommand{\rikkk}{\pmb{\delta^m_{k_2}}}
 
 \newcommand{\Expect}{\mathbb{E}}
 \newcommand{\Exx}[1]{\mathbb{E}\left[ #1 \right]}

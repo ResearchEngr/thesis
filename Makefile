@@ -21,7 +21,9 @@ ftwo:
 three: 
 	$(TEX) -jobname=three "\includeonly{jcc/jcc}\input{$(PROJECT)}"
 four: 
-	$(TEX) -jobname=four "\includeonly{slk/slk}\input{$(PROJECT)}"
+	$(TEX) -jobname=four "\includeonly{oj/oj}\input{$(PROJECT)}"
+tf: 
+	$(TEX) -jobname=tf "\includeonly{jcc/jcc,oj/oj}\input{$(PROJECT)}"
 intro: 
 	$(TEX) -jobname=intro "\includeonly{intro/intro}\input{$(PROJECT)}"
 title: 

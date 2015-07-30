@@ -1,0 +1,26 @@
+\begin{tikzpicture}[scale=.8]%1.3,1
+\begin{axis}[title=Normalized Line Flow , xlabel=Line, ylabel=Line Flow (MW),xmin=0,xmax=9, grid=major,legend style={at={(.98,.875)},anchor=north east}]
+
+                        \addplot+[opacity=.9,only marks, mark size=1, mark=triangle,
+                        /pgfplots/error bars/.cd,
+                        x dir=none,
+                        y dir=both,
+                        y explicit] table[x=count,y=opf, y error=eopf] {\mypathjccdata/highflow.dat};
+                        \addlegendentry{OPF}
+
+                         \addplot+[opacity=.9,only marks, mark size=1, mark=o,
+                        /pgfplots/error bars/.cd,
+                        x dir=none,
+                        y dir=both,
+                        y explicit] table[x=count,y=cc, y error=ecc] {\mypathjccdata/highflow.dat};
+                        \addlegendentry{CC}
+
+                        \addplot+[opacity=.9,only marks, mark size=1, mark=square,
+                        /pgfplots/error bars/.cd,
+                        x dir=none,
+                        y dir=both,
+                        y explicit] table[x=count,y=sjc, y error=esjc] {\mypathjccdata/highflow.dat};
+                        \addlegendentry{SJC}
+ 
+\end{axis}
+\end{tikzpicture}
