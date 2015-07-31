@@ -381,7 +381,7 @@ z_{en} \le 1- \xi_e  \label{xi}
 
 Now, the set of all feasible cascades can be described as follows, 
 \begin{equation}
-\cX(\xi) \equiv \left\{ \left(d, p, f, z \right)  |  \mbox{ \cref{pf1,pf2,r1,r2,lf1,lf2,lf3,r,xi}  hold } \right\} 
+\Omega(\xi) \equiv \left\{ \left(d, p, f, z \right)  |  \mbox{ \cref{pf1,pf2,r1,r2,lf1,lf2,lf3,r,xi}  hold } \right\} 
 \end{equation}
 where $d = \left[ d_0, d_1, \cdots, d_N \right]$ is the set of vectors of demand served for each node in the scenario tree.  Now, this representation of the cascading process can be used in many ways.  One example is a chance constrained model, in which the operator requires a line to be available in a certain percentage of scenarios.  Another example is to use this as a subproblem in a larger planning model. 
 
@@ -391,7 +391,7 @@ The following model is a least cost dispatch model that includes the effects fro
 \label{leastcost}
 \begin{align} \displaystyle
 	{\large \mbox{min}} \hspace{10px} &  \Expect_\Xi \sum_{in} \left[ C_{in}  p_{in,m}  + W_{in} (\hat{d}_{i} - d_{in,m}) \right]	\\
-	&(d,p,f,z)_m  \in \cX(\xi_m)    \hspace{20px}   \forall \xi_m \in \Xi	
+	&(d,p,f,z)_m  \in \Omega(\xi_m)    \hspace{20px}   \forall \xi_m \in \Xi	
 \end{align}
 \end{subequations}
 This can be adapted to several different problems in power systems.  The main difficulty with this multi stage stochastic program is computational complexity.  The program can be calibrated in order to produce similiar load shed distributions to the OPA model, however the number of outcomes and stages in the model needs to be small or the computational hurdle becomes too large.
@@ -426,12 +426,12 @@ Let $x$ be the design variable, which is decided at the root node and represents
 \begin{tikzpicture}
 
 \draw (.5,.5) node(ROOT)[circle,draw]{\small $x$ };
-\draw (3,3) node(ONE)[circle,draw]{ \small $\cX_1$ };
-\draw (3.25,1.5) node(TWO)[circle,draw]{ \small $\cX_2$ };
+\draw (3,3) node(ONE)[circle,draw]{ \small $\Omega_1$ };
+\draw (3.25,1.5) node(TWO)[circle,draw]{ \small $\Omega_2$ };
 \draw (3.25,.85) node(DOTONE){ \large $\vdots$ };
-\draw (3.25,0) node(N)[circle,dashed,draw]{ \small $\cX$ };
+\draw (3.25,0) node(N)[circle,dashed,draw]{ \small $\Omega$ };
 \draw (3.15,-.65) node(DOTTWO)[rotate=-15]{ \large $\vdots$ };
-\draw (3,-1.5) node(S)[circle,draw]{ \small $\cX_M$ };
+\draw (3,-1.5) node(S)[circle,draw]{ \small $\Omega_M$ };
 
 \draw (1.85,2.15) node(OMG1){ \small $\xi_1$ };
 \draw (2.05,1.25) node(OMG2){ \small $\xi_2$ };
@@ -458,7 +458,7 @@ The objective is to allocate a budget for capacity additions in order to reduce 
 
 \begin{align} \displaystyle
 	{\large \mbox{min}} \hspace{10px} &  \Expect_\Xi \sum_{in} \left[ C_{in}  p_{in,m}  + W_{in} (\hat{d}_{i} - d_{in,m}) \right]	\\
-	&(d,p,f,z)_m  \in \cX(\xi_m)    \hspace{20px}   \forall \xi_m \in \Xi	\\
+	&(d,p,f,z)_m  \in \Omega(\xi_m)    \hspace{20px}   \forall \xi_m \in \Xi	\\
 	& \underline{X}_e y_e \le x_e \le \overline{X}_e y_e \hspace{35px} \forall e \in \cE\\
 	&\sum_e x_e \le B_x 	\\
 	& \sum_e y_e \le B_y  

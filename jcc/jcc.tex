@@ -330,11 +330,10 @@ z_e(\mu^y_e,\sigma^y_e) = (a + b \mu^y_e)\left[ 1 - \Phi(\alpha_L) \right]  + b 
 %%%%%%%% Section 3
 \subsection{Joint Chance Constraint Model}%WITH ARBITRARY SLACK!!
 The JCC model departs from traditional power flow models in that it allows for a trade-off between line risk, system risk, and cost. Since the cost and risk are both related to the slack distribution, the model is given with the slack distribution as a variable.  In this section, the full joint chance constraint model follows with a brief explanation of some of the constraints.  The relevant parameters derived from the injection covariance matrix is also given.  Then a cutting plane algorithm is shown to solve the full JCC model.
-
 \begin{subequations}
 \label{jcc_program}
 \begin{alignat}{3}
-\textbf{JCC:= }\min_{\left(x,\beta,;\theta,y,\pi,s,z\right)} && \multispan{2}{$\displaystyle\sum_j \left[  c_2 \left(x_j^2 + \beta_j^2 \sD \right) + c_1 x_j + c_0 \right]$}  & \label{jcc_obj}\\
+\textbf{JCC:= }\min_{\left(x,\beta,;\theta,y,\pi,s,z\right)} && \displaystyle\sum_j \left[  c_2 \left(x_j^2 + \beta_j^2 \sD \right) + c_1 x_j + c_0 \right]  && \label{jcc_obj}\\
                         && \textstyle \sum_j c^g_{ij} x_j - \sum_j c^b_{ie} y_e          &=d_i       && \forall i \label{jcc_cons}\\ 
                  && y_e - b_e \textstyle \sum_i c^b_{ie} \theta_i          &=0         && \forall e \label{jcc_kcl}\\
                  && y_e &\in \left[ -U_e^\epsilon, U^\epsilon_e \right] && \forall e \label{jcc_limit}\\
@@ -372,7 +371,7 @@ First, we calculate $\frac{\partial \Phi(\alpha_L)}{\partial \mu^y_e} = - \frac{
 &= \frac{a + b \mu^y_e}{\sigma^y_e}\phi(\alpha_L)  + b \left[ 1 - \Phi(\alpha_L) \right] -  \frac{a + b\mu^y_e}{\sigma^y_e}\phi(\alpha_L)\\
 & = b\left[ 1 - \Phi(\alpha_L) \right]
 \end{align*}
-For our second derivative, we calculate $\frac{\partial \Phi(\alpha_L)}{\partial \sigma^y_e} = - \frac{1}{\sigma^y_e} \alpha_L \phi(\alpha_L)$ and $\frac{\partial \phi(\alpha_L)}{\partial \sigma^y_e} =  \frac{1}{\sigma^y_e} \alpha_L^2 \phi(\alpha_L)$.  Then, taking the derivative of $z$ with respect to $\sigma^y_e$, we have
+For our derivative with respect to $\sigma^y_e$, we calculate $\frac{\partial \Phi(\alpha_L)}{\partial \sigma^y_e} = - \frac{1}{\sigma^y_e} \alpha_L \phi(\alpha_L)$ and $\frac{\partial \phi(\alpha_L)}{\partial \sigma^y_e} =  \frac{1}{\sigma^y_e} \alpha_L^2 \phi(\alpha_L)$.  Then, taking the derivative of $z$ with respect to $\sigma^y_e$, we have
 \begin{align*}
 \frac{\partial z_e}{\partial \sigma}(\mu^y_e,\sigma^y_e) & = (a+b\mu^y_e)\frac{1}{\sigma^y_e} \alpha_L  \phi(\alpha_L) + b \sigma^y_e \frac{1}{\sigma^y_e} \alpha_L^2  \phi(\alpha_L) + b \phi(\alpha_L)\\
 & = -b\frac{L-\mu^y_e}{\sigma^y_e} \alpha_L  \phi(\alpha_L) + b \alpha_L^2  \phi(\alpha_L) + b \phi(\alpha_L)\\

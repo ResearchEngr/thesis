@@ -21,8 +21,47 @@ In chapter (JCC), we developed a real time risk model to constrain the probabili
 The downside of a chance constraint model is that it does not account for the impact of these events.  Power system networks are comprised of many different classes of assets.  The most straightforward example is that the failure of a small distribution line in a radial tree will have minimal impact on the reliability of the bulk power system and the high voltage network that carries the majority of the power over long distances.  However, even among the bulk power system, the failure of individual lines may have disporotionate impact on the probability of a large scale cascading event.  This may have to do with many things such as the connectivity of a neighboring node, the current environmental conditions in and around a region, or even the relay settings on neighboring transmission lines.  Here we will take an empirical approach using the OPA cascading simulation from chapter (DFO) to evaluate the impact of losing a line on the resulting cascade simulation and the output of the load shed distribution.  We then incorporate this measure of impact into our JCC model by giving it an OPA weighting scheme, denoted JCC-OW (Joint Chance Constraint - OPA Weighted).  This OPA weighting scheme can be thought of as a surragate model for OPA to be used in a real time dispatch model.  This problem is solved with a cutting plane algoritm similar to JCC.  Finally, we explore the trade-off between cost of dispatch and rare event risk through the computational section.
 
 
+
+
 \section{Cascading Failure Risk Model}
 We would like to take into account the impact of losing a transmission element on the load shed distribution from OPA.  Instead of being concerned with only whether or not a line fails, we would also like to know how much does this line contribute to cascading power failure risk.  Due to reliability requirements such as N-1 constraints, the base system is typically stable and has low cascading power failure risk.  Since outages can be due to things outside of system control, we will perform our risk analysi under N-1 exogenous contingencies corresponding to each individual line outages.  After these initial line outages, the system is sometimes moved to a state in which additional outages may put it into an unreliable state and begin a cascading process which has a chance of become a large scale blackout.  We will use these N-1 contingencies as well as our JCC risk model to sample initial contingencies for the OPA cascading process.  The initial contingency will include the line that failed with certainty due to an exogenous event as well as probable line outages due to current flow on transmission elements and the given failure density function.  We will use the distribution of load shed after the OPA process to develop an OPA weighting for JCC to take into account the effects of the particular line on the cascading process. 
+
+\subsection{Overview of Sources of Uncertainty}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+
+\draw (0,3.5) node(demand)[rectangle,draw]{ $\bD$};
+\draw (6,3.5) node(contingency)[rectangle,draw]{ $\Xi$};
+\draw (8,3.5) node(evolution)[rectangle,draw]{ $\Omega$};
+
+\draw (0,2) node(rd){ $\rd $};
+\draw (2,2) node(rf){ $\ry$};
+\draw (4,2) node(grf){ $g(\ry)$};
+\draw (6,2) node(rxi){ $\rxi$};
+\draw (8,2) node(romega){ $\romega$};
+\draw (4,.5) node(rlambda){ $\lambda(\rd,\rxi,\romega)$};
+
+\draw[thick,->] (demand) -- (rd);
+\draw[thick,->] (rd) -- (rf);
+\draw[thick,->] (rf) -- (grf);
+\draw[thick,->] (grf) -- (rxi);
+\draw[thick,->] (contingency) -- (rxi);
+\draw[thick,->] (evolution) -- (romega);
+\draw[thick,->] (rd) -- (rlambda);
+\draw[thick,->] (rxi) -- (rlambda);
+\draw[thick,->] (romega) -- (rlambda);
+
+\end{tikzpicture} 
+\caption{Random variable relationships and sources of uncertainty}
+\end{figure}
+
+We are capturing three seperate sources of uncertainty and evaluating the stress on the power system by using the OPA cascading model as a surrogate process for the risk of a cascading power failure.  The power system is affected daily by the uncertainty in demand and generation, denoted by random variable $\rd = d + C_m \ri$ with  probability space $\bD$.  We built this uncertainty into our model and by assuming the net injection uncertainty is multivariate Gaussian, we calculate a system risk measure approximating the probability that one or more lines fail.  This ties into the next source of uncertainty, random variable $\rxi$ for probability space $\Xi$, which models the initial line failures that could initiate a cascading sequence.  This random variable, $\rxi$, will provide the connection between the JCC model of chapter (JCC) with the OPA model from chapter (MSIP,DFO).  The primary source of uncertainty modeled in those chapters was $\romega$ from space $\Omega$ which governs the evolution of the cascading model.  This cascading model can be seen as a surrogate for the stress on the power system in relation to rare event failures.     
+
+The JCC model incorporates uncertainty from random demand, $\bD$, and initial contingencies $\Xi$.  The OPA model can include uncertainty from all three sources, $\bD, \Xi, \Omega$.  Let $\cX = \bD \times \Xi \times \Omega$ represent the whole probability space for the OPA model, where $\rchi = (\ri, \rxi, \romega)$ is an event in the whole sample space.  The random variables dependcies are laid out in figure (ref) that describe the relationships between variables.
+
+
 
 \subsection{N-1 Exogeneous Contingencies}
 
@@ -31,7 +70,7 @@ We would like to take into account the impact of losing a transmission element o
 \begin{tikzpicture}
 
 \draw (-2,1.25) node{ \textbf Input };
-\draw (-2,.5) node(INPUT)[rectangle,draw]{ $d, \rdelm$};
+\draw (-2,.5) node(INPUT)[rectangle,draw]{ $\rd=d + C_m \rdelm$};
 \draw (.5,1.5) node{ \textbf Base };
 \draw (.5,.5) node(ROOT)[circle,draw]{\scriptsize $\ry^0(x,\beta)$ };
 \draw (3.5,5) node{ \textbf N-1 };
@@ -77,6 +116,7 @@ L_{en} = \left\{ \begin{array}{c c}
 \end{equation}
 Shift factors for multiple lines can be found provided certain conditions are met \cite{guler_2007}, however are typically only used for onesmall number of line outages.  A subset of lines will not have line outage factors when $A_{nn}^B = 1$.  In our computational results, we filter out these scenarios for the N-1 analysis.
 
+
 The mean flow can be found by taking the expecation over the uncertainty in net injections and using equation \ref{n1cont} that describes flow for branch $e$ in contingency $n$.
 \begin{equation}
 \E{\bD}{\ry_e^n} =  \E{\bD}{\ry_e}  + L_{en} \E{\bD}{\ry_n} 
@@ -106,13 +146,17 @@ The following equations are added to the JCC model \ref{jcc_program} to describe
 \begin{subequations}
 \label{jcc_n1_program}
 \begin{alignat}{3}
-y^+_{en} - y_e - L_{en} y_n & \geq 0 && \forall e,n \label{n1mean2}\\
-y^+_{en} + y_e  +  L_{en} y_n & \geq 0 && \forall e,n \label{n1mean2}\\
- s_{en}^2 - \psen^2 \sD + 2 \psen \left( \se + L_{en} \sn \right) &\geq \sigma^2_{\psi_{en}} && \forall e,n \label{n1stddev}\\
-z_{en} - g_e(y^+_{en},s_{en}) &\geq 0 && \forall e,n \label{n1linerisk}\\
-\sum_e z_{en} &\leq \epsilon_n && \forall n
+\textbf{JCC N1:= }\min_{\left(x,\beta,;\theta,y,\pi,s,z\right)} & \displaystyle\sum_j \left[  c_2 \left(x_j^2 + \beta_j^2 \sD \right) + c_1 x_j + c_0 \right] && \label{jcc_n1_obj} \\
+&\cref{jcc_cons,jcc_kcl,jcc_limit,jcc_gen1,jcc_gen2,jcc_slack,jcc_pi,jcc_var,jcc_lr,jcc_risk}   && \nonumber\\
+&y^+_{en} - y_e - L_{en} y_n  \geq 0 && \forall e,n \label{n1meanup}\\
+&y^+_{en} + y_e  +  L_{en} y_n  \geq 0 && \forall e,n \label{n1meandown}\\
+ s_{en}^2 - \psen^2 \sD + 2 &\psen \left( \se + L_{en} \sn \right) \geq \sigma^2_{\psi_{en}} && \forall e,n \label{n1stddev}\\
+&z_{en} - g_e(y^+_{en},s_{en}) \geq 0 && \forall e,n \label{n1linerisk}\\
+&\sum_e z_{en} \leq \epsilon_n && \forall n
 \end{alignat}
 \end{subequations}
+
+
 Finally, in order to describe the convex, non-analytic risk function for the N-1 contingencies \ref{n1linerisk}, we use the same cutting planes from JCC \ref{line_risk_cuts}.  The cutting planes are calculated at a specific value for slack distribution $\beta$ and the line risk function is underestimated via the gradient.  The cutting planes for the standard deviation of branch flow have changed due to the new covariance calculation taking into account the N-1 contingencies.  These equations are described as follows.
 \begin{subequations}
 \begin{align}
@@ -129,55 +173,22 @@ s_{en} \geq \fenb &+ \sum_j \pfenb \left( \beta_j - \hat{\beta_j} \right)\\
 \subsubsection{OPA Simulation of Cascading Power Failures}
 The fast time scale OPA model (given in chapter one \ref{fast_opa} has been shown to have the same power-law distribution seen in real-world blackout data.  This simulation can be seen as a surrogate model for the response of the power system to rare-event stress.  As such, it is useful to explore the effects different parameters can have and even optimize over them to find any characteristics or trends there may be.
 
-The linear program \ref{dcopf_ow_program} is a load shedding version of the standard DC OPF economic dispatch model.  
-\begin{subequations}
-\label{dcopf_ow_program}
-\begin{alignat}{3}
-\min_{\left(x;l,\theta,y\right)} && \displaystyle\sum_j \left[  c_2 x_j^2  + c_1 x_j + c_0 \right] &+ W \sum_i l_i &  \label{jcc_obj}\\
-                        && \textstyle \sum_j c^g_{ij} x_j - \sum_j c^b_{ie} y_e   +l_i       &=d_i       && \forall i \label{opf_cons}\\ 
-                 && y_e - b_e \textstyle \sum_i c^b_{ie} \theta_i          &=0         && \forall e \label{opf_kcl}\\
-                 && l_i &\in \left[ 0, d_i \right] && \forall e \label{opf_loadshed}\\
-                 && y_e &\in \left[ -U_e, U_e \right] && \forall e \label{opf_limit}\\
-                 && x_j &\in \left[ G^{min}_j, G^{max}_j \right] && \forall j  \label{opf_gen}  
-\end{alignat}
-\end{subequations}
-
-
-Let $L$ be the total load shed for a particular dispatch point $x$ and given input $d,\xi,\omega$.
-\begin{equation}
-L = \sum_i l_i
-\end{equation}
-
-\begin{figure}
-\centering
-\begin{tikzpicture}
-\draw [->,thick] (1,1) node[anchor=east, circle, draw]{$\xi$ \scriptsize occurs}
--- (1.35,1) node(TC)[anchor=west,text width=1.2cm,text centered,  rectangle, draw]{\scriptsize Topology changes};
-\draw[->,thick] (TC)
---(3.3,1) node(PF)[anchor=west,text width=1.6cm,text centered, rectangle,draw]{\scriptsize Power flow calculated};
-\draw[->,thick] (PF)
---(5.7,1) node(F)[anchor=west,text width=1.95cm, text centered, rectangle, draw]{\scriptsize Overloaded lines fail, probability $p$};
-\draw[->,thick] (F)
---(8.3,1) node(DN)[anchor=west,text width=1.75cm, text centered,rectangle,draw,line width=1.5pt]{\scriptsize No failures, cascade done};
-\draw[->,thick] (F.south)
---(5.2,-.4) node(LF)[anchor=east,text width=1.6cm, text centered, rectangle, draw]{\scriptsize Line failures };
-\draw[->,thick] (LF.west)
--- (TC.south);
-
-\end{tikzpicture} 
-\caption{A Review of the OPA short-term cascading process}
-\end{figure}
-Inputs
+Inputs to OPA (ref equations close to here)
 \bi
 \item $x$, generation
-\item $d$, demand
-\item $\xi$, initial contingency
-\item $\omega$, cascade evolution
+\item $\rd$, demand
+\item $\rxi$, initial contingency
+\item $\romega$, cascade evolution
 \ei
+
+Load Shed
+\begin{equation}
+\lambda ( x, \rd, \rxi, \romega )
+\end{equation}
 
 Expected Load Shed
 \begin{equation*}
-f(x) = \E{\Xi,\Omega}{ \lambda\left(x,d,\xi,\omega\right) }
+f(x) = \E{\bD, \Xi,\Omega}{ \lambda\left(x,\rd,\rxi,\romega\right) }
 \end{equation*}
 
 
@@ -185,7 +196,7 @@ f(x) = \E{\Xi,\Omega}{ \lambda\left(x,d,\xi,\omega\right) }
 \centering
 \begin{tikzpicture}
 
-\draw (.5,3) node(INPUT)[rectangle,draw]{ $d, \rdelm$};
+\draw (.5,3) node(INPUT)[rectangle,draw]{ $\rd=d + C_m \ri$};
 
 \draw (.5,.5) node(ROOT)[circle,draw]{\scriptsize $\ry^0(\alert{x},\alert{\beta})$ };
 \draw (3.5,4) node(ONE)[circle,draw]{ \scriptsize $\ry^1(\alert{x},\alert{\beta})$ };
@@ -217,10 +228,10 @@ f(x) = \E{\Xi,\Omega}{ \lambda\left(x,d,\xi,\omega\right) }
 \draw[thick,->] (S) -- (OPAS) node [midway,above] { $g(\ry^N) \rightarrow \rxi^N$ };
 
 
-\draw (10,4) node(ONEFIN)[rectangle]{ $\lambda (x,d,\rxi^1,\omega )$  };
-\draw (10,2) node(TWOFIN)[rectangle]{ $\lambda ( x,d,\rxi^2,\omega )$ };
-\draw (10,0) node(NFIN)[rectangle,dashed]{ $\lambda ( x,d,\rxi^n,\omega )$ };
-\draw (10,-2) node(SFIN)[rectangle]{ $\lambda ( x,d,\rxi^N,\omega)$ };
+\draw (10,4) node(ONEFIN)[rectangle]{ $\lambda (x,\rd,\rxi^1,\romega )$  };
+\draw (10,2) node(TWOFIN)[rectangle]{ $\lambda ( x,\rd,\rxi^2,\romega )$ };
+\draw (10,0) node(NFIN)[rectangle,dashed]{ $\lambda ( x,\rd,\rxi^n,\romega )$ };
+\draw (10,-2) node(SFIN)[rectangle]{ $\lambda ( x,\rd,\rxi^N,\romega)$ };
 
 \draw[thick, ->] (OPAONE) -- (ONEFIN) ;
 \draw[thick,->] (OPATWO) -- (TWOFIN);
@@ -263,7 +274,7 @@ f(x) = \E{\Xi,\Omega}{ \lambda\left(x,d,\xi,\omega\right) }
 \EndIf
 \EndFor
 \EndWhile
-\State \label{done}Load Shed $  \lambda\left(x,D,\xi,\omega\right)  = z_{s^*} - z_0$
+\State \label{done}Load Shed $  \lambda\left(x,\delta^m,xi,omega\right)  = z_{s^*} - z_0$
 \EndProcedure
 \end{algorithmic}
 \end{algorithm}
@@ -380,8 +391,21 @@ Want a first order weighting ($\eta$) to approximate OPA
 \end{figure}
 
 
+\begin{subequations}
+\label{jcc_n1_ow_program}
+\begin{alignat}{3}
+\textbf{JCC OW:= }\min_{\left(x,\beta,;\theta,y,\pi,s,z\right)} & \displaystyle\sum_j \left[  c_2 \left(x_j^2 + \beta_j^2 \sD \right) + c_1 x_j + c_0 \right] &&  \label{ow_obj}  \\
+&\cref{jcc_cons,jcc_kcl,jcc_limit,jcc_gen1,jcc_gen2,jcc_slack,jcc_pi,jcc_var,jcc_lr,jcc_risk}   && \nonumber\\
+&\cref{n1meanup,n1meandown,n1stddev,n1linerisk}   && \nonumber\\
+&\sum_e \eta_e z_{en} \leq \zeta_n && \forall n
+\end{alignat}
+\end{subequations}
+
+
+
+
 \subsection{Cutting Plane Algorithm for JCC N-1 with OPA Weighting}
-Now, we can describe the cutting plane algorithm for JCC at a high level and give pseudo-code \ref{jcc_alg} for implementation.  The main subproblem the algorithm solves is the standard DC power flow.  After solving, the generator injects $x$, slack distribution $\beta$, and branch flows $y$ are used to calculate risk information about the dispatch point.  To get the risk information, the branch standard deviations $s$ need to be calculated.  With the mean flow $y$ and standard deviation $s$, the line risk $z$ can be calculated.  The sum of line risk is system risk $r$.  If $r$ is less than the required system risk $\epsilon$, the problem is solved.  Otherwise, the algorithm adds cuts for all lines with a positive risk $z$.  The cuts describe how $z$ is related to $y,s$ and how $s$ is related to $\beta$.  Then the power flow subproblem is solved with the addition of the cuts and this repeats until it is infeasible or the risk constraint is satisfied.
+
 \begin{algorithm}
 \caption{This cutting plane algorithm solves JCC \ref{jcc_program} with N-1 contingencies\ref{jcc_n1_program} using the OPA weighting scheme \ref{jcc_ow_weight} via linear programs and cutting planes}\label{jcc_ow_alg}
 \begin{algorithmic}
