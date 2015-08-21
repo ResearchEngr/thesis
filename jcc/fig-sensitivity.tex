@@ -1,3 +1,12 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\newcommand{\mypathjccdata}{../jcc/data}
+\usepackage{amsmath,amssymb,amsfonts} % Typical maths resource packages
+\input{def}
+\newcommand{\ry}{\pmb{y}}
+\begin{document}
+
 \begin{tikzpicture}[scale=.8]
 \begin{axis}[title=L vs Risk, xlabel=L, ylabel=r,legend pos=outer north east,ymax=.04,xmin=.9,xmax=1,
 	  extra x ticks={.98},
@@ -16,3 +25,4 @@
 
 \end{axis}
 \end{tikzpicture}
+\end{document}

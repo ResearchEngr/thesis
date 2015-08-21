@@ -82,7 +82,8 @@ and the cluster coefficient of the graph is $C = \frac{1}{n} \sum_{i=1}^{n_v} c_
 
 The final measure used was degree assortativity, which is the correlation of the degree of two connected nodes.  Power networks were found to have small, negative degree assortativity.  This was due to distribution feeders, which have a large number of radial lines connecting single loads to the substation.  This behavior was not found in small-world networks.
 
-Hines et. al. \cite{hines_2010} conclude that while these topological measures are useful for understanding the structure and perhaps indicating general vulnerabilities, they can lead to erroneous conclusions.  For example, Kinney et. al. \cite{kinney_2005} and Albert et. al. \cite{albert_2004} draw different conclusions about such things as the effects of single outages using similar data.  Power flow based models are more realistic and thus more useful for vulnerability analysis.  However, analogous measures with electrical topological information can be very useful. \endnote{\input{\mypathmsip/end-pseudtop}}
+Hines et. al. \cite{hines_2010} conclude that while these topological measures are useful for understanding the structure and perhaps indicating general vulnerabilities, they can lead to erroneous conclusions.  For example, Kinney et. al. \cite{kinney_2005} and Albert et. al. \cite{albert_2004} draw different conclusions about such things as the effects of single outages using similar data.  Power flow based models are more realistic and thus more useful for vulnerability analysis.  However, analogous measures with electrical topological information can be very useful. 
+%\endnote{\input{\mypathmsip/end-pseudtop}}
 
 
 \subsection{OPA Model}\label{opa_section}
@@ -198,7 +199,9 @@ which can be used to find the final equilibrium temperature, $T_e(f)$ (a functio
 \subsection{Power Flow Review}
 In order to run the OPA simulation of cascading failures, the ability to calculate power flows on the system is critical.  To model a balanced, three phase power flows, in full resolution we need to model complex power.  The alternating current of the power system can be represented by sine or cosine waves.  A three phase power system has three lines for each transmission element and each line has a wave that is out of phase with the other two.  Using one wave as a reference, the other phases will attempt to be 120 degrees behind reference and 120 degrees ahead of reference.  This improves the efficiency and quality of power for loads over a 2 line system as well as not requiring an excessive amount of lines for each transmission element.  
 
-The details about complex power and electrical parameters of transmission elements to model balanced three phase power flow equations will be left to the appendix.\endnote{\input{\mypathmsip/end-elecinfo}} \endnote{\input{\mypathmsip/end-threephase}}  These non-linear equations model the net power and reactive power injects as well as voltage and phase angle at each vertex of the power system.  A few simplifying assumptions will be made to allow the equations to become linear for the DC (decoupled) power flow equations.  Then, using the dc power flow model, basic economic dispatch and unit commitment models will be shown.  
+The details about complex power and electrical parameters of transmission elements to model balanced three phase power flow equations will be left to the appendix.
+%\endnote{\input{\mypathmsip/end-elecinfo}} \endnote{\input{\mypathmsip/end-threephase}}  
+These non-linear equations model the net power and reactive power injects as well as voltage and phase angle at each vertex of the power system.  A few simplifying assumptions will be made to allow the equations to become linear for the DC (decoupled) power flow equations.  Then, using the dc power flow model, basic economic dispatch and unit commitment models will be shown.  
 %Finally, some pseudo-topological measures will be reviewed that will be useful in the optimization process.
 
 \subsubsection{Decoupled Power Flow}
@@ -266,7 +269,7 @@ The mixed-integer formulation of cascading power failures uses binary variables 
 \end{figure}
 
 
-\subsection{Decision Dependent Uncertainty}
+\subsection{Decision Dependent Uncertainty}\label{decisiondependentuncertainty}
 In order to model the decision dependent uncertainty, a cumulative distribution function (cdf) for line failures based on loaded is needed.  This model uses a parameter, $R$, to represent the effective capacity of a line.  This is found by sampling from the cdf before formulating the problem.  This effective capacity represents the loading of the transmission line that will cause its failure.  This failure is represented in the binary variable, $z$. \\
 
 In Mixed-Integer Programming, there have been standard equations developed to model logical conditions.  This problem has two logical conditions that need to be modeled in order to represent this decision dependent uncertainty.  First, the condition that the line will fail if it has more power flow than its effective capacity.
@@ -372,7 +375,7 @@ scatter/classes={
 
 
 
-\subsection{Feasible Cascades}
+\subsection{Feasible Cascades}\label{feasiblecascades}
 The cascading process begins with an intial exogenous event, $\xi \in \left\{ 0, 1 \right\}^{\magE}$.  The following equation enforces a line outage throughout the whole cascade for all $\xi = 1$.
 
 \begin{equation}
@@ -399,7 +402,47 @@ This can be adapted to several different problems in power systems.  The main di
 
 
 \section{Model Flexibility}
-The primary strength of this formulation is the flexibility it has in using additional constraints and objectives to inform decision making about power systems.  All of these models can then be solved with commercial solver software without the need to develop additional specialized routines.  The first example is a chance constrained model, which enforces a probabilistic constraint on the number of line outages in any scenario. \endnote{\input{\mypathmsip/end-chance}}  The second example is a redispatch model that moves to a generator configuration that is close to the original while minimizing the expected size of the cascade.\endnote{\input{\mypathmsip/end-redispatch}}  Another exampe is a reserve planning model that allocates reserves among the generators in such a way as to minimize the worst case failure.\endnote{\input{\mypathmsip/end-opreserve}}  Finally, the example we will use is a transmission expansion model that allocates a budget for capacity expansion on the grid in such a way as to minimize the expected size of the cascade.  This will have computation results and compare them with the OPA simulation to a simple heuristic which allocates the expansion budget.
+The primary strength of this formulation is the flexibility it has in using additional constraints and objectives to inform decision making about power systems.  All of these models can then be solved with commercial solver software without the need to develop additional specialized routines.  The first example is a chance constrained model, which enforces a probabilistic constraint on the number of line outages in any scenario. 
+%\endnote{\input{\mypathmsip/end-chance}}  
+In this model, constraints are used to express the probability that less than a given number of lines are outaged is close to 1.  A typical case in power systems would be that the system should not go beyond 1 contingency in a large percentage of scenarios.
+\begin{equation}
+P\left\{\text{Line Outage} \le k \right\} \ge 1 - \epsilon
+\end{equation}
+This can be done by adding another binary variable for each scenario that represents whether or not that scenario has less than $k$ outages.  Then these new binary variables will be summed and constrained by the given probability.
+\begin{subequations}
+\begin{align}
+\sum_i z_{is} &\le	M_s \hat{z_s} + | \xi_s | + k \\
+\sum_s \hat{z_s} &\le \epsilon | \cS |
+\end{align}
+\end{subequations}
+where $M_s = | \cE | - | \xi_s | - k$.  The objective of this program would be to minimize load shed as in (\ref{leastcost}) such that the power system does not lose more than $k$ branches.
+
+
+The second example is a redispatch model that moves to a generator configuration that is close to the original while minimizing the expected size of the cascade.
+%\endnote{\input{\mypathmsip/end-redispatch}} 
+This model tries to find an operating configuration that is within a given distance from the current operating regime and minimizes the worst case scenario outage.  The input for this model is the current operating configuration $(p_0, d_0)$ as well as a distance vector $\delta$ that represents how far each generator can move from its current output levels.  In this case, the root node of the stochastic tree will have variables that represent initial generator output levels and the child trees will be constrained from how far they can move from this.  Also, a continuous variable will be added that represents the amount of load shed in the worst case scenario.  The objective will be to minimize this worst case scenario.  
+\begin{equation}
+p - p_0 \le \delta
+\end{equation}
+\begin{equation}
+l \ge \sum_i \hat{d}_i - d_{is}
+\end{equation}
+aim to min 
+This program could be used when the system is becoming close to unstable and cost concerns become less of a priority than system stability.
+
+
+ Another exampe is a reserve planning model that allocates reserves among the generators in such a way as to minimize the worst case failure.
+%\endnote{\input{\mypathmsip/end-opreserve}}  
+In this case an operating configuration need not be given.  The program can either search for an operating configuration as well as reserves or given an operating configuration, allocate the reserves.  These operating reserves determine where the system is able to relieve congestion in a contingency.
+\begin{align}
+p_{in} + r_{in} &\le \overline{P}_i \\
+p_{in} &\le p_{i\rho (n)} + r_{i\rho (n)} \\
+\sum_i r_{in} &\le \beta \sum_i \hat{d}_i 
+\end{align}
+where $\beta$ is the level of operating reserves alotted for the system.
+
+
+Finally, the example we will use is a transmission expansion model that allocates a budget for capacity expansion on the grid in such a way as to minimize the expected size of the cascade.  This will have computation results and compare them with the OPA simulation to a simple heuristic which allocates the expansion budget.
 
 
 

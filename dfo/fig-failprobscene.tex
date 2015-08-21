@@ -1,10 +1,16 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\newcommand{\mypathdfodata}{../data}
+\begin{document}
 	\begin{tikzpicture}
-	\begin{axis}[ title=\mbox{ Failure Probability by Line over Scenarios },legend pos=north east ,scale=1.4572, ymax=.55, xlabel=Line Number,ylabel=Proability of Failure ]	
- 			\addplot+[opacity=.19758375, mark size=.67, only marks] table[x=line, y=prob] {./data/small.pob};
+	\begin{axis}[ title=\mbox{ Failure Probability by Line over Scenarios },legend pos=north east ,scale=1, ymax=.55, xlabel=Line Number,ylabel=Proability of Failure ]	
+ 			\addplot+[opacity=.19758375, mark size=.67, only marks] table[x=line, y=prob] {\mypathdfodata/small.pob};
 	\addlegendentry{Scene. Prob}
-			\addplot+[red,opacity=.9895, mark size=.915, only marks] table[x=line, y=prob] {./data/small.pba};
+			\addplot+[red,opacity=.9895, mark size=.915, only marks] table[x=line, y=prob] {\mypathdfodata/small.pba};
 		\addlegendentry{Avg. Prob}
 
 
 	\end{axis}	
 	\end{tikzpicture}
+\end{document}

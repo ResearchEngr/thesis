@@ -1,76 +1,342 @@
 \newcommand{\mypathdfo}{../thesis/dfo}
 \newcommand{\mypathdfodata}{../thesis/dfo/data}
+\newcommand{\mypathdfocode}{../thesis/dfo/code}
 \newcommand{\scd}{\cD_\oplus}
 \newcommand{\btu}{\bigtriangleup}
-\chapter{Exploring the OPA~Simulation by Solving~Design~Problems}
+\newcommand{\wrp}[1]{ $<$#1$>$}
+
+\usetikzlibrary{shapes.geometric,arrows,shadows,backgrounds}
+\usetikzlibrary{positioning-plus,node-families,calc}
+
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\scriptsize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+
+\tikzset{
+  basic box/.style = {
+    shape = rectangle,
+    align = center,
+    draw  = #1,
+    fill  = #1!25,
+    rounded corners},
+  header node/.style = {
+    Minimum Width = header nodes,
+    font          = \strut\ttfamily,
+    text depth    = +0pt,
+    fill          = white,
+    draw},
+  header/.style = {%
+    inner ysep = +1.5em,
+    append after command = {
+      \pgfextra{\let\TikZlastnode\tikzlastnode}
+      node [header node] (header-\TikZlastnode) at (\TikZlastnode.north) {#1}
+      node [span = (\TikZlastnode)(header-\TikZlastnode)]
+        at (fit bounding box) (h-\TikZlastnode) {}
+    }
+  },
+  hv/.style = {to path = {-|(\tikztotarget)\tikztonodes}},
+  vh/.style = {to path = {|-(\tikztotarget)\tikztonodes}},
+  fat blue line/.style = {ultra thick, blue}
+}
+
+\tikzstyle{process} = [rectangle, minimum width=3cm, minimum height=1cm, text centered, text width=3cm, draw=black, fill=orange!30]
+\tikzstyle{sensor}=[draw, fill=blue!20,
+    text centered, minimum height=2em,drop shadow]
+\tikzstyle{sensor2}=[draw, fill=blue!20, 
+    text centered, minimum height=2.5em,drop shadow]
+\tikzstyle{ann} = [above, text width=5em, text centered]
+\tikzstyle{wa} = [sensor, text width=10em, fill=red!20, 
+    minimum height=6em, rounded corners, drop shadow]
+\tikzstyle{sc} = [sensor, text width=13em, fill=red!20, 
+    minimum height=10em, rounded corners, drop shadow]
+\tikzstyle{data} = [sensor2,cloud, fill=red!20, rounded corners, drop shadow]
+\tikzstyle{decision} = [diamond, minimum width=3cm, minimum height=1cm, text centered, draw=black, fill=green!30]
+
+\chapter{Exploring the OPA~Simulation Through Transmission Expansion}\label{dfo-chapter}
 %\section{Solving Design Problems}
 
-The cascading model built in chapter \ref{msip-model} is too hard to optimize at the scale we need to model the uncertainty in the cascading process.  In order to work around this difficulty, we will decompose the multi-stage structure of this problem and simulate the entire cascading process.  The primary benefit is removing the temporal linked binary variables for line outages from the master problem allowing sequential evaluation of the decision dependent uncertainty.  This lets us parallelize the OPA evaluations to increase the computational effort.
+The cascading model built in Chapter \ref{msip-model} is too hard to optimize at the scale we need to model the uncertainty in the cascading process.  In order to work around this difficulty, we will decompose the multi-stage structure of this problem and instead simulate the cascading process.  The primary benefit is removing the temporal linked binary variables for line outages from the master problem allowing sequential evaluation of the decision dependent uncertainty.  This allows us to parallelize the OPA evaluations to increase the computational effort.
 
-In order to optimize design problems using the OPA simulation for risk metrics, we need to first understand the characteristics of the cascading process and the effects that generation, reserves, and line limits have on the resulting load shed distributions.  Then, we can modify existing derivative free frameworks to optimize this simulation and utilize exploratory steps to improve local performance and global strategies to find near optimal decisions.
+We will explore the long term design problem of transmission capacity expansion using the OPA simulation to evaluate rare event stress on the transmission infrastructure.  We begin by laying out the OPA simulation which involves sequential evaluations of a linear program modeling economic dispatch with a weighted load shed term in the objective.  The lines will fail in the same manner described in the previous chapter in \cref{decisiondependentuncertainty} and the failure density function can be seen as the line having a random effective capacity that when exceeded the line will fail with certainty.  As the simulation proceeds, the topology will change and a new linear program will be solved.  The first primary benefit of this sequenctial procedure is the ability to hot start the LP solver.  The constraint for a line that has failed which links the connected nodes phase angle will be relaxed.  The LP solver can use the previous basis and perform a small number of pivots to find an optimal solution to the new problem representing the changed topology.
 
-The OPA simulation provides fundamental difficulties to the optimization process.  The function evaluations are non convex nor continuously differentiable.  It is inherently noisy and the load shed distribution is wide, often characterized by its power law distribution.  Some of these effects can be smoothed away by employing a wide range of potential initiating events, however it may be important to optimize against a small subset of events that have a higher likihood of occurence and are known to be risky.  In this case, the non convexity and discontinuity are most apparent.
+Following the discussion on the LP subproblem and the failure density function will be the algorithm used to evaluate an OPA simulation trial for a fixed demand and contingency.  This single trial will sample from the cascade evolution distribution $\Omega$ and is representing the same uncertainty as the presampled $\Omega$ from the multi-stage stochastic program in \cref{feasiblecascades}.  In this section we are going to explore the uncertainty in load shed distribution due to the uncertainty caused by the cascade evolution uncertainty in $\Omega$ and a small subset of initial contingencies in $\Xi$. We describe the statistical measures of load shed distribution we are interested in \cref{riskmeasures} and focus primarily on the function describing expected value of load shed for the simulation exploration and design problem optimization.
 
-To begin, an overview of derivative free optimization will be given.  A general class of direct search algorithms will be explored for its convergence properties as well as flexibility.  Model based methods, as well as accessory information, can be used to speed up the standard direct search methods.  Then, initial experimentation on the OPA model will be given as well as the implementation and variance reduction strategies.  A modified algorithm will be developed and compared against vanilla algorithms of DFO to show the benefit of accessory information. 
+We then look at whether we can create a surrogate function for the OPA cascade simulation in order to develop a computationally cheap evaluation that is correlated with the function representing expected load shed.  We plot the values of load shed by stage in the cascade and see that the cascades with large load shed do not necessarily have large load sheds in the first stage.  Additionally, the number of lines that fail in the first stage of the cascade is not correlated with the load shed at the final stage.  While we certainly have not explored all possible surrogate functions, we proceed by using the full cascade simulation instead of a surrogate function.
 
-\section{Literature Review}
-This section will give an overview to the history and current state of derivative free optimization.  The foundation for direct search and model based search of DFO techniques will be explored to be used in solution methods for the OPA optimization procedure.  The DFO field has been around for some time now and has seen a resurgence over the last decade and a half with the only textbook at less than 5 years old (Conn, Scheinberg, Vicente) \cite{conn_2009}.  Kolda et. al. provide an extensive work on direct search methods and its extensions in \cite{kolda_2003}. 
-\subsection{Derivative Free Optimization}
+Since we need to use the full cascade simulation and there is a high standard deviation in the load shed distribution, it is important to use variance reduction techniques to reduce the computational effort needed to achieve a small confidence interval on the expected value of load shed.  Common random numbers significantly improves the ability to compare different systems and reduce the variance of the difference of the performance of two systems.  For design problems, this is exactly what we need.  We would like to evaluate how systems perform relative to each other. 
+
+After explaining the common random number scheme used, we proceed to explore the function describing the expected value of load shed.  This OPA simulation and the expected value of load shed over many trials provides fundamental difficulties to the optimization process.  The function is neither convex nor continuously differentiable.  The load shed is inherently noisy and its  distribution is wide, often characterized by a power law distribution.  Some of these effects can be smoothed away by employing a wide range of potential initiating events, however it may be important to optimize against a small subset of events that have a higher likelihood of occurrence and are known to be risky.  In this case, the non-convexity and discontinuity are most apparent. 
+
+After learning about the function characteristics, we begin to explore how we can optimize the design problem of transmission expansion.  We look to the class of derivative free optimization techniques of direct search methods which are simple, flexible, and powerful.  Altough we do not have the nice function properties that guarantee global or local convergence, they have been found to work well for these types of black box optimization routines.  By using a grid based pattern search method that describes a spanning set, we can be assured of local convergence in regions of the functions with nice properties.  Additionally, we can use exploratory steps that can be based off of accessory information that can speed up the search routine and not ruin the local convergence properties.
+
+In order to tackle this problem, we will use massive computational effort through parallelization of the OPA simulations.  We describe this parallelization process using Condor on the UW-Madison Center for High Throughput Computing.  In order to be a friendly load on the Condor system, we employed Condor DAGMan to manage the job submission procedure for each iteration in order to smooth job submissions and ensure a small number of idle jobs at any given time to reduce the stress on their system.  The file and submission structure will be described as well as the scripts needed to manage this process.  Years of computational time can be done within a short time horizon.  This enables a fine mesh search pattern on the function in order to improve on a completely brute force search procedure.  Finally, we show the results from implementation of this simple DFO method and the improvements in expected load shed from the OPA simulation.
+
+
+\section{OPA Cascade Simulation}
+
+The load shed distribution of the fast time scale OPA model (given in \cref{fast_opa}) has been shown to have the same power-law distribution seen in real-world blackout data.  This simulation can be seen as a surrogate model for the response of the power system to rare-event stress.  As such, it is useful to explore the effects different parameters can have on the distribution and even optimize over them to find any characteristics or trends there may be. To begin, we need to develop an efficient evaluation of the cascading power failure simulation for eventual use in an optimization procedure. 
+
+A brief description of the parameters, variables, indicies and sets will be given and the LP subproblem for the cascade simulation will follow.  Variable $x_j$ represents the generation from generator $j$ in the set of all generators $\cJ$.  The LP will have a quadratic cost function with $c_j^2, c^1_j, c^0_j$ representing the cost parameters for generator $j$.  Branch flow is represented by $y_e$ for branch $e$ in the set of all branches $\cE$.  The parameter $b_e$ represents the susceptance of branch $e$ and is used to describe the branch flow based on the difference of phase angles between the two connected nodes.  The variable $l_i$ represents load shed at node $i$ in the set of all nodes $\cI$, the parameter $W$ representing the cost of load shed, and the parameter $d_i$ is the nominal demand.  Finally, $c^x_{ij}$ is an incidence matrix which takes a 1 when generator $j$ is located at node $i$ and $c^y_{ie}$ is a -1 when branch $e$ is from nodes $i$ and a 1 when branch $e$ is to node $i$. The following linear program (\ref{dcopf_program}) is a load shedding version of the standard DC OPF economic dispatch model.  
+\begin{subequations}
+\label{dcopf_program}
+\begin{alignat}{3}
+\min_{\left(x,l;\theta,y\right)} && \displaystyle\sum_{j \in \cJ} \left[  c_j^2 x_j^2  + c_j^1 x_j + c_j^0 \right] &+ W z &  \label{jcc_obj}\\
+                        && \sum_{j \in \cJ} c^x_{ij} x_j - \sum_{j \in \cJ} c^b_{ie} y_e   +l_i       &=d_i       && \forall i \in \cI \label{opf_cons}\\ 
+                 && y_e - b_e \sum_{i \in \cI} c^b_{ie} \theta_i          &=0         && \forall e \in \cE \label{opf_kcl}\\
+&& z - \sum_{i \in \cI} l_e &=0 &&  \label{opf_loadshed} \\
+                 && x_j &\in \left[ G^{min}_j, G^{max}_j \right] && \forall j \in \cJ \label{opf_gen}  \\
+                 && y_e &\in \left[ -U_e, U_e \right] && \forall e \in \cE \label{opf_limit}\\
+                 && l_i &\in \left[ 0, d_i \right] && \forall e \in \cE \label{opf_loadshed}
+\end{alignat}
+\end{subequations}
+where $z$ is the total load shed for a particular dispatch point with vectors $(x,y,l)$ representing generation, branch flows, and nodal load shed.
+
+
+We will look to understand the effect of adding capacity $u$ to the system prior to an initiating event for the OPA cascading procedure.  The subproblem (eqs. \ref{dcopf_program}) is modified to allow the branch flows to attain their new capacity level, that is
+\begin{equation}
+ y_e  \in \left[ - U_e - u_e, U_e + u_e \right]    \hspace{15px} \forall e \in \cE
+\end{equation}
+In addition, the failure density function from the previous section shown in \cref{cdf} will also move to account for the additional capacity.  This means that not only does the capacity level change, the point $L$, in which the line becomes risky also moves, so that our line risk function is now
+\begin{equation}\label{linefaildensity}
+g_e(y_e,u_e) = \left\{ \begin{array}{ll}
+1 & y_e > U_e + u_e \\
+(y_e-u_e)U_e^{-1}p - L_e p & U_e + u_e \geq y_e > L_e U_e + u_e \\
+0 & \mbox{o/w}
+\end{array}
+\right. 
+\end{equation}
+
+\begin{figure}
+\centering
+\includegraphics{\mypathdfo/fig-effectivecapacity}
+\caption{ Line failure density function from eq. (\ref{linefaildensity}) }
+\label{cdf}
+\end{figure}
+
+
+We will use the subproblem from \cref{dcopf_program} and the failure density function to simulation the OPA cascading process.  The algorithm requires sequential solves of the DC OPF with changes to the topology. We can take advantage of this using LP hot starts where the sequential solves typically require only a small number of pivots to find the new optimal solution.  The cascading algorithm is given in \cref{opa_alg}.  The algorithm is run for a fixed design vector $u$, demand vector $d$, and initial contingency $\xi$ representing a set of lines that has failed to initiate the cascading sequence.  The topology is changed according to the contingency $\xi$ and the new DC OPF problem is solved.  The algorithm proceeds by using the failure density function to determine the probability that a line will fail and then samples a Bernoulli variable with this probability to determine the outcome.  If no lines fail, the cascade is considered over.  If lines fail, the topology is changed, the new LP is solved, and the process repeats until no lines fail.
+
+\begin{algorithm}
+\caption{OPA cascading algorithm simulating the evolution of the cascading process governed by uncertainty space $\Omega$}\label{opa_alg}
+\begin{algorithmic}
+\Procedure{OPA}{$u, d, \xi$}
+\State Solve ( \ref{dcopf_program} ) to find base case load shed $z_0$
+\State $\xi$ occurs and corresponding changes to the grid are made
+\State Stage $s \gets 1$
+\While{ Not DONE }
+\State Solve ( \ref{dcopf_program} ) to find power injects and branch flows for adjusted grid
+\State $\mathbb{O}_s \gets \emptyset$
+\For{$\forall e \in \cE $}
+\State $\mathbb{O}_s = 
+\left\{ 
+\begin{array}{lr}
+  \mathbb{O}_s + \left\{ e \right\} & \mbox{w/ prob. } g_e(y_e,u_e), \mbox{ draw } \omega_{es} \\
+  \mathbb{O}_s & \mbox{o/w }
+\end{array}
+\right. $ 
+\EndFor
+\If{ $\mathbb{O}_s \neq \emptyset$ }
+\State Modify Grid with $\mathbb{O}_s$
+\State $s\gets s+1$
+\Else
+\State $s^* \gets s,$ calculate $z_{s^*}$, DONE
+\EndIf
+\EndWhile
+\State \label{done}Load Shed $  \lambda\left(u,d,\xi,\omega\right)  = z_{s^*} - z_0$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\subsection{Risk Measures}\label{riskmeasures}
+The OPA algorithm simulates one outcome for a fixed $u, d,$ and $\xi$.  Let $\omega$ represent this sampled uncertainty and $\lambda\left(u,d,\xi,\omega\right)$ be the load shed from this single OPA trial.  Repeating this process for $N^t$ trials will give a distribution of load shed values.  We will primarily be interested in the expected value of load shed over the initial contingencies $\Xi$ and the cascade evolution $\Omega$.  Let function $f (u) $  for design $u$, fixed demand $d$ and contingency $\xi$ be calculated as 
+\begin{equation}
+f(u) = \Expect_{\Xi \Omega} \left[  \lambda\left(u,d,\rxi,\romega\right)  \right]
+\end{equation}
+
+\newcommand{\tabheight}{11pt}
+\begin{table}
+\centering
+\begin{tabular}{| c | c | c|}
+\hline
+& & \\[1pt]
+Sample Mean & $f$ &$ \hat{Z}(N^t)=\sum_n \frac{Z_n}{N^t} $\\[\tabheight]
+Sample Variance & $s^2_d$ &$ S^2(N^t)=\sum_n \frac{\left(Z_j - f\right)^2}{N^t-1} $\\[\tabheight]
+Standard Error & $s^2_e$ &$ \Var{f}= \frac{s^2_d}{N^t}$\\[\tabheight]
+Confidence Interval& $CI(1-\eta)$  & $f \pm z_{1-\eta/2} \sqrt{s^2_e}$ \\[\tabheight]
+Value at Risk & $ VaR(\eta)$& $ \lb Z_{a} |  a = \floor{ \eta N^t }\rb $\\[\tabheight]  %$\inf\left\{l \in \R{} | F_L(l) \geq \eta \right\}$\\[\tabheight]
+Conditional Value at Risk & $ CVaR(\eta)$& $\Exx{Z_n | Z_n \geq VaR(\eta)}$ \\[\tabheight]
+\hline
+\end{tabular}
+\caption{Risk Measures}\label{tab:risk}
+\end{table}
+
+For $N^t$ trials with load shed $Z_n = \lambda (u,d,\xi^n,\omega^n )$, we can describe the distribution of load shed by a set of risk measures.  We just looked at the expected load shed and the sample mean for $N^t$ trials can be given in \cref{tab:risk}.  In addition to the mean, we have the sample variance, which is a measure of the width of the distribution and the standard error, which measures how accurately we have calculated the mean based on how many samples we have taken.  With the mean and standard error we can describe $1-\eta$ confidence intervals, which says that the mean will be within a given range at least $1-\eta$ percent of the time.  This confidence interval is calculated using the inverse of the standard normal distribution.  The value at risk is a measure of the percentile of the distribution, so that the $\eta$ value at risk is the value of the load shed at percentile $\eta$.  The conditional value at risk is the expectation of the load shed conditioned on it being above a percentile $\eta$.  This finds the area underneath the tail of a distribution.  All of the risk measures are shown along with the formulas to calculate them for a set of $N^t$ samples in \cref{tab:risk}.  Additionally, these statistical measures are plotted for the load shed distribution for a sequence of design points $u$ in which capacity is being added to one line in \cref{fig:riskmeasure}
+
+\begin{figure}
+\centering
+\includegraphics{\mypathdfo/fig-riskmeasure}
+\caption[Risk Measures]{Value at Risk, Conditional Value at Risk, and Maximum risk measures for load shed distribution}\label{fig:riskmeasure}
+\end{figure}
+
+
+
+\subsection{Parameters and Simulation Inputs and Outputs}
+We will now go into the details involving the OPA simulation, in particular, the parameters that are used in the algorithms and the input and output files used in the computational implementation. As with all of the models in this thesis, the dispatch model is done on a network topology with parameters defining susceptance for branch flow, generators and their cost coefficients, and the nominal demand of the system.  These paramters are stored in a \wrp{.gr} file and is one of the inputs to the simulation routine.  All of the other parameters, which are used in the cascade \cref{opa_alg} are defined in a \wrp{.in} file and an example is showed in \cref{paramdef}.  This includes the line failure distribution parameters $L$ and $p$ as well as a scenario tree definition, which connects this simulation to the MSIP model in the previous chapter.  The scenario tree is built by defining the number of stages and how many outcomes per node.  The number of outcomes per node is allowed to vary depending on the stage of the simulation.  Since this is a simulation and we are decomposing the scenario tree structure, we typically use a large number of outcomes at the root node and then resolve these completely.  The number of initial contingencies is the parameter called scenarios and for each scenario the initial outages are defined in the Outage section.  Finally, trials is how many times the scenario tree is solved, so that a 100 child node tree with 500 trials will result in 50,000 samples of a full cascade simulation.  Finally, a seed is given for the random number generators so that a common random number scheme can be used if desired.
+
+The solve methodology takes information from the parent node in the scenario tree about the new topology required, relaxes the required branch flow constraints, solves the problem, and stores the results in a tree data structure.  The process repeats until all nodes in the scenario tree are resolved.  If no lines fail in a node of the scenario tree, the child nodes are truncated since the OPA cascade algorithm has ended.  After a scenario tree is solved, the final nodes of the tree are looped over and the load shed of that sample is output into a \wrp{.dem} file and each line number that has filed is output into a \wrp{.lin} file.  These raw data files can be large and there are python scripts to do a load shed analysis on the \wrp{.dem} file to give the risk measures associated with the load shed distribution in a \wrp{.lsa} file.  The \wrp{.lin} file is counted with a python script and output in a \wrp{.lao} file in order to find out how many times a given line has failed over all the trials.  These input and output files are tabulated in \cref{tab:files}.
+
+\begin{table}
+\centering
+\begin{tabular}{| l  r | l | m{10cm} |}
+\hline
+File && Size & Description \\
+\hline
+\wrp{.gr} & & 8K &  Defines bus, branch, and generator parameters (grid2.gr~$\equiv$~IEEE~118~bus,8K)\\
+\wrp{.in} &\cref{paramdef} & 4K & Simulation parameter definitions \\
+\wrp{.cap} &\cref{optimalpointcap} & 4K & Capacity addition file \\
+\wrp{.dem} & & 80K & The load shed from every trial cascade simulation \\
+\wrp{.lin} & & 2.1M & The line number for every time a line has failed in a cascade during all the trials \\
+\wrp{.lsa} &\cref{optimalpointlsa} & 4K & Statistical analysis of load shed from cascade trials in \wrp{.dem} \\
+\wrp{.lao} &\cref{optimalpointlao} & 4K & Count of line outages from cascade simulations output in \wrp{.lin} \\
+\hline
+\end{tabular}
+\caption{Data files used in parallelization routine}
+\label{tab:files}
+\end{table}
+
+
+
+\linespread{1}
+\lstinputlisting[language=bash,label={paramdef},caption={simcplex.in: Parameter definition file}]{\mypathdfocode/Powerin/shared/simcplex.in}
+\linespread{2}
+
+
+
+
+\subsection{Surrogate Functions}
+The OPA cascade simulation requires many LP solves in order to simulate the cascading process for many trials.  One potential way to reduce the computational effort needed would be to develop a surrogate function which is correlated with the expected load shed function we are trying to minimizing.  If we could find a surrogate that was cheap to compute and by minimizing the surrogate function, the expected load shed function would also decrease, this function could be used in the optimization procedure in many ways.   For our surrogate function, we consider using information resolved in the first stage of the cascade algorithm.
+
+\begin{figure}
+\centering
+\includegraphics{\mypathdfo/fig-firststage}
+\caption[Lack of correlation between load shed and first stage line failures]{The poor relationship between load shed and the number of lines that failed in the first stage.}
+\label{fig:first}
+\end{figure}
+
+
+We continue exploring the OPA simulation by looking at potential first stage approximators of the OPA cascading process. The two potential approximators we look at are the load shed after the first stage in the cascade and the number of lines that have failed after the first stage of the cascade.  We begin by looking at the number of lines that have failed after the first stage of the cascade. Figure \ref{fig:first} shows a scatter plot of load shed in the 1st stage with load shed in the final stage.  Through visual inspection, we see that there is little to no correlation between the number of failed lines and the final load served.  This may be due to the difference of importance of transmission lines in the network; we explore this idea in the final chapter \cref{ch:jccow}.
+
+
+\begin{figure}
+\centering
+\includegraphics{\mypathdfo/fig-loadserve}
+ \caption{Load Served at Different Stages}\label{fig:loadserve}
+\end{figure}
+
+
+Next, we explore whether or not the load served at intermediate stages of the cascade has any correlation with the final load served. In \cref{fig:loadserve} we see the progression of the load shed over the course of the cascade.  These scatter plots chart the load served, out of a potential 3,668 MW.  At stage zero the load served is 3,668 for all scenarios and we see the distribution of the final load served between about 1,500 and 2,500 MW.  After the first stage, the load served for some scenarios drops below the nominal load.  However, the amount of load served after the first stage does not appear to be well correlated with the final load served.  As the stages progress up to 20, we see that the load served in intermediate stages of the cascade give little insight into whether it is a bad cascade or not.  
+
+
+\subsection{Common Random Numbers}
+The stochastic uncertainty of the OPA process leads to large standard errors for the risk measures.  Variance reduction techniques are important to reduce the computational burden and a common random number scheme was employed.  Common random numbers essentially give each test system the same set of experimental conditions.  By doing so, the variance in the difference between two systems is reduced and less computational resources will be needed. \cite{law_2007}
+
+The OPA simulation uses effective capacities to determine whether a line fails for a particular stage and branch flow loading.  In order for the alternative configurations to be under similar experimental conditions, a random number seeding strategy was used to ensure alternative configurations would recieve the exact same effective capacity for that particular stage in that particular node of the scenario tree.   Formally, we can see why this works in some cases.  Suppose we have two systems with expected load shed $L_{ij}$ for systems $i=1,2$ and trials $j=1,2,...N$.  Now lets study the metric $Z_j = L_{1j} - L_{2j}$ and let the true comparison be $\Exx{Z}=\mu_Z$.  In order to make decisions about this, we need to be fairly confident in our estimation $\hat{Z}(n)=\sum_j \frac{Z_j}{n}$ of $\mu_z$.  The standard error of our sample mean $\hat{Z}(n)$ is
+\begin{equation}
+\Var{ \hat{Z}(n) } = \frac{ \Var{X_1} + \Var{X_2} - \CoVar{X_1}{X_2} }{n}
+\end{equation}
+
+In order to reduce the variance, we need $\CoVar{X_1}{X_2}>0$.  Be using a common random number scheme giving the alternative system configuration the same experimental conditions, we end up with a postive covariance.  This makes sense, as a sample path with consistently low effective capacities should do worse in all systems.  In practice, this common random number scheme is very successful for our problem and makes comparing systems less costly.
+
+
+\subsection{Capacity Addition}
+We now explore the landscape of the function with respect to capacity additions by looking at the results from simple changes to the design variables.  We start by looking at what happens when you add load shed along the coordinate directions.  We restrict ourselves to looking at lines that already exist and adding capacity to these lines.  We will not impose any restrictions on the amount of capacity to add to lines.  Thermal line limits are often constrained in order to maintain a minimum clearance between the lines and vegetation or other infrastructure.  So, in addition to being able to build a parallel line, it is also feasible to increase this clearance by installing taller poles or increasing vigilence in vegetation management.
+
+Our first figure \cref{fig:double} shows what happens if you simply double the capacity on each line individually and do nothing to the rest of the system.  The red points are the nominal system and its standard error plotted along each direction and the blue points correspond to the line number in which the capacity was doubled. Perhaps contrary to what would be expected or hoped for, the OPA simulation does not respond favorably in the majority of the coordinate directions and less than 40\% of lines lead to a reduction.  There may be a few reasons for this.  First, by increasing the limit of one line, it may now be possible to overload neighboring lines and increase their likelihood of failure. 
+
+\begin{figure}
+\centering
+\includegraphics{\mypathdfo/fig-double}
+\caption{Comparing the total load shed for doubling capacity along the coordinate direction.}
+\label{fig:double}
+\end{figure}
+
+Additionally, by looking along just one direction and slowly increasing capacity, we see that the function can change dramatically.  Even when the number of trials are increased so that the standard error is low, the function evaluations corresponding to adding capacity on one transmission element are variable and can have large discontinuities.  We have plotted three transmission elements in which the capacity is varied from zero to three times its nominal capacity in \cref{fig:capadd}.  The point in which the capacity is zero is still enforcing the phase angle linkage so that when the branch flow is zero, the phase angles of the two connecting nodes must be equivalent.
+
+
+\begin{figure}
+\input{\mypathdfo/fig-capadd}
+	\caption{Plotting expected load shed for capacity additions along coordinate directions.  }
+\label{fig:capadd}
+\end{figure}
+
+Looking further at the ability of increased capacity to influence neighboring lines, we focus on line C from \cref{fig:capadd}.  Line C highlights the difficulty of optimizing over this function by showing the discontinuities of the OPA simulation with respect to capacity additions.  In figure \cref{fig:cluster}, we visually show that these discontinuities can be associated with changes in the frequency of line failures for lines in the given cascade simulations and additionally the frequency of line failures may be correlated with nearby lines.  Here we see multiple jumps in the expected value of load shed, and during the last jump, we also see a spike in frequency of line failures for a subset of the transmission lines that are in the same region of the transmission network.  The frequency of line failures can often be lined up with corresponding changes in expected load shed.
+
+\begin{figure}
+\centering
+\includegraphics{\mypathdfo/fig-linecluster}
+\caption{A cluster of lines correlated with reduced system performance}
+\label{fig:cluster}
+\end{figure}
+
+Finally, we look at a surface plot of adding capacity on separate branches in \cref{fig:heatmap}.  Exploring the effects of adding capacity to lines 67 and 79, we vary the amount of capacity from zero to a very large number.  We then truncate the pictures at the point where the additional capacity has no more effect on the OPA simulation and show only the part where changes occur.  We see that the surface is bumpy, that is it has some higher frequency effects with low amplitude.  Additionally, we note there are larger trends that have much higher amplitude effects.  It will be important for our optimization method to be robust to these high frequency bumps so that they do not get trapped in local minima.  Additionally, the conditional value at risk is plotted as well for this same set of trial points in \cref{fig:heatmap}. The CVaR has some similar trends and minima as the expected value, however it differs in some notable ways as well.  The expected value has a large region in which the value is near minima.  In the CVaR plot, the minima is a smaller region.  Additionally, the CVaR also has more high frequency bumps creating local minima and maxima.  This may be true of the actual function, however, since this is measuring the tail of the distribution, it may be related to sample size as well.
+
+\begin{figure}
+\centering
+\includegraphics{\mypathdfo/fig-heatmap}
+\includegraphics{\mypathdfo/fig-heatmapcvar}
+\caption[Expected load shed and conditional value at risk for capacity expansion]{2d heat map of expected load shed and conditional value at risk for adding capacity to two different lines, 67 and 79}\label{fig:heatmap}
+\end{figure}
+
+
+
+\section{Optimizing Design Problems using Pattern Search}
+
+This section will give an overview of derivative free optimization.  The foundation for direct search and model based search of DFO techniques will be explored to be used in solution methods for the OPA optimization procedure.  The DFO field has been around for some time now and has seen a resurgence over the last decade and a half with the only textbook at less than 5 years old (Conn, Scheinberg, Vicente) \cite{conn_2009}.  Kolda et. al. provide an extensive work on direct search methods and its extensions in \cite{kolda_2003}. 
+
 This class of optimization strategies covers a wide-range of problems and techniques.  In general, the problem has a function $f: \R{n} \rightarrow \R{}$ that takes a decision variable $x \in \R{n}$ and returns a scalar. 
 \begin{equation}
 \min_{x \in \R{n}} f(x)
 \end{equation}
 The primary problem attribute that makes DFO a good choice for solution method is that standard gradient or Newton based method will not work.  This can be due to a variety of reasons, a common one being simulation-based optimization.  Here, the derivative is unavailable symbolically (through hard work or automatic differentiation schemes) and, perhaps due to stochastic or numerical noise, is unable to be calculated with finite difference methods.  Even if the underlying function is smooth, a costly function evaluation may make the finite difference approach undesirable due to the considerable time to calculate full gradients.
 
-While still useful for smooth functions with a Lipschitz continuous derivatives, these methods can shine in nonsmooth and even non-convex application.  Direct search methods work by searching in many directions in order to guarantee a descent direction is chosen.  This has the ability to provide robustness against noise that may mislead gradient based methods using a single search direction.  In addition, by using relatively large step size the trial points provide a smoothing affect to the function which allow it to ignore high-frequency noise until it is close to a lower-frequency, higher amplitude minimum.  Contrary to problem application, we will assume a smooth function with a Lipschitz continuous derivative in order to find convergence results for different algorithms.  No guarantees can be made for the nonsmooth problems, however in practice these techniques are relatively successful for this class of problems
+While still useful for smooth functions with a Lipschitz continuous derivatives, these methods can shine in nonsmooth and even non-convex application.  Direct search methods work by searching in many directions in order to guarantee a descent direction is chosen.  This has the ability to provide robustness against noise that may mislead gradient based methods using a single search direction.  In addition, by using relatively large step size the trial points provide a smoothing affect to the function which allow it to ignore high-frequency noise until it is close to a lower-frequency, higher amplitude minimum.  Contrary to problem application, we will assume a smooth function with a Lipschitz continuous derivative in order to find convergence results for different algorithms.  No guarantees can be made for the nonsmooth problems, however in practice these techniques are relatively successful for this class of problems.
 
-\subsubsection*{History}
 \begin{figure}
 \centering
 \input{\mypathdfo/fig-dfomethod}
 \caption{DFO methods for continuous variable optimization}
 \end{figure}
-Derivative-free techniques for optimizing problems have literature dating back to the 60's when Hookes and Jeeves \cite{hooke_1961} proposed a simple search method to find a maximum or minimum when classical methods were unfeasible.  Since then, direct search methods have seen many improvements both to their performance in practice and results in theory.  Modern direct search methods are able to conform to local topology as well as guarantee convergence to stationary points.  New methods are beginning to use probabilistic search procedures to improve in performance as well as increase the classes of problems they are able to solve.
-
-Geometry based methods also started in the 60's with Nelder and Mead \cite{nelder_1965} using the geometric simplex and operations such as reflection, expansion, and contraction.  These methods can be useful as they naturally conform to local topology, however the geometry can often degenerate and converge to a non-optimal point.  Modern methods can use safeguarding techniques to prevent this or restart a simplex when it has deteriorated.  
-
-Heuristic search procedures showed up in the 70's and have continued to be used throughout with many papers in practical application.  Common procedures such as genetic algorithms (1975) \cite{holland_1975}, simulated annealing (1983) \cite{kirkpatrick_1983}, and particle swarm (1995) \cite{eberhart_1995} \cite{kennedy_1995} are used throughout engineering and physic disciplines, partly due to their ease in application and decent practical performance.  While good for practical applications, they lack the more rigorous theory for convergence that is behind direct search and model based methods.
-
-Model-based methods are very good at using function evaluations and spend considerably more effort to choose new points.  These interpolation based strategies were around at least by 1973 \cite{winfield_1973} and assume the model is accurate within its trust-region.  The method procedes by minimizing its model and using that as a new trial point.  Modern implementations can use linear models \cite{powell_1994}, quadratic models \cite{powell_2002}, or perhaps a good compromise being underdetermined quadratic models.
-
-Finally, global based strategies are used in conjunction with many of the previous models in order to work toward global optima. One primary avenue is partitioning models.  These partions have trial points at the extreme points of the partion (1972)\cite{shubert_1972}, the center point (1993) \cite{jones_1993}, or arbitrary points within (1999) \cite{huyer_1999} and typically work by building underestimators of the function using the Lipschitz constant or an estimate.  Another strategy employed is surrogate functions to opitimize instead of the original function.  Common versions are response surfaces, kriging, and radial basis functions.  
-
-A more complete history and overview of current derivative free methods as well as numerical tests for a large, diverse set of solvers can be found in \cite{rios_2013}.  Now we turn to direct search and model based methods to understand their implementation, performance, and convergence properties.
-
-
-\subsubsection*{Gradient Line Search}
-To start, a quick overview of line search methods and properties to guarantee convergence will be given.  These properties will be used as a comparison for comparable properties used in DFO methods.  Line search methods move in a descent direction and have constraints on step length in order to ensure convergence.  Assuming our function is continuously differentiable and letting $\alpha$ be a step size and $d$ a direction, we have
-\begin{equation}
-f(x + \alpha d ) = f(x) + \alpha \grad f(x) d  + o (\alpha)
-\end{equation}
-and by setting $d = -\grad f(x)$ we are guarenteed to reduce $f$ for sufficiently small step sizes $\alpha$.  We can see that any direction that is sufficiently in line with the negative gradient of $f$ will lead to a decrease, that is
-\begin{equation}
--\grad f(x_k)^T d_k > 0
-\end{equation}
-Additionally, a near orthogonal direction to the gradient will lead to poor progress in search and convergence.  The angle between the search direction and the negative gradient needs to be bounded away from 0.  In the typical line search, this angle condition is
-\begin{equation}
-\frac{-\grad f(x_k)^T d_k}{\norm{\grad f(x_k) } \norm{d_k}} \geq c > 0
-\end{equation}
-and is automatically satisfied for $d_k = -\grad f(x_k)$.
-
-A simple decrease condition $f(x_{k+1}) < f(x_{k})$ is not enough to guarantee convergence, due to the existence of sequences of points moving in a descent direction with a limit point other than the minimum.  This is related to the step size and both too short and too long of step sizes can cause problems.  The Armijo-Goldstein-Wolfe conditions prevent these problems by constraining the step length 
-\begin{align}
-f(x_k + \alpha_k d_k) \le f(x_k) + c_1 \alpha_k \grad f(x_k)^T d_k  \label{step_length_1}\\
-\grad f (x_k + \alpha_k d_k)^T d_k \ge c_2 \grad f(x_k)^T d_k \label{step_length_2}
-\end{align}
-with $0 < c_1 < c_2 < 1$.  Typically, one needs to only enforce too long of steps (eq. \ref{step_length_2}) since there are no too short of steps (eq. \ref{step_length_1}) due to backtracking schemes.
-
 
 \subsection{Direct Search}
-An overview of the convergence results for a standard direct search method will be given. Positive spanning sets as well as the cosine measure are used to bound the angle between the polling directions and the negative gradient.  Then, using the subsequence of unsuccessful iterates, the trial steps become arbitrarily small and $x$ will approach a limit point.  We will need the assumption that the gradient is Lipschitz continuous with constant $M$
-\begin{equation}
-\norm{\grad f(y) - \grad f(x)}  \leq M \norm{ y - x }
-\end{equation}
+An overview of the convergence results for a standard direct search method will be given. Positive spanning sets as well as the cosine measure are used to bound the angle between the polling directions and the negative gradient.  Then, using the subsequence of unsuccessful iterates, the trial steps become arbitrarily small and $x$ will approach a limit point.  We will need the assumption that the gradient is Lipschitz continuous with constant $M$.
+%\begin{equation}
+%\norm{\grad f(y) - \grad f(x)}  \leq M \norm{ y - x }
+%\end{equation}
 
 \begin{figure}
 \centering
@@ -82,7 +348,16 @@ A positively spanning set $\cG$ of $\R{n}$ can write any vector $v \in \R{n}$ as
 \begin{equation}
 v = \sum_i \beta_i d_i
 \end{equation}
-Kolda, Lewis, and Torczon \cite{kolda_2003} call this a generating set of $\R{n}$ which makes the foundation for their class of generating set search methods.  This is a large class of problems which generalize lattice methods of Berman \cite{berman_1966} \cite{berman_1969} as well as their own older methods \cite{torczon_1997} \cite{lewis_2000} and include the original Hookes and Jeeves method\cite{hooke_1961}.  Generating sets can be adapted for explicit linear constraints to conform to local topology.\endnote{\input{\mypathdfo/end-linearconstraint}}
+Kolda, Lewis, and Torczon \cite{kolda_2003} call this a generating set of $\R{n}$ which makes the foundation for their class of generating set search methods.  This is a large class of problems which generalize lattice methods of Berman \cite{berman_1966} \cite{berman_1969} as well as their own older methods \cite{torczon_1997} \cite{lewis_2000} and include the original Hookes and Jeeves method\cite{hooke_1961}.  Generating sets can be adapted for explicit linear constraints to conform to local topology.
+
+These constraints can be dealt with in the framework of generating set search.  Here, one needs to concern themselves only with the nearby active constraints and a satisfactory set of polling directions would be a positive spanning set of the tangent cone of the nearby active constraints. 
+\begin{figure}
+\centering
+\input{\mypathdfo/fig-genset}
+\caption{Generating set for polar cone to conform to local explicit constraints}
+\end{figure}
+The compass search for standard bound constraints conforms to the constraints ideally and no modifications need to be made other than letting $f = \inf $ for $x$ out of bounds and not waste the time on the function evaluation.
+
 
 By searching in all directions of a generating set of $\R{n}$, we are guaranteed to have a direction which is somewhat aligned with the descent direction $f$, if it is smooth and has a Lipschitz continous derivative.  To make this matter concrete, the cosine measure of a set is the worst case scenario for the descent direction aligning with any direction of the generating set $\cG$.
 \begin{equation}\label{kappa}
@@ -112,32 +387,7 @@ This can be calculated for various generating sets, for example the compass sear
 \end{algorithmic}
 \end{algorithm}
 
-The key to convergence comes during the unsucessful steps.  The typical analysis will show that the gradient can be bounded at unsucessful steps by the step size and that the step size will go to zero in the limit.  At an unsucessful step we are guaranteed a descent direction, however none of our trial steps satisfy simply decrease, so that $0\geq f(x_k + \delta_k d) - f(x_k)$ for descent direction $d$.  
-\begin{comment}
-Using the continous derivative assumption, the mean value theorem says there is a point in the middle $(\alpha \in [0,1])$ with 
-\begin{equation*}
-0\geq f(x_k + \delta_k d) - f(x_k) = \grad f(x_k + \alpha_k \Delta_k d)^T \Delta_k d
-\end{equation*}
-and subtracting $\grad f(x_k) \Delta_k d$ from both sides will give us a change in gradients.
-\begin{equation*}
- - \Delta_k \grad f(x)^T d \leq \left[ \grad f(x_k + \alpha_k \Delta_k d)  - \grad f(x_k ) \right]^T \Delta_k d
-\end{equation*}
-Finally, using the defination of the Lipschitz continous derivative, we have
-\begin{equation}
--\Delta_k \grad f(x)^T d \leq M \Delta_k d
-\end{equation}
- compass search specifically , and plugging in $v = -\grad f(x)$, we have bound
-\end{comment}
-From our cosine measure definition \ref{kappa} and plugging in $v = -\grad f(x)$ we have
-\begin{equation}
-\kappa (\cG) \norm{\grad f(x)} \norm{d} \leq \grad f(x) d
-\end{equation}
-Using the lipschitz continous derivative, the fact that the trial step was unsucessful, and the cosine measure for the coordinate directions $\kappa (\scd)=\frac{1}{\sqrt{n}}$, the gradiant can be bounded 
-\begin{equation}
-\norm{\grad f(x)} \leq \sqrt{n} M \Delta_k
-\end{equation}
-
-As long as our step size goes to zero $\Delta_k \rightarrow 0$ as our work effort increases $k\rightarrow \infty$, we will converge to a stationary point.  There are two primary ways to ensure this happens.  The first is to use a forcing function that constrains the trial step to have more than simple decrease.  Another way is to ensure all the trial points lie on a rational lattice.  If all the trial points are then integer combinations, all future trials will lie on this lattice.  As it is rational, only a finite number of points will be evaluated before there is an unsuccessful iteration.  As there are only a finite number of evaluations in between unsucessful steps and at each unsucessful step the step size is reduced, that step size will converge to 0.  Figure \label{fig:explore} shows an example of a polling step with exploratory trial points on a rational lattice. For a more detailed convergence proof for standard compass search and the more general generating set search, Kolda et. al. \cite{kolda_2003}.
+As long as our step size goes to zero $\Delta_k \rightarrow 0$ as our work effort increases $k\rightarrow \infty$, we will converge to a stationary point.  There are two primary ways to ensure this happens.  The first is to use a forcing function that constrains the trial step to have more than simple decrease.  Another way is to ensure all the trial points lie on a rational lattice.  If all the trial points are then integer combinations, all future trials will lie on this lattice.  As it is rational, only a finite number of points will be evaluated before there is an unsuccessful iteration.  As there are only a finite number of evaluations in between unsuccessful steps and at each unsuccessful step the step size is reduced, that step size will converge to 0.  In \cref{fig:explore} we see an example of a polling step with exploratory trial points on a rational lattice. For a more detailed convergence proof for standard compass search and the more general generating set search, Kolda et. al. \cite{kolda_2003}.
 
 
 
@@ -151,246 +401,232 @@ As long as our step size goes to zero $\Delta_k \rightarrow 0$ as our work effor
 
 
 \subsubsection{Flexibility}
-This class of direct search methods was choosen because of the flexibility in its framework.   As long as the trial points lie on a rational lattice, the method will converge to a local stationary point.  This means that the lattice can be rotated to conform to local topology, it will admit exploratory points, and can even use model based methods to improve its search direction and exploratory steps.  This includes aligning search directions with approximate gradients that can be calculated using simplex directions or previous trial points. This framework will allow us to test using accessory information to speed up the optimization procedure and compare its effects to model based methods.
+This class of direct search methods was chosen because of the flexibility in its framework.   As long as the trial points lie on a rational lattice, the method will converge to a local stationary point.  This means that the lattice can be rotated to conform to local topology, it will admit exploratory points, and can even use model based methods to improve its search direction and exploratory steps.  This includes aligning search directions with approximate gradients that can be calculated using simplex directions or previous trial points. This framework will allow us to test using accessory information to speed up the optimization procedure and compare its effects to model based methods.
 %\textbf{Model Based Methods}
-%trust regions
-%Stochastic Trust Region \endnote{\input{\mypathdfo/end-stochtrust}}
-
-%\textbf{Approximate Gradient Methods}
-%Implicit filtering
-%Simplex gradients
-%Stochastic Approximation
-
-%Stochastic Gradient \endnote{\input{\mypathdfo/end-stochgrad}}
-%Stochastic Approximation \endnote{\input{\mypathdfo/end-stochapprox}}
 
 
 
-
-
-\section{Optimizing the OPA Simulation}
-
-First, we need to develop an efficient evaluation of cascading power failures for use in the optimization procedure.  For the needed resolution in function value, parallel computing will be used for concurrent function evaluation and common random numbers will be used to reduce the variance of the risk metrics.
-
-After the OPA model is implemented, we will explore the behavior of the simulation with changes to our decision variables (transmission expansion variables from previous chapter).  We will look at different risk measures and compare their features, opting to use primarily expectation and conditional value at risk of load shed.  It is noted that even the expectation, which is typically smoothed under stochastic uncertainty, is non-convex nor monotonic for line capacity additions.  Additionally, initial stage load shed results are poor approximators of total load shed for a given cascade sequence.
-
-Finally, we will determine the performance of direct search and model based methods on the OPA simulation.  A modified method will be developed to take advantage of accessory information within effective DFO strategies.  Accessory information produced by the OPA simulation is used to reduce the search space and find breakpoints in a line search method.  The performance of these methods will be shown and intuition gained from the solutions.
-
-\subsection*{OPA Simulation}
-
-The fast time scale OPA model (given in chapter one \ref{fast_opa} has been shown to have the same power-law distribution seen in real-world blackout data.  This simulation can be seen as a surrogate model for the response of the power system to rare-event stress.  As such, it is useful to explore the effects different parameters can have and even optimize over them to find any characteristics or trends there may be.
-
-The linear program \ref{dcopf_program} is a load shedding version of the standard DC OPF economic dispatch model.  
-\begin{subequations}
-\label{dcopf_program}
-\begin{alignat}{3}
-\min_{\left(g,\beta,l;\theta,y\right)} && \displaystyle\sum_j \left[  c_2 g_j^2  + c_1 g_j + c_0 \right] &+ W \sum_i l_i &  \label{jcc_obj}\\
-                        && \textstyle \sum_j c^g_{ij} g_j - \sum_j c^b_{ie} y_e   +l_i       &=D_i       && \forall i \label{opf_cons}\\ 
-                 && y_e - b_e \textstyle \sum_i c^b_{ie} \theta_i          &=0         && \forall e \label{opf_kcl}\\
-                 && l_i &\in \left[ 0, D_i \right] && \forall e \label{opf_loadshed}\\
-                 && y_e &\in \left[ -U_e, U_e \right] && \forall e \label{opf_limit}\\
-                 && g_j &\in \left[ G^{min}_j, G^{max}_j \right] && \forall j  \label{opf_gen}  
-\end{alignat}
-\end{subequations}
-
-
-Let $z$ be the total load shed for a particular dispatch point $(g,\beta,l)$.
-\begin{equation}
-z = \sum_i l_i
-\end{equation}
-
-Now we need to understand the effect of adding capacity $x$ to a system for the OPA cascading procedure.  The DC OPF (eqs. \ref{dcopf_program}) will now allow the branch flow to attain its new capacity level, that is
-\begin{equation}
- y_e  \in \left[ - U_e - x_e, U_e + x_e \right]
-\end{equation}
-In addition, the failure density function will also move to account for its additional capacity.  This means that not only does the capacity level change, the point $L$, in which the line becomes risky also moves, so that our risk function is now
-\begin{equation}
-h(y) = \left\{ \begin{array}{ll}
-(y_e-x_e)U_e^{-1}p - Lp & y_e > L U_e + x_e \\
-0 & \mbox{o/w}
-\end{array}
-\right. 
-\end{equation}
-
-The algorithm requires sequential solves of the DCOPF where there are changes to the topology. We can take advantage of this and typically will require only a small handful of pivots to find the new solution.
-\begin{algorithm}
-\caption{OPA Cascading Algorithm}\label{opa_alg}
-\begin{algorithmic}
-\Procedure{OPA}{$x, D, \xi, \omega$}
-\State Solve ( \ref{dcopf_program} ) to find base case load shed $z_0$
-\State $\xi$ occurs and corresponding changes to the grid are made
-\State Stage $s \gets 1$
-\While{ Not DONE }
-\State Solve ( \ref{dcopf_program} ) to find power injects and branch flows for adjusted grid
-\State $\mathbb{O}_s \gets \emptyset$
-\For{$\forall e \in \cE $}
-\State $\mathbb{O}_s = 
-\left\{ 
-\begin{array}{lr}
-  \mathbb{O}_s + \left\{ e \right\} & \mbox{w/ prob. } h(y_e), \mbox{ draw } \omega_{es} \\
-  \mathbb{O}_s & \mbox{o/w }
-\end{array}
-\right. $ 
-\If{ $\mathbb{O}_s \neq \emptyset$ }
-\State Modify Grid with $\mathbb{O}_s$
-\State $s\gets s+1$
-\Else
-\State $s^* \gets s,$ calculate $z_{s^*}$, DONE
-\EndIf
-\EndFor
-\EndWhile
-\State \label{done}Load Shed $  \lambda\left(x,D,\xi,\omega\right)  = z_{s^*} - z_0$
-\EndProcedure
-\end{algorithmic}
-\end{algorithm}
-
-
-Finally, we consider the load shed over a subset of initial contingencies $\Xi$ given an uncertainty distribution for the cascade evolution $\Omega$.  The load shed $f (x) $  for decision $x$ and fixed demand $D$ is calculated as 
-\begin{equation}
-f(x) = \Exx{  \lambda\left(x,D,\xi,\omega\right)  }_{\Xi,\Omega}
-\end{equation}
-
-\subsection*{Implementation}
-The simulation is implemented in C++ using CPLEX to solve the linear programs.  At each stage of the cascade, the solution may only require a small amount of pivots so that the individual LP solves are very fast and load shed evaluations can be found in bulk.  The number of trial, $N_k$, will be selected so that the standard error of the function value is small relative to its value.  The number of trials per function evaluation can be changed dependent on iteration count for improvements in speed or resolution.
-
-The Center for High Throughput Computing provides computation resources for UW and affiliated researchers.  Jobs can be submitted through Condor \cite{beowulfbook-condor} which manages the collective pool of around 1 million cpu hours per day.  Users submit jobs to the cluster, which assigns resources that process the job.  Requirements can be given to ensure that the resource is capable of performing the job.  In order to get access to a larger portion of the cluster, low memory and disk requirements help.  Overhead associated with the process, such as being assigned resources and data transfers can be minimized but not removed. As such, the workflow was designed for job times of around 5-30 minutes and perform all analysis locally with the raw data to reduce network data exchanges.
-
-In order to take advantage of a larger cluster \cite{condor_flock}, the main C++ program was compiled for two primary linux kernals that make up the majority of the cluster using the interactive shell job for Condor.  The memory requirements were set at 500MBs and storage at 3GBs, with plenty of buffer room for program operation.  The large data output from the OPA simulation includes stage by stage details of net power injects, branch flows, and load shed.  This data is then analyzed on the remote resource using python to find the risk metrics of the load shed as well as any accessory information computation.  The output of the analysis is less than 8K for load shed and outage data that is needed for most of the optimization routines.  Additional overhead is used to smooth the job requests and restart hung jobs. 
-
-\subsubsection*{Common Random Numbers}
-The stochastic uncertainty of the OPA process leads to large standard errors for the risk measures.  Variance reduction techniques are important to reduce the computational burden and a common random number scheme was employed.  Common random numbers essentially gives each test system the same set of experimental conditions.  By doing so, the variance in the difference between two systems is reduced and less computational resources will be needed. \cite{law_2007}
-
-The OPA simulation uses effective capacities to determine whether a line fails for a particular stage and loading.  In order for the alternative configurations to be under similar experimental conditions, a random number seeding strategy was used to ensure alternative configurations would recieve the same luck.  Formally, we can see why this works in some cases.  Suppose we have two systems with expected load shed $L_{ij}$ for systems $i=1,2$ and trials $j=1,2,...N$.  Now lets study the metric $Z_j = L_{1j} - L_{2j}$ and let the true comparison be $\Exx{Z}=\mu_Z$.  In order to make decisions about this, we need to be fairly confident in our estimation $\hat{Z}(n)=\sum_j \frac{Z_j}{n}$ of $\mu_z$.  The standard error of our sample mean $\hat{Z}(n)$ is
-\begin{equation}
-\Var{ \hat{Z}(n) } = \frac{ \Var{X_1} + \Var{X_2} - \CoVar{X_1}{X_2} }{n}
-\end{equation}
-
-In order for this to reduce the variance, we need $\CoVar{X_1}{X_2}>0$.  This makes sense, as a sample path with consistently low effective capacities should do worse in all systems.  In practice, this common random number scheme is very successful for our problem and makes comparing systems less costly.
-
-
-\subsection{Model Behavior}
-To investigate the behavior of the model, we will begin by looking at the results from simple changes to the decision variables.  The risk measures, table \ref{tab:risk}, are calculated for the load shed distribution and the expectation and the conditional value at risk are used for optimization.  The load shed from this cascading power simulation follows a power law distribution which cause tail events to have a relatively large effect.  The expected value and conditional value at risk could be surrogate models of each other as they tend to track in a similar manner. The maximum can display much more erratic behavior and optimizing against this would be costly and restrictive.
-
-\newcommand{\tabheight}{11pt}
-\begin{table}
-\centering
-\begin{tabular}{| c | c | c|}
-\hline
-& & \\[1pt]
-Sample Mean & $f^{ex}$ &$ \hat{Z}(n)=\sum_j \frac{Z_j}{n} $\\[\tabheight]
-Sample Variance & $s^2_d$ &$ S^2(n)=\sum_j \frac{\left(Z_j - \hat{Z}(n)\right)^2}{n-1} $\\[\tabheight]
-Standard Error & $s^2_e$ &$ \Var{\hat{Z}(n)}= \frac{S^2(n)}{n}$\\[\tabheight]
-Confidence Interval& $CI(1-\eta)$  & $f^{ex} \pm z_{1-\eta/2} \sqrt{s^2_e}$ \\[\tabheight]
-Value at Risk & $ VaR(\eta)$& $ \lb Z_{a} |  a = \floor{ \eta n }\rb $\\[\tabheight]  %$\inf\left\{l \in \R{} | F_L(l) \geq \eta \right\}$\\[\tabheight]
-Conditional Value at Risk & $ CVaR(\eta)$& $\Exx{Z | Z \geq VaR(\eta)}$ \\[\tabheight]
-\hline
-\end{tabular}
-\caption{Risk Measures}\label{tab:risk}
-\end{table}
+To get an idea of the strengths and weaknesses of direct search on the OPA simulation, the standard compass search algorithm was implemented on a reduced 2 dimensional subspace.  These figures show the rough search space and the need for filtering higher frequency effects.  Similar properties are seen for conditional value at risk.
 
 \begin{figure}
 \centering
-\input{\mypathdfo/fig-riskmeasure}
-\caption{Value at Risk, Conditional Value at Risk, and Maximum risk measures for load shed distribution}
+\includegraphics{\mypathdfo/fig-trialmap}
+\caption{Trial exploration using standard compass search with initial step size 50}
 \end{figure}
 
-\subsubsection{Capacity Addition}
-The decision variable $x$ represents branch capacity additions.   Using the expected value of load sheds as the risk measure, the function response to different decision variables is very noisy.  The small changes in line flows in the first stage can propogate and cause large disturbances in the system.  A surface plot of this is shown in figure \ref{fig:heatmap} and displays the bumpy surface.  While the surface is definately bumpy, there are larger amplitude trends that make filtering out higher frequency noise important.  
+
+Here we can see the compass search gets trapped in a local minima.  If a small step size is used, the search will get trapped in nearby minima when more progress can be made elsewhere.   We ran 4 different compass searches with initial trial steps of 1, 25, 50, and 75.  Large step sizes tend to improve final solution results and it is important to note that they all found very different solutions. This highlights the need for a strategy to find local minima that are nearer to the global minimum. 
 
 
 \begin{figure}
 \centering
-\input{\mypathdfo/fig-heatmap}
-\caption{2d heat map of expected load shed for adding capacity to two different lines, 67 and 79}\label{fig:heatmap}
-\end{figure}
-
- 
-To understand whether it is easy to improve the system or not, we tried to double the capacity of all the lines.  Less than 40\% of the lines led to an improvement in the system.
-\endnote{\input{\mypathdfo/end-capadd}}
-This lead us to focus on clusters of lines in response to different effects \endnote{\input{\mypathdfo/end-clustering}}.  It can be seen that adding capacity to one line may make the system worse whereas adding capacity to a cluster would improve it.  
-
-
-\subsubsection{Direct Search Application}
-
-To get an idea of the strengths and weaknesses of direct search on the OPA simulation, the standard compass search algorithm was implemented on a reduced 2 dimensional subspace for your viewing pleasure.  These figures show the rough search space and the need for filtering higher frequency effects.  Similar properties are seen for conditional value at risk \endnote{\input{\mypathdfo/end-heatmapcvar}}, however the maximum risk measure has more noise.
-
-Here we can see the compass search gets trapped in a local minima.  If a small step size is used, the search will get trapped in nearby minima when more progress can be made elsewhere.   We ran 4 different compass searches with initial trial steps of 1,25,50, and 75.  Large step sizes tend to improve final solution results and it is important to note that they all found very different solutions. This highlights the need for a strategy to find local minima that are nearer to the global minimum. \endnote{\input{\mypathdfo/end-compass}}
-\begin{figure}
-\centering
-\input{\mypathdfo/fig-trialmap}
-\caption{Trial exploration using standard compass search}
+\includegraphics{\mypathdfo/fig-functionvalue}
+\caption{Resulting points from compass search with different initial step size values}
 \end{figure}
 
 
 
-\subsection{1st Stage Approximators}
-Is there any good way to approximate the total effect of the cascading process?  One common technique in DFO methods is to find a surrogate function which has similar properties to your real function but is faster to compute.  We looked at two different statistics to see if it was possible to infer how bad a cascade would be in the early stages.  Unfortunately, the initial stages of the cascade were poorly correlated with the total load shed for any given sample path.
 
-\begin{figure}
-\centering
-\input{\mypathdfo/fig-firststage}
-\caption{The poor relationship between load shed and the number of lines outaged in the first stage.}
-\label{fig:first}
-\end{figure}
 
-Figure \ref{fig:first} shows a scatter plot of load shed in the 1st stage with load shed in the final stage.
-\endnote{\input{\mypathdfo/end-firststage}}
-Visual inspection of this for various initial contingencies showed that any calculation using this would be a poor estimator.  This is not surprising since the rare event cases have a disproportionitly high influence due to the power law distribution.  More stages need to progress to find the highly disruptive cases.  Figure \ref{fig:loadserve} shows the same scatter plot for stages 0, 1, 5, 10, 15, and 20 to show the progression.  Even in later stages, the undetermined cases still vary.
+
+
+
+
+
+
+\subsection{Line Search Breakpoints}
 
 We can actually find more information in the actual line flow statistics for different stages in the cascade.  Changes with respect to 1st stage line flows can identify changes in final stage load shed, although not whether it will improve or degrade the performance.
+
+
+We need an algorithm that can handle the noisy output of the OPA model and uses the accessory information in the simulation.  This information includes the line with the most failures, clustering, topology information, electrical properties, and correlations between lines and load shed. Using direct search as the foundation, we will modify the exploratory steps to take advantage of this information.  This will provide local convergence guarantees while giving more robustness to the solution methodology.
+
+
 \begin{figure}
 \centering
-\input{\mypathdfo/fig-lineflowscene}
-%\input{\mypathdfo/fig-failprobscene}
+\includegraphics[scale=.84]{\mypathdfo/fig-lineflowscene}
+\includegraphics[scale=.84]{\mypathdfo/fig-failprobscene}
  \caption{Line flows for each scenario and  their averages}
 \label{fig:flows}
 \end{figure}
-\endnote{\input{\mypathdfo/end-failure.tex}}
 
-
-
-\section{Algorithm Design}
-We need an algorithm that can handle the noisy output of the OPA model and uses the accessory information in the simulation.  This information includes most outaged lines, clustering, topology information, electrical properties, and correlations between lines and load shed. Using direct search as the foundation, we will modify the exploratory steps to take advantage of this information.  This will provide local convergence guarantees while giving more robustness to the solution methodology.
-
-
-\subsection{Search Direction}
-For search directions, we are primarily interested in the lines that fail through the simulation.  Additionally, the first stage failure probability for line flow tends to correlate with changes in load shed.
-\begin{equation}
-p_{e}(x) = \Expect_\Xi \left[ \Expect_\Omega \left[ h \left( \ry_{e1}(x) \right) \right] \right]
-\end{equation}
-The covariance between the probability of failure for a given line and the load shed can be used to group lines together.
-\begin{equation}
-\sigma_{ef } = \CoVar{ p_e(x)}{ f (x) }
-\end{equation}
-If lines tend to covary with load shed together, they may be part of a cluster.
-\begin{equation}
-\cH_e\left(\epsilon\right) = \lb i | \sigma_{if } \in \left[ \alpha_0 \sigma_{ef } , \alpha_1 \sigma_{ef} \right], 0<\alpha_0< \alpha_1 \rb
-\end{equation}
-We can refine this information by taking the connected components in $\cH_e$ for additonal search directions.
-
-\subsection{Line Search Breakpoints}
-We also want to make our search process more global.  In order to do that, we want to take exploratory trial points along specific directions.  We would like to maximize how much we learn with each trial point, in order to do that we look at how different two systems may be.  In order to compare the systems we use first stage line failure probabilities.
-\begin{equation}
-\tau (x_i, x_j) = \norm{ p_e(x_i) - p_e(x_j) }^2
-\end{equation}
-This information can be used to tell if two operating points have different cascading properties.  By looking at the distance between two operating points, breakpoints can be found where the distance between operating points risk characteristics are extremely different from another, close, operating point.
 
 Additionally, we can find the point in which adding additional capacity won't have any effect.  
 \begin{equation}
 \nu_e = \max_{\begin{array}{c}\Xi,\Omega\\s=0,1,....,s^*\end{array}} \left\{ \ry_{es} \right\}
 \end{equation}
-Here $\nu_e (x)$ is the maximum flow on a particular line.  By choosing $x$ such that the line has no chance to fail, any additional capacity will not change the outcome.
+Here $\nu_e (u)$ is the maximum flow on a particular line.  By choosing $u$ such that the line has no chance to fail, any additional capacity will not change the outcome.
 
-%Break Points \endnote{\input{\mypathdfo/end-breakpoints}} choosing N
-%\subsection{Local Convergence}
-%\subsection{Modified Coordinate Search}
-%All together now
-%\section{Computational Results}
+
+
+\begin{figure}
+\centering
+\includegraphics{\mypathdfo/fig-breakpoint}
+  \caption{Approximation of function by finding breakpoints}
+\label{fig:break}
+\end{figure}
+
+We also want to make our search process more global.  In order to do that, we want to take exploratory trial points along specific directions.  We would like to maximize how much we learn with each trial poin by looking at how different two systems may be.  In order to compare the systems we use first stage line failure probabilities.
+\begin{equation}
+\tau (x_i, x_j) = \norm{ p_e(x_i) - p_e(x_j) }^2
+\end{equation}
+This information can be used to tell if two operating points have different cascading properties.  By looking at the distance between two operating points, breakpoints can be found where the distance between operating points risk characteristics are extremely different from another, close, operating point.
+
+
+
+
+
+
+
+\subsection{Implementing Parallelization in Condor}
+
+The Center for High Throughput Computing provides computation resources for UW and affiliated researchers.  Jobs can be submitted through Condor \cite{beowulfbook-condor} which manages the collective pool of around 1 million cpu hours per day.  Users submit jobs to the cluster, which assigns resources that process the job.  Requirements can be given to ensure that the resource is capable of performing the job.  In order to get access to a larger portion of the cluster, low memory and disk requirements help.  Overhead associated with the process, such as being assigned resources and data transfers can be minimized but not removed. As such, the workflow was designed for job times of around 5-30 minutes and perform all analysis locally with the raw data to reduce network data exchanges.
+
+The majority of the Condor cluster and UW-Madison uses the Scientific Linux distrubution with version 5 and 6.  The submit node I was using had SL6 installed, and I compiled the C++ binary directly on that machine.  In order to access the portion of the cluster which uses SL5, I had to find a remote resource with SL5 installed and build the binary remotely on that machine.  Condor gives a way to have an interactive session the remote resource.  In the Condor submit file (\cref{interactivesession}) I request an interactive session and restrict the remote resource to be a MatlabBuildJob, which ensures an SL5 remote resource.  I transfer the source code and associated libraries as a tar file, unpack and build on the remote resource and close the session, which initiates a transfer of all newly created files, including the SL5 binary for the C++ code.
+
+\linespread{1}
+\lstinputlisting[language=bash,label={interactivesession},caption={inter-sl5.cmd: Condor submit file to run an interactive session on an SL5 machine}]{\mypathdfocode/Powerin/intersl5.cmd}
+\linespread{2}
+
+
+After having the main C++ program compiled for two primary linux kernals, we can also access  other Condor networks through the Open Science Grid and a simple flag WantFlocking (\cite{condor_flock}).  This allows us to have a large base of computational resources to request to do our job.  However, many of these resources are memory and storage constrained.  In order to tap into these resources, we restrict the memory requirements  of our computational process to 500MBs and storage at 3GBs, which gave plenty of buffer room for program operation and still allowed the capture of the majority of the resources.  The large data output from the OPA simulation includes stage by stage details of net power injects, branch flows, and load shed.  This data is then analyzed on the remote resource using python script files to find the risk metrics of the load shed as well as any accessory information needed in the optimization algorithm.  The output of the analysis is less than 8K for load shed and outage data that is needed for most of the optimization routines.  
+\begin{table}
+\centering
+\begin{tabular}{| l r | c | m{6cm} |}
+\hline
+File && Diagram &   Description \\
+\hline
+proc.py &\cref{procpy} & Condor Queue Reader & Condor queue reader and command instructor \\
+runit &\cref{runit}& Runit Daemon &  Principal process flow manager \\
+allocate.py &\cref{allocatepy}& Pattern Search Logic & Pattern search logic \\
+consub.py &\cref{consubpy}& Dag File Structure &Create condor submit structure based on given search points from pattern search logic\\
+%power.py &\cref{powerpy}& &Classes for grid, bus, and branches \\
+%tools.py &\cref{toolspy}& &Common functions for analysis \\
+CONTROL &\cref{controlfile} & CONTROL: job t & A condor file of bash commands to run on the remote resource \\
+%REMOVE && & A list of files to remove before transfering created files back to master computer \\
+countLines.py &\cref{countlinespy}& Data Analysis & Take \wrp{.lin} file and count number of line outages \\
+loadShed.py &\cref{loadshedpy}& Data Analysis & Take \wrp{.dem} file and do statistical analysis of load shed \\
+\hline
+\end{tabular}
+\caption{Scripts and command files used in parallelization routine}\label{tab:condorscript}
+\end{table}
+
+Now, we begin to outline the parallelization routine used with condor to optimize the capacity expansion problem using the OPA simulation to evaluate rare event stress.  In \cref{fig:parallel}, the main process flows are represented.  The blue boxes represent processes or scripts that create or modify data.  The red clouds represent data used in these processes, however some files are omitted from this diagram in exchange for overall process clarity.  Dashed lines are initiating events or creation of files from the processes and dashed lines are data transfers, inputs, or structural relationships between data.  The green decision box represents the daemon that keeps the overall parallelization algorithm running.  The principal scripts used in these processes are tabulated in \cref{tab:condorscript}.
+
+\linespread{1}
+\begin{figure}
+\centering
+\footnotesize
+\input{\mypathdfo/fig-parallel}
+\caption[Process flow for parallel OPA evaluations]{Process flow for parallel OPA evaluations and a simple pattern search DFO method.  Red clouds represent data and blue boxes represent processes.  Dashed lines are for data input or transfers and solid lines are processes or data creation. }
+\label{fig:parallel}
+\end{figure}
+\linespread{2}
+
+The runit daemon begins by determining whether the optimization routine is currently running.  This allows the process to be started and stopped at will and will ensure robustness to loss of network connection.  The daemon queries the proc.py script to check the condor queue and the current folder structure to see if any jobs are currently running or there has been steps taken in the optimization routine.  If there is, it continues where it left off, otherwise it initiates the first step in the optimization algorithm.  It has the option to give a set of initial lines to search from function improvement, otherwise it evaluates the nominal system.  The condor file structure is made, the job is submitted, and the daemon waits for the results.
+%\linespread{1}
+%\lstinputlisting[language=bash,label={runit},caption={runit: Main Process Flow}]{\mypathdfocode/runit.sh}
+%\linespread{2}
+
+After the process set up, we begin a standard iteration.  The daemon waits for the Condor queue to become empty and when it does it begins to initiate processes.  It starts by summarizing the output to be used in the pattern search logic.  After this is done, the pattern search logic determines which lines should be searched for improvement and the condor file submit structure is created based on these search directions.  The daemon submits the condor jobs and then begins waiting again for their completion.
+
+Condor DAGman was used for job submission in the intra-iteration process flow.  DAGman allows jobs to be described in a directed acyclic graph which gives control over the order in which jobs are submitted and their dependencies.  It also has additional features to be a friendly load on the Condor system.  In various iterations, there may be over 1000-2000 potential trial points that need to be evaluated.  Instead of submitting these all instaneously, these jobs are processed sequentially and have a small delay in between job submission as to not overload the system.  In addition, it limits the number of jobs that are sitting idle in the queue, which does not slow down the optimization routine but reduces the demand on the condor job management system.  DAGman does add some overhead to the process, however, due to the immense process capabilities of the Condor system, these are dwarfed by the sheer amount of computational power you gain.  Being a friendly load on the system is a small price to pay.
+
+DAGman uses a very specific file structure in order to submit jobs that have shared resources.  The file structure for the input to DAGman is given in \cref{fig:filedagman}.  To make the DAG submission job, Powerin is given as the input directory.  Powerin contains a folder called shared that holds the resources needed for every job.  DAGman will create a job for each folder inside Powerin and that folder will hold the resources necessary for that particular job.  In our case, we include a \wrp{.cap} file which defines the design decision $u$ for that particular trial point.  In the shared folder, there is a file called CONTROL (\cref{controlfile}) that DAGman uses to process each job.  CONTROL is a list of shell command to initiate on the host resource. 
+\linespread{1}
+\lstinputlisting[language=bash,label={controlfile},caption={CONTROL: commands to run on remote resource}]{\mypathdfocode/Powerin/shared/CONTROL.f}
+\linespread{2}
+ Additionally, the grid definition file, as well as the simulation parameters, are stored there as they do not change from job to job.  Packed in sl5.tar.gz and sl6bin.tar.gz are the binaries for those particular instances, and DAGman will only bring the correct binary depending on the host resource being used.  SLIBS.tar.gz contains the common libraries that are used by the programs and python scripts.  The python data analysis scripts are also used at the remote resource to process the raw data files in order to reduce the network transfers.  The REMOVE file will clean up the host resource before the job ends and every newly created file that is not removed is transferred back to the submit node.  The other files contained in Powerin are scripts used to create the job folders and run the pattern search logic.  After the folder structure has been created, a condor dag job can be created by running the following command.
+\begin{lstlisting}
+mkdag --data=Powerin --outputdir=step$iteration --cmdtorun=arrive.py --pattern=want.lao --pattern=want.lsa --type=Other --maxidle=500
+\end{lstlisting}
+DAGman will use the Powerin directory to create the DAG and create an output directory called stepN depending on which iteration the optimization algorithm is on.  It will create a job for every folder inside Powerin, except shared.  It will begin with the script called arrive.py and upon completion, it will check to see if want.lao and want.lsa have been created.  If they have not, it will be assumed the job has failed and DAGman will resubmit the job.  Additionally, it limits the maximum number of idle jobs in the queue to 500.
+
+\begin{figure}
+\linespread{1}
+\begin{forest}
+  dir tree
+  [ Powerin 
+    [allocate.py (search logic for allocating trial points)]
+    [consub.py (construct condor submit file structure for search pattern)]
+    [power.py (power classes for python scripts)]
+    [tools.py (common functions for python scripts)]
+    [cap.py (class to analysis capacity files for opt routine)]
+    [shared
+      [CONTROL (commands for host computer)]
+      [REMOVE (files to remove before transfer)] 
+      [countLines.py (data analysis before network transfer)]
+      [loadShed.py (data analysis before network transfer)]
+      [grid.gr (grid definition file)]
+      [simcplex.in (simulation parameters)]
+      [sl5bin.tar.gz (binary for sl5 instances)]
+      [sl6bin.tar.gz (binary for sl6 instances)]
+      [SLIBS.tar.gz (common libraries)]
+    ]
+    [ pt1/add.cap    ]
+    [ $\vdots$ ]
+    [ ptT/add.cap]
+  ]
+\end{forest}
+\linespread{2}
+\caption{Folder structure for DAG input in parallelization routine}\label{fig:filedagman}
+\end{figure}
+
+The output folder for DAGman will contain subfolders for each job that contain log files as well as the output files that were transferred back to the submit node.  After the daemon sees that all the condor jobs are done, it will initiate summarization and then proceed to the next step in the algorithm.  The overall folder structure for this optimization procedure is given in \cref{fig:optroutine}.  The Powerin folder is cleaned of all job subfolders in between each iteration and new job subfolders are created depending on the new trial points created from the pattern search logic.  Important files about the search points used are copied over to the output folders before they are cleaned from the input folder.  The output folders can be used to trace what has happened up to the current point in the algorithm in order to allow the daemon to continue off where it last was if it was restarted, either intentionally or unintentionally.
+
+\begin{figure}
+\linespread{1}
+\begin{forest}
+  dir tree
+  [ChtcRun
+    [proc.py (condor queue reader and develop commands)]
+    [runit (parallelization daemon)]
+    [ Powerin 
+      [ python scripts ]
+      [shared (files for every trial point) ]
+      [ pt1/add.cap (file defining trial point $u^1$ for current iteration)]
+      [ $\vdots$ ]
+      [ ptT/add.cap (file defining trial point $u^T$ in unique folder)]
+    ]
+    [ step0  (output directory for first iteration)
+      [ pt1  (output for first trial point of first iteration)]
+      [ $\vdots$ ]
+      [ ptT  (output for Tth trial point)]
+    ]
+    [ $\vdots$ ]
+    [ stepN  (output directory for Nth iteration)
+      [ $\vdots$ ]
+    ]
+  ]
+\end{forest}
+\linespread{2}
+\caption{Folder structure for using DAGs in parallelization routine}\label{fig:optroutine}
+\end{figure}
+
+Using a relatively naive pattern search with a fine mesh grid aligned on the coordinate directions, the brute force power of Condor was able to achieve significant improvement in the function value.  The function value and associated risk measure are plotted in \cref{fig:opt1}.  The majority of the improvement was made over the initial iterations of the algorithm.  The algorithm stopped when the function value made no improvement over the last iteration.  The final design point is shown in \cref{optimalpointcap} and the risk measures tabulated in \cref{optimalpointlsa}.
+
+
+\linespread{1}
+\lstinputlisting[language=bash,label={optimalpointcap},caption={point.cap: Transmission expansion design from pattern search method}]{\mypathdfocode/opt/point3.cap}
+\lstinputlisting[language=bash,label={optimalpointlsa},caption={point.lsa: Load shed analysis from chosen design}]{\mypathdfocode/opt/point.lsa}
+\linespread{2}
+
+
+\begin{figure}
+\begin{center}
+\includegraphics{\mypathdfo/fig-optroute}
+ \caption{Pattern search procedure for transmission expansion design problem}
+ \label{fig:opt1}
+\end{center}
+\end{figure}
+
+
+
+
+
 
 \section{Conclusion}
-This chapter gives a brief overview of DFO techniques.  Direct search was chosen due to its ability to filter high frequency noise and its flexibility in implementation while still guaranteeing local convergence under mild assumption.  This flexibility allows us to use accessory information in the exploratory steps to speed up solve times as well as find better global solutions.
-Several indicators were found that can be used to improve both search directions as well as exploratory trial points.  This will be combined with a direct search method in order to see the effects of these ideas as well as compare them to model based methods and their effects.  Additionally, the OPA simulation was implemented with a common random number scheme to reduce variance and low system requirements to parallelize the computational effort.  This allowed for large test cases to be evaluated and optimized using the OPA simulation as a subproblem.
-
+We began by decomposing the scenarios developed in the previous chapter in order to parallelize the computational effort needed in order to evaluate the wide load shed distribution.  We continued by exploring the function defined by the expected value of load shed over a small subset of initial contingencies as well as the cascade evolution.  We saw that doubling the capacity along coordinate directions does not lead to improvements in the OPA simulation the majority of the times.  We traced this to overloading neighbors when additional capacity was added to one line but not others.  We also saw that discontinuities of load shed could be correlated with the frequency of line failures in the OPA cascade simulation.  We used this to develop a line search procedure that finds these discontinuities. Finally, we implemented the parallelization in Condor using the DAGman functionality for job submission.  This allowed for job submission smoothing as well as restarting hung jobs or jobs that have failed.  We used this parallelization and a naive pattern search with a fine mesh grid to achieve improvement in the function value for the transmission expansion design problem.
 
 
 
@@ -406,11 +642,13 @@ Several indicators were found that can be used to improve both search directions
 
 %Old problem parameters, which is why the scales are so different
 
-%\begin{figure}
-%\begin{center}
-%\input{\mypathdfo/fig-optroute}
-% \caption{Brute force search procedure along coordinate directions in the null space}
-% \label{fig:opt1}
-%\end{center}
-%\end{figure}
 %}
+
+
+
+%This chapter gives a brief overview of DFO techniques.  Direct search was chosen due to its ability to filter high frequency noise and its flexibility in implementation while still guaranteeing local convergence under mild assumption.  This flexibility allows us to use accessory information in the exploratory steps to speed up solve times as well as find better global solutions.
+%Several indicators were found that can be used to improve both search directions as well as exploratory trial points.  This will be combined with a direct search method in order to see the effects of these ideas as well as compare them to model based methods and their effects.  Additionally, the OPA simulation was implemented with a common random number scheme to reduce variance and low system requirements to parallelize the computational effort.  This allowed for large test cases to be evaluated and optimized using the OPA simulation as a subproblem.
+
+
+
+

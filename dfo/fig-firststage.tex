@@ -1,5 +1,11 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\newcommand{\mypathdfodata}{../data}
+\begin{document}
 	\begin{tikzpicture}
-	\begin{axis}[ title=\mbox{ Load Shed versus First Stage Line Outages },xlabel=Number of Lines Outaged, ylabel=Load Shed]	
- 			\addplot+[opacity=.3875, mark size=.65, only marks] table[x=numlines, y=ex] {./data/done.fst};
+	\begin{axis}[ title=\mbox{ Load Shed versus First Stage Line Outages },xlabel=Number of Failed Lines, ylabel=Load Shed]	
+ 			\addplot+[opacity=.3875, mark size=.65, only marks] table[x=numlines, y=ex] {\mypathdfodata/done.fst};
 	\end{axis}	
 	\end{tikzpicture}
+\end{document}

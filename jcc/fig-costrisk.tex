@@ -1,10 +1,23 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\newcommand{\mypathjccdata}{../jcc/data}
+\begin{document}
 \begin{tikzpicture}
-\begin{axis}[title=Cost vs Risk (case30),scale=1, xlabel=Cost, ylabel=Risk, legend pos=outer north east]
+\begin{axis}[title=Cost vs Risk L(.9),scale=.7, xlabel=Cost, ylabel=Risk]
 \addplot+[opacity=.7,mark size=1] table[x=copf,y=ropf] {\mypathjccdata/cost-risk2.dat};
-\addlegendentry{OPF}
 \addplot+[opacity=.7, mark size=.1] table[x=ccc,y=rcc] {\mypathjccdata/cost-risk2.dat};
-\addlegendentry{CC}
 \addplot+[opacity=.7, mark size=.1] table[x=csjc,y=rsjc] {\mypathjccdata/cost-risk2.dat};
+\end{axis}
+\end{tikzpicture}
+\begin{tikzpicture}
+\begin{axis}[title=Cost vs Risk  L(.99),scale=.7, xlabel=Cost, ylabel=Risk, legend pos=outer north east]
+\addplot+[opacity=.7,mark size=1] table[x=copf,y=ropf] {\mypathjccdata/cost-risk6.dat};
+\addlegendentry{OPF}
+\addplot+[opacity=.7, mark size=.1] table[x=ccc,y=rcc] {\mypathjccdata/cost-risk6.dat};
+\addlegendentry{CC}
+\addplot+[opacity=.7, mark size=.1] table[x=csjc,y=rsjc] {\mypathjccdata/cost-risk6.dat};
 \addlegendentry{JCC}
 \end{axis}
 \end{tikzpicture}
+\end{document}

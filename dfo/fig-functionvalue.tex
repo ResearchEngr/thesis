@@ -1,6 +1,13 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\newcommand{\mypathdfodata}{../dfo/data}
+
+\begin{document}
+
 \begin{tabular}{c c}
 \begin{tikzpicture}[scale=.8]
-\begin{axis}[title=Trial Points]
+\begin{axis}[title=Function value by iteration,xlabel=Iteration,ylabel=Load Shed (MW)]
 \addplot+[only marks, circle, mark size=1, opacity=.95] table[x=num, y=ex]{\mypathdfodata/minobj.dat};
 \addlegendentry{Compass Search 1}%$x_0 = (0,0), \Delta_0=25$
 \addplot+[only marks, circle, mark size=1, opacity=.95] table[x=num, y=ex]{\mypathdfodata/objmin25.dat};
@@ -13,19 +20,22 @@
 \end{tikzpicture}
 &
 \begin{tikzpicture}[scale=.8]
-\begin{axis}[
+\begin{axis}[xlabel=Capacity (MW),ylabel=Capacity (MW),
     colormap/jet,colorbar,
     mesh/cols=16,
     view={0}{90},xmin=-5,xmax=80,ymin=-5,ymax=80]
     \addplot3[surf,shader=flat,opacity=.25] table{\mypathdfodata/heatmap_opt.dat};
 \end{axis}
-\begin{axis}[title=Trial Points,legend pos=north east, xmin=-5,xmax=80,ymin=-5,ymax=80]
+\begin{axis}[title=Heat Map with Final Points,legend pos=north east, xmin=-5,xmax=80,ymin=-5,ymax=80]
 \addplot+[mark size=4] coordinates { (.969,1.63) };
 \addplot+[mark size=4] coordinates { (26.56,37.5) };
 \addplot+[mark size=4] coordinates {  (53.32, -1.56) };
 \addplot+[mark size=4] coordinates { (74.56,75) };
 \end{axis}
 \end{tikzpicture}
-\\
-Note 1 & Note 2
+%\\
+%Function value by iteration & Note 2
 \end{tabular}
+
+
+\end{document}

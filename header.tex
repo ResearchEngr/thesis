@@ -14,6 +14,9 @@
 \usepackage{booktabs,colortbl}
 \usepackage{tikz}
 \usetikzlibrary{patterns}
+\usetikzlibrary{trees}
+\usepackage{forest}
+
 \usepackage{pgfplots}
 \usepackage{pgfplotstable}
 \usepackage{endnotes}
@@ -23,8 +26,53 @@
 \usepackage{afterpage}
 \usepackage{comment}    
 \usepackage{setspace}
+\usepackage{listings}
 \usepackage[margin=1in]{geometry}
 \graphicspath{{./img/}}
+\usepackage[toc,page]{appendix}
+\usepackage{tocloft}
+
+
+\forestset{
+  dir tree/.style={
+    for tree={
+      parent anchor=south west,
+      child anchor=west,
+      anchor=mid west,
+      inner ysep=1pt,
+      grow'=0,
+      align=left,
+      edge path={
+        \noexpand\path [draw, \forestoption{edge}] (!u.parent anchor) ++(1em,0) |- (.child anchor)\forestoption{edge label};
+      },
+      font=\sffamily,
+      if n children=0{}{
+        delay={
+          prepend={[,phantom, calign with current]}
+        }
+      },
+      fit=band,
+      before computing xy={
+        l=2em
+      }
+    },
+  }
+}
+
+
+% Define block styles
+
+\tikzstyle{decision} = [diamond, draw, fill=blue!20, 
+    text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+    text width=5em, text centered, rounded corners, minimum height=4em]
+\tikzstyle{line} = [draw, -latex']
+\tikzstyle{cloud} = [draw, ellipse,fill=red!20, node distance=3cm,
+    minimum height=2em]
+
+\crefname{lstlisting}{listing}{listings}
+\Crefname{lstlisting}{Listing}{Listings}
+    
 
 \newcommand\blankpage{%
     \null
@@ -95,6 +143,7 @@
 \newcommand{\cF}{\mathcal{F}}
 \newcommand{\cG}{\mathcal{G}}
 \newcommand{\cH}{\mathcal{H}}
+\newcommand{\cI}{\mathcal{I}}
 \newcommand{\cJ}{\mathcal{J}}
 \newcommand{\cK}{\mathcal{K}}
 \newcommand{\cL}{\mathcal{L}}

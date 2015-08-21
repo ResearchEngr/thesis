@@ -1,40 +1,59 @@
 
 \chapter{Conclusion}
+In this thesis we explored rare event risk on the bulk power system.  From the recent literature of cascading power failures, we built upon the OPA cascading power failure simulation.  We started by modeling this process as a multi-stage stochastic program with integer variables in \cref{msip-model}.  We introduced the concept of effective capacity to model the decision-dependent uncertain inherent in this cascading process.  This model allows for the flexibility of using the cascading process as a sub-problem in long term design problems.  We then turn to Monte Carlo simulation of this process in order to parallelize the computational process to get better resolution of the cascade evolution uncertainty in \cref{dfo-chapter}.  We look at the effects of transmission expansion on the OPA simulation and optimize this using derivative free optimization techniques and large computational resources through Condor.  In the second half of the thesis, we switch to real-time dispatch models.  In \cref{jcc-chapter} we develop a system risk measure that constrains the probability of one or more lines failing.  Also, we model uncertainty in generation and demand and translate this to uncertainty in branch flows by calculating the branch covariance matrix.  Using these two models, we approximate this system risk measure under uncertainty and use a cutting plane algorithm to solve this convex problem.  Finally, in \cref{ch:jccow} we combine the rare event risk model of the OPA simulation with the real-time line failure dispatch model.  We extend the joint chance constraint to the N-1 contingencies and use these contingencies to seed the OPA model.  Based off of these results, we develop a linear weighting system to approximate how important each line is with respect to the OPA cascade simulation.  We use this linear weighting system and a cutting plane algorithm to solve this convex optimization problem.
 \section{Contributions}
-The first chapter's primary contribution was to model the existing cascading power failure simulation as a multi-stage stochastic program using mixed integer variables.  The primary difficulty was overcoming the decision dependent uncertainty, which was done by using the concept of effective capacity distribution and a priori sampling.  While the computational difficulty made practical use of this impossible, if highly probable sequences of failures were known in advance, this model could be used to protect against them.
+In \cref{msip-model}, the primary contribution was to model the existing cascading power failure simulation as a multi-stage stochastic program using mixed integer variables.  The primary difficulty was overcoming the decision dependent uncertainty, which was done by using the concept of effective capacity distribution and a priori sampling.  While the computational difficulty made practical use of this impossible, if highly probable sequences of failures were known in advance, this model could be used to protect against them.
 
-The second chapter's primary contribution was to optimize over the OPA simulation efficiently, which previously was only used in simple sensitivity analysis.  To this end, an efficient implementation was made with a common random number scheme to reduce variance and low system requirements to allow for massively parallel solution methodology.  In addition, DFO techniques were used to filter the high frequency noise and exploratory steps using accessory information from the OPA simulation enhanced the solution time to allow for large test case optimization.
+In \cref{dfo-chapter}, the primary contribution was to optimize over the OPA simulation efficiently.  We looked at the design problem of transmission expansion and explored the characteristics of this risk function.  We developed an efficient implementation was made with a common random number scheme to reduce variance and low system requirements to allow for massively parallel solution methodology.  In addition, DFO techniques were used to filter the high frequency noise and exploratory steps using accessory information from the OPA simulation enhanced the solution time.
 
-The third chapter's primary contribution was to develop a dispatch model that included a system risk constraint to control endogenous risk from line loading.  This system risk measure was modeled as a joint chance constraint and can be calculated analytic even under net injection uncertainty.  The cost-risk frontier was explored and the new model was compared to the standard chance constraint model used in recent literature.  The chance constraint model can be closely replicated with the JCC model, however it is inefficient according to our system risk metric and the JCC model is far more flexibile.
+In \cref{jcc-chapter}, the primary contribution was to develop a dispatch model that included a system risk constraint to control endogenous risk from line loading.  This system risk measure was modeled as a joint chance constraint we solve this exactly when there is no uncertainty in generation and demand.  When there is net injection uncertainty, we approximate this system risk measure and solve approximately using a cutting plane algorithm..  The cost-risk frontier was explored and the new model was compared to the standard chance constraint model used in recent literature.  
 
-\section{Future Work}
-The primary research going forward will be finalize the DFO implementation for the OPA simulation and develop extensions to the JCC model for pricing and reliability analysis.
-\begin{itemize}
-\item Optimizing Design Problems (Ch. 3)
-\bi
-\item Implement full DFO algorithm and explore effects from using problem specific information
-\item Compare direct search method with model based method for DFO algorithm
-\ei
-\item Risk Model for Real-Time Dispatch (Ch. 4)
-\bi
-\item Make use of the extension of JCC to exogenous contingencies by measuring the relability of the system using the OPA cascading model
-\item Price the covariance matrix for net injection uncertainty using the shadow prices from the system risk constraints in the JCC model.
-\ei
-\end{itemize}
-
-Currently, only brute force exploration procedures were used in the parallel framework developed for optimizing over the OPA simulation.  This was used to understand the accessory information gained from the solution such as intermediate line flow and load shed data.  Now, direct search and model based search procedures will be implemented and compared.  These search procedures will be enhanced with problem specific information to speed up solve times.
-
-The JCC model will be extended to allow for pricing the covariance matrix for net injection uncertainty.  This uncertainty is responsible for a large portion of system stress that is protected against using ancillary services such as regulation and reserves.  By pricing this, the assets and injection points responsible for this stress will be charged in order to send proper price signals through the market.
-
-In addition, the JCC model will be used for a decision policy in the first two stages of the OPA cascade, replacing the standard DC power flow decision policy.  This will be done to explore the effects the JCC model will have on the reliability of the system to exogenous contingencies.  Here, the JCC model with the N-1 extension will be used to find the dispatch point for the first two stages of the cascade.  Typically, the initial stages of the cascade have time between epochs of failures of 30 minutes to 4 hours, plenty of time to redispatch generation assets.  Then, the cascade sequence will proceed as normal and the results will be compared with the OPA model with the standard DC economic dispatch as its decision policy.  The JCC model accounts for endogenous line loading risk so it is expected to improve the results of the OPA cascade by being in a better initial dispatch point and heading off the problem before the system can deteriorate.  
-
-\section*{Thanks}
-Thanks for reading, I look forward to the help and feedback.
-
+In \cref{ch:jccow}, we extended our endogenous system risk model to the N-1 contingencies.  We also evaluate the N-1 contingencies using OPA to evaluate rare event risk.  We then develop a linear weighting system to account for this rare event risk and constrain it in our real time dispatch model.
 
 \bibliographystyle{plain}	
 \bibliography{ref,msip-bib,jcc-bib,dfo-bib}		
 
 \clearpage
 
-\theendnotes
+\begin{appendices}
+\chapter{Code for Computational Models}
+
+\section{Multi Stage Stochastic Program}
+This code is publicly available on GitHub at
+\url{https://github.com/eanderson4/msip}
+
+\section{Condor Parallelization Code}
+
+\linespread{1}
+\scriptsize
+\lstinputlisting[language=Python,label={procpy},caption={proc.py: Condor Queue and Log File Reader}]{\mypathdfocode/Proc.py}
+
+\lstinputlisting[language=bash,label={runit},caption={runit: Main Process Flow}]{\mypathdfocode/runit.sh}
+
+\lstinputlisting[language=Python,label={powerpy},caption={power.py: Power Class}]{\mypathdfocode/Powerin/power.py}
+\lstinputlisting[language=Python,label={toolspy},caption={tools.py: Common Functions}]{\mypathdfocode/Powerin/tools.py}
+%\lstinputlisting[language=Python,label={cappy},caption={cap.py: Capacity file analysis functions}]{\mypathdfocode/Powerin/cap.py}
+\lstinputlisting[language=Python,label={allocatepy},caption={allocate.py: Direct Search Pattern}]{\mypathdfocode/Powerin/allocate.py}
+\lstinputlisting[language=Python,label={consubpy},caption={consub.py: Build Condor Submit Structure}]{\mypathdfocode/Powerin/consub.py}
+\lstinputlisting[language=Python,label={loadshedpy},caption={loadshed.py: Take raw load shed and summarize}]{\mypathdfocode/Powerin/loadShed.py}
+\lstinputlisting[language=Python,label={countlinespy},caption={countLines.py: Take raw line out info and summarize}]{\mypathdfocode/Powerin/countLines.py}
+
+\lstinputlisting[language=bash,label={optimalpointlao},caption={point.lao: Line outage file from chosen design}]{\mypathdfocode/opt/point.lao}
+
+\linespread{2}
+
+
+\section{Joint Chance Constraint Model}
+This code is publicly available on GitHub at
+\url{https://github.com/eanderson4/pow-opt}
+
+\section{Joint Chance Constraint with OPA Weighting}
+This code is publicly available on GitHub at
+\url{https://github.com/eanderson4/opt-opa}
+
+
+\end{appendices}
+
+%\clearpage
+
+%\theendnotes

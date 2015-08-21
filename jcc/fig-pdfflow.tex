@@ -1,3 +1,12 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\newcommand{\mypathjccdata}{../jcc/data}
+\usepackage{amsmath,amssymb,amsfonts} % Typical maths resource packages
+\input{def}
+\newcommand{\ry}{\pmb{y}}
+\begin{document}
+
     \begin{tikzpicture}[scale=.7]
       \begin{axis}[ title=PDF of Power Flow ,xlabel=$y'$,ylabel=$\bP{\Omega}{\ry=y'}$, xmin=-.05, xmax=1.55, 
           xtick={0,.5,1,1.5},
@@ -10,3 +19,5 @@
         
       \end{axis}
     \end{tikzpicture}
+
+\end{document}

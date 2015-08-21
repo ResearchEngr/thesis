@@ -1,21 +1,61 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\newcommand{\mypathdfodata}{../data}
+\begin{document}
+
 	\begin{tikzpicture}
-	\begin{axis}[ title=\mbox{  Opt Routine }  ]	
+	\begin{axis}[ title=\mbox{ Pattern Search Routine },legend pos=outer north east, scale=1, xlabel=Capacity (MW), ylabel=Load Shed (MW)]			
+\addplot+[black,opacity=.5, mark size=.5,only marks,smooth,solid] table[x=run, y=ex] {\mypathdfodata/opt1.dat};
+\addlegendentry{Expect}
+
+	\addplot+[blue,opacity=.5, mark size=.5,solid,smooth,error bars/.cd, y dir=both, y explicit] table[x=run, y=ex, y error=sd] {\mypathdfodata/opt1.dat};
+\addlegendentry{St. Dev}
+	\addplot+[purple,opacity=.615, mark size=.5,solid,smooth] table[x=run, y=var] {\mypathdfodata/opt1.dat};
+\addlegendentry{5\% V@R}
+	\addplot+[purple,opacity=.815, mark size=.5,solid,smooth] table[x=run, y=cvar] {\mypathdfodata/opt1.dat};
+\addlegendentry{5\% CV@R}
+	\addplot+[purple,opacity=1, mark size=.5,solid,smooth] table[x=run, y=max] {\mypathdfodata/opt1.dat};
+\addlegendentry{Maximum}
+%		\addlegendentryexpanded{$\i$ - Ex}
+	\end{axis}	
+	\end{tikzpicture}
+
+\end{document}
+
+
+\bc{
+	\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{  Pattern Search Routine - Expected Load Shed } ,xlabel=Iteration,ylabel=Load Shed (MW) ]	
  	
-		\addplot+[opacity=.5, mark size=.5, smooth,solid,thick,black, error bars/.cd, y dir=both, y explicit] table[x=run, y=ex, y error=se] {./data/opt1.dat};
+		\addplot+[opacity=.5, mark size=.5, smooth,solid,thick,black, error bars/.cd, y dir=both, y explicit] table[x=run, y=ex, y error=se] {\mypathdfodata/opt1.dat};
 		\addlegendentry{Ex}
-		\addplot+[opacity=.5,mark size=.75, smooth,solid, green] table[x=run, y=sd] {./data/opt1.dat};
-		\addlegendentry{St. Dv.}	
+		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=max] {\mypathdfodata/opt1.dat};
+		\addlegendentry{Max}	
+		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=var] {\mypathdfodata/opt1.dat};
+		\addlegendentry{VaR 5\%}	
+%		\addplot+[opacity=.5,mark size=.75, smooth,solid, green] table[x=run, y=sd] {\mypathdfodata/opt1.dat};
+%		\addlegendentry{St. Dv.}	
 %		\addlegendentry{Expectation}
 
 
 	\end{axis}	
-	\begin{axis}[ axis y line*=right, legend pos=outer north east]
+\end{tikzpicture}
+\begin{tikzpicture}
+	\begin{axis}[ title=\mbox{Pattern Search Routine - Tail Measures},xlabel=Iteration]
 %
-		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=max] {./data/opt1.dat};
+		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=max] {\mypathdfodata/opt1.dat};
 		\addlegendentry{Max}	
-		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=var] {./data/opt1.dat};
-		\addlegendentry{VAR}	
+		\addplot+[opacity=.5,mark size=.75, smooth,solid] table[x=run, y=var] {\mypathdfodata/opt1.dat};
+		\addlegendentry{VaR 5\%}	
 	\end{axis}
 
 
 	\end{tikzpicture}
+
+
+
+	\addplot+[blue,opacity=.5, mark size=.5,solid,smooth,error bars/.cd, y dir=both, y explicit] table[x=run, y=ex, y error=se] {\mypathdfodata/opt1.dat};
+\addlegendentry{St. Error}
+
+}

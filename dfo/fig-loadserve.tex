@@ -1,9 +1,57 @@
-\foreach \i in {0, 1, 5,10,15,20}{
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\newcommand{\mypathdfodata}{../data}
+\begin{document}
+
+\newcommand{\inumm}{0}
+\begin{tabular}{c c}
 	\begin{tikzpicture}
-	\begin{axis}[ scale=.6575, xlabel=Load Served (MW) Stage \i , ylabel=Load Served (MW) Final ]	
-			\addplot+[opacity=.46775, mark size=.915, only marks] table[x=ls\i, y=ls30] {./data/long.corr};
-%		\addlegendentryexpanded{$\i$ - Ex)
+	\begin{axis}[ scale=.6575, xlabel=Load Served (MW) Stage \inumm , ylabel=Load Served (MW) Final ]	
+			\addplot+[opacity=.46775, mark size=.915, only marks] table[x=ls\inumm, y=ls30] {\mypathdfodata/long.corr};
+%		\addlegendentryexpanded{$\inumm$ - Ex)
+	\end{axis}	
+	\end{tikzpicture}
+\renewcommand{\inumm}{1}
+&
+	\begin{tikzpicture}
+	\begin{axis}[ scale=.6575, xlabel=Load Served (MW) Stage 1 , ylabel=Load Served (MW) Final ]	
+			\addplot+[opacity=.46775, mark size=.915, only marks] table[x=ls1, y=ls30] {\mypathdfodata/long.corr};
+%		\addlegendentryexpanded{$\inumm$ - Ex)
+	\end{axis}	
+	\end{tikzpicture}
+\\
+\renewcommand{\inumm}{5}
+	\begin{tikzpicture}
+	\begin{axis}[ scale=.6575, xlabel=Load Served (MW) Stage \inumm , ylabel=Load Served (MW) Final ]	
+			\addplot+[opacity=.46775, mark size=.915, only marks] table[x=ls\inumm, y=ls30] {\mypathdfodata/long.corr};
+%		\addlegendentryexpanded{$\inumm$ - Ex)
+	\end{axis}	
+	\end{tikzpicture}
+&
+\renewcommand{\inumm}{10}
+	\begin{tikzpicture}
+	\begin{axis}[ scale=.6575, xlabel=Load Served (MW) Stage \inumm , ylabel=Load Served (MW) Final ]	
+			\addplot+[opacity=.46775, mark size=.915, only marks] table[x=ls\inumm, y=ls30] {\mypathdfodata/long.corr};
+%		\addlegendentryexpanded{$\inumm$ - Ex)
+	\end{axis}	
+	\end{tikzpicture}
+\\
+\renewcommand{\inumm}{15}
+	\begin{tikzpicture}
+	\begin{axis}[ scale=.6575, xlabel=Load Served (MW) Stage \inumm , ylabel=Load Served (MW) Final ]	
+			\addplot+[opacity=.46775, mark size=.915, only marks] table[x=ls\inumm, y=ls30] {\mypathdfodata/long.corr};
+%		\addlegendentryexpanded{$\inumm$ - Ex)
+	\end{axis}	
+	\end{tikzpicture}
+&
+\renewcommand{\inumm}{20}
+	\begin{tikzpicture}
+	\begin{axis}[ scale=.6575, xlabel=Load Served (MW) Stage \inumm , ylabel=Load Served (MW) Final ]	
+			\addplot+[opacity=.46775, mark size=.915, only marks] table[x=ls\inumm, y=ls30] {\mypathdfodata/long.corr};
+%		\addlegendentryexpanded{$\inumm$ - Ex)
 	\end{axis}	
 	\end{tikzpicture}
  %\label{fig:lmp}
-}
+\end{tabular}
+\end{document}

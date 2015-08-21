@@ -1,12 +1,14 @@
-\begin{center}
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\newcommand{\mypathdfodata}{../data}
+\begin{document}
 	\begin{tikzpicture}
 	\begin{axis}[ title=\mbox{ Load Shed for Capacity Addition on Coordinate Directions},legend pos=north east ,scale=1.12, xlabel=Line Number, ylabel=Load Shed (MW)]	
-			\addplot+[opacity=.6775, mark size=.915, only marks,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {./data/grad.dat};
+			\addplot+[opacity=.6775, mark size=.915, only marks,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {\mypathdfodata/grad.dat};
 \addlegendentry{Coordinate Directions};
-			\addplot+[opacity=.1175, mark size=.915, red, only marks,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {./data/base.dat};
+			\addplot+[opacity=.1175, mark size=.915, red, only marks,error bars/.cd, y dir=both, y explicit] table[x=name, y=ex, y error=se] {\mypathdfodata/base.dat};
 \addlegendentry{Nominal System}
 	\end{axis}	
 	\end{tikzpicture}
-\caption{Comparing the total load shed for doubling capacity along the coordinate direction.}
-\label{fig:grad}
-\end{center}
+\end{document}
